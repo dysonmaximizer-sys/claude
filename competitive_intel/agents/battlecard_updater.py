@@ -17,13 +17,17 @@ import logging
 from datetime import datetime, timezone
 
 import anthropic
-from notion_client import Client
 
-from config import ANTHROPIC_API_KEY, CLAUDE_MODEL, NOTION_TOKEN
-from integrations.notion_client import get_battlecard_page_id, mark_battlecard_updated
+from config import ANTHROPIC_API_KEY, CLAUDE_MODEL
+from integrations.notion_client import (
+    get_battlecard_page_id,
+    mark_battlecard_updated,
+    append_blocks,
+    get_block_children,
+    update_block,
+)
 
 logger = logging.getLogger(__name__)
-notion = Client(auth=NOTION_TOKEN)
 anthropic_client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
 OVERVIEW_UPDATE_SYSTEM = """You are a competitive intelligence analyst updating a sales battlecard \
@@ -119,7 +123,7 @@ def _append_intel_entry(
         },
     ]
 
-    notion.blocks.children.append(block_id=page_id, children=blocks)
+    append_blocks(page_id, blocks)
 
 
 def _refresh_overview(
@@ -134,8 +138,8 @@ def _refresh_overview(
     """
     try:
         # Retrieve existing page content to find the current overview
-        blocks = notion.blocks.children.list(block_id=page_id)
-        current_overview = _extract_overview(blocks.get("results", []))
+        blocks = get_block_children(page_id)
+        current_overview = _extract_overview(blocks)
 
         if not current_overview:
             return  # No overview block to update
@@ -163,7 +167,7 @@ Write the updated overview."""
         updated_overview = message.content[0].text.strip()
 
         # Find and update the overview block
-        _update_overview_block(blocks.get("results", []), updated_overview)
+        _update_overview_block(blocks, updated_overview)
 
     except Exception as e:
         logger.warning("Could not refresh overview for %s: %s", competitor_name, e)
@@ -186,10 +190,9 @@ def _update_overview_block(blocks: list, new_text: str) -> None:
         if block.get("type") == "paragraph":
             rich_text = block["paragraph"].get("rich_text", [])
             if "".join(t.get("plain_text", "") for t in rich_text).strip():
-                notion.blocks.update(
-                    block_id=block["id"],
-                    paragraph={
-                        "rich_text": [{"type": "text", "text": {"content": new_text}}]
-                    },
+                update_block(
+                    block["id"],
+                    "paragraph",
+                    {"rich_text": [{"type": "text", "text": {"content": new_text}}]},
                 )
                 return
