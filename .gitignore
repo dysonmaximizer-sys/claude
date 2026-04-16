@@ -1,0 +1,23 @@
+# Environment — never commit secrets
+.env
+*.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+*.egg-info/
+dist/
+build/
+
+# Output
+output/
+
+# Claude Code local settings
+.claude/
+
+# macOS
+.DS_Store
