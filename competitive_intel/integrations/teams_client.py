@@ -14,6 +14,7 @@ TODO: Once Teams channels are created, add all webhook URLs to .env.
 
 import logging
 import os
+from typing import Optional
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential

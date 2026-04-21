@@ -4,9 +4,10 @@ Never hardcode credentials here.
 """
 
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(Path(__file__).parent / ".env", override=True)
 
 # ── API Keys ──────────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
@@ -25,10 +26,8 @@ TEAMS_GENERAL_WEBHOOK = os.environ.get("TEAMS_GENERAL_WEBHOOK", "")
 # e.g. TEAMS_WEBHOOK_EQUISOFT, TEAMS_WEBHOOK_HUBSPOT, etc.
 
 # ── Email (newsletter distribution) ───────────────────────────────────────────
-SMTP_HOST = os.environ.get("SMTP_HOST", "smtp.gmail.com")
-SMTP_PORT = int(os.environ.get("SMTP_PORT", "587"))
-SMTP_USER = os.environ.get("SMTP_USER", "")
-SMTP_PASSWORD = os.environ.get("SMTP_PASSWORD", "")
+RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
+SMTP_FROM = os.environ.get("SMTP_FROM", "onboarding@resend.dev")
 NEWSLETTER_RECIPIENTS = [
     e.strip()
     for e in os.environ.get("NEWSLETTER_RECIPIENTS", "marketing@maximizer.com").split(",")

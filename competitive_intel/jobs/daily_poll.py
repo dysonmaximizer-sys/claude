@@ -23,7 +23,7 @@ def run() -> dict:
     Returns a summary dict: {"new_changes": int, "errors": int}
     """
     from integrations.visualping_client import get_recent_changes
-    from integrations.notion_client import log_change
+    from integrations.notion_client import log_change, change_already_logged
 
     logger.info("=== Daily poll started ===")
 
@@ -38,6 +38,18 @@ def run() -> dict:
 
     for change in changes:
         try:
+            if change_already_logged(
+                change["competitor_name"],
+                change["url"],
+                change.get("detected_at", ""),
+            ):
+                logger.info(
+                    "Skipping duplicate: %s — %s",
+                    change["competitor_name"],
+                    change["url"],
+                )
+                continue
+
             log_change(
                 competitor_name=change["competitor_name"],
                 tier=change["tier"],
@@ -45,6 +57,7 @@ def run() -> dict:
                 raw_change=change["raw_change"],
                 category=change["category"],
                 source_type=change["source_type"],
+                detected_at=change.get("detected_at", ""),
             )
             logged += 1
             logger.info(

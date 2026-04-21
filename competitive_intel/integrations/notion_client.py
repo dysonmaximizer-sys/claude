@@ -11,10 +11,15 @@ Databases managed here:
 import logging
 import os
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Optional
 
 import requests
+from dotenv import load_dotenv
 from tenacity import retry, stop_after_attempt, wait_exponential
+
+# Load .env relative to this file so env vars are available regardless of CWD
+load_dotenv(Path(__file__).parent.parent / ".env", override=True)
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +80,33 @@ def _query_db(db_id: str, filter_body: dict, sorts: list = None) -> list[dict]:
 
 # ── Changes Database ──────────────────────────────────────────────────────────
 
+def change_already_logged(competitor_name: str, url: str, detected_at: str) -> bool:
+    """
+    Return True if a change for this competitor/URL was already logged within
+    a 2-hour window of detected_at. Prevents duplicate entries on overlapping polls.
+    """
+    if not detected_at:
+        return False
+    try:
+        from datetime import timedelta
+        dt = datetime.fromisoformat(detected_at.replace("Z", "+00:00"))
+        window_start = (dt - timedelta(hours=1)).isoformat()
+        window_end   = (dt + timedelta(hours=1)).isoformat()
+        results = _query_db(
+            _CHANGES_DB,
+            {"and": [
+                {"property": "Competitor", "select": {"equals": competitor_name}},
+                {"property": "URL",        "url":    {"equals": url}},
+                {"property": "Date Detected", "date": {"on_or_after":  window_start}},
+                {"property": "Date Detected", "date": {"on_or_before": window_end}},
+            ]},
+        )
+        return len(results) > 0
+    except Exception as e:
+        logger.debug("Dedup check failed (allowing log): %s", e)
+        return False
+
+
 def log_change(
     competitor_name: str,
     tier: str,
@@ -82,6 +114,7 @@ def log_change(
     raw_change: str,
     category: str = "Other",
     source_type: str = "Web",
+    detected_at: str = "",
 ) -> str:
     """Write a new change entry to the Changes database. Returns the new page ID."""
     competitor_page_id = get_competitor_page_id(competitor_name)
@@ -96,7 +129,7 @@ def log_change(
         "Source Type": {"select": {"name": source_type}},
         "Category": {"select": {"name": category}},
         "Raw Change": {"rich_text": [{"text": {"content": raw_change[:2000]}}]},
-        "Date Detected": {"date": {"start": datetime.now(timezone.utc).isoformat()}},
+        "Date Detected": {"date": {"start": detected_at or datetime.now(timezone.utc).isoformat()}},
         "Status": {"select": {"name": "Unscored"}},
         "Teams Alert Sent": {"checkbox": False},
         "Battlecard Updated": {"checkbox": False},

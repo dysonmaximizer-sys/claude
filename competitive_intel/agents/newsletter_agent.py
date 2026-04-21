@@ -11,22 +11,19 @@ Uses prompt caching on the system prompt.
 """
 
 import logging
-import smtplib
 import textwrap
 from datetime import datetime, timezone
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from pathlib import Path
+
+import requests
 
 import anthropic
 
 from config import (
     ANTHROPIC_API_KEY,
     CLAUDE_MODEL,
-    SMTP_HOST,
-    SMTP_PORT,
-    SMTP_USER,
-    SMTP_PASSWORD,
+    RESEND_API_KEY,
+    SMTP_FROM,
     NEWSLETTER_RECIPIENTS,
 )
 
@@ -128,40 +125,50 @@ def save_newsletter(newsletter_text: str, month: int, year: int) -> Path:
 
 def email_newsletter(newsletter_text: str, month: int, year: int) -> bool:
     """
-    Send the newsletter via SMTP.
-    Returns True on success, False if SMTP is not configured.
+    Send the newsletter via Resend API (HTTPS).
+    Returns True on success, False if not configured.
     """
-    if not SMTP_USER or not SMTP_PASSWORD:
+    if not RESEND_API_KEY:
         logger.warning(
-            "SMTP credentials not configured — email delivery skipped. "
-            "Add SMTP_USER and SMTP_PASSWORD to .env to enable email."
+            "Resend API key not configured — email skipped. "
+            "Add RESEND_API_KEY to .env to enable email delivery."
         )
         return False
 
     month_name = datetime(year, month, 1).strftime("%B %Y")
     subject = f"Competitive Intelligence: Monthly Strategic Synthesis — {month_name}"
+    html_body = (
+        f"<html><body>"
+        f"<pre style='font-family:Arial,sans-serif;font-size:14px;line-height:1.6'>"
+        f"{newsletter_text}"
+        f"</pre></body></html>"
+    )
 
-    msg = MIMEMultipart("alternative")
-    msg["Subject"] = subject
-    msg["From"] = SMTP_USER
-    msg["To"] = ", ".join(NEWSLETTER_RECIPIENTS)
-
-    # Plain text part
-    msg.attach(MIMEText(newsletter_text, "plain"))
-
-    # Simple HTML version (preserves whitespace)
-    html = f"<html><body><pre style='font-family:Arial,sans-serif;font-size:14px;line-height:1.6'>{newsletter_text}</pre></body></html>"
-    msg.attach(MIMEText(html, "html"))
+    payload = {
+        "from": SMTP_FROM,
+        "to": NEWSLETTER_RECIPIENTS,
+        "subject": subject,
+        "text": newsletter_text,
+        "html": html_body,
+    }
 
     try:
-        with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-            server.ehlo()
-            server.starttls()
-            server.login(SMTP_USER, SMTP_PASSWORD)
-            server.sendmail(SMTP_USER, NEWSLETTER_RECIPIENTS, msg.as_string())
+        response = requests.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=30,
+        )
+        response.raise_for_status()
         logger.info("Newsletter emailed to: %s", ", ".join(NEWSLETTER_RECIPIENTS))
         return True
-    except smtplib.SMTPException as e:
+    except requests.HTTPError as e:
+        logger.error("Resend API error: %s — %s", e, response.text)
+        return False
+    except requests.RequestException as e:
         logger.error("Failed to send newsletter email: %s", e)
         return False
 
