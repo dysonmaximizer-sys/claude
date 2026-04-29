@@ -97,8 +97,11 @@ def _get_changes_for_job(
 
     results = []
 
-    # History is ordered oldest → newest; iterate in reverse to find recent changes
-    for i in range(len(history) - 1, 0, -1):
+    # History is newest-first (index 0 = most recent snapshot).
+    # Iterate from newest toward oldest; for each entry, history[i+1] is the
+    # prior snapshot to diff against.  We stop processing the very last entry
+    # because there is nothing older to diff it against.
+    for i in range(len(history) - 1):
         entry = history[i]
         created_str = entry.get("created", "")
 
@@ -109,13 +112,13 @@ def _get_changes_for_job(
             continue
 
         if created < since:
-            break  # Older than our lookback window
+            break  # All subsequent entries are even older — stop
 
         if not _is_significant_change(entry):
             continue
 
-        # Get the previous snapshot to diff against
-        prev_entry = history[i - 1]
+        # history[i+1] is the previous (older) snapshot
+        prev_entry = history[i + 1]
         raw_change = _extract_change_text(entry, prev_entry, url)
 
         if raw_change:
