@@ -99,9 +99,9 @@ def _get_changes_for_job(
 
     # History is newest-first (index 0 = most recent snapshot).
     # Iterate from newest toward oldest; for each entry, history[i+1] is the
-    # prior snapshot to diff against.  We stop processing the very last entry
-    # because there is nothing older to diff it against.
-    for i in range(len(history) - 1):
+    # prior snapshot to diff against.  For the very last entry (oldest) we
+    # have no prior snapshot — log the page content directly instead.
+    for i in range(len(history)):
         entry = history[i]
         created_str = entry.get("created", "")
 
@@ -117,9 +117,15 @@ def _get_changes_for_job(
         if not _is_significant_change(entry):
             continue
 
-        # history[i+1] is the previous (older) snapshot
-        prev_entry = history[i + 1]
-        raw_change = _extract_change_text(entry, prev_entry, url)
+        if i + 1 < len(history):
+            # Normal case: diff current snapshot against the prior one
+            prev_entry = history[i + 1]
+            raw_change = _extract_change_text(entry, prev_entry, url)
+        else:
+            # Oldest entry — no prior snapshot to diff against; log page text
+            raw_change = _fetch_html_as_text(entry.get("html", ""))
+            if raw_change:
+                raw_change = f"[First detected change — full page snapshot]\n\n{raw_change}"
 
         if raw_change:
             results.append(
