@@ -1,12 +1,13 @@
 """
-Newsletter agent — generates the monthly Strategic Synthesis newsletter.
+Newsletter agent — generates the monthly Competitive Intelligence newsletter.
 
 Runs on the 1st of each month. Synthesises all scored changes from the previous
-month into a structured executive briefing, then:
+month into a structured briefing, then:
   1. Saves the full newsletter to output/
   2. Posts an announcement + preview to the Teams general channel
   3. Emails the full newsletter to the configured recipient list
 
+The system prompt is loaded from resources/newsletter_system_prompt.txt.
 Uses prompt caching on the system prompt.
 """
 
@@ -30,45 +31,29 @@ from config import (
 logger = logging.getLogger(__name__)
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
 
-SYSTEM_PROMPT = """You are writing the monthly Competitive Intelligence Strategic Synthesis \
-for Maximizer's senior leadership team. Maximizer is a B2B SaaS CRM for wealth management \
-and insurance advisory firms.
+# ── System prompt: loaded from resources file ─────────────────────────────────
 
-Your newsletter must follow this exact structure:
+_PROMPT_FILE = Path(__file__).parent.parent / "resources" / "newsletter_system_prompt.txt"
 
----
-COMPETITIVE INTELLIGENCE: MONTHLY STRATEGIC SYNTHESIS
-[Month Year]
+def _load_system_prompt() -> str:
+    try:
+        return _PROMPT_FILE.read_text(encoding="utf-8").strip()
+    except FileNotFoundError:
+        logger.warning("newsletter_system_prompt.txt not found at %s — using inline fallback", _PROMPT_FILE)
+        return (
+            "You are writing a competitive intelligence newsletter for Maximizer CRM. "
+            "Use plain text only (no markdown). Section headers must be: "
+            "INTRODUCTION, COMPETITIVE NEWS, PRODUCT UPDATES."
+        )
 
-EXECUTIVE SUMMARY
-2–3 sentences on the most important competitive development this month and its strategic implication.
+SYSTEM_PROMPT = _load_system_prompt()
 
-TOP SIGNALS THIS MONTH
-For each significant change (score ≥ 7), write one entry:
-  • [Competitor] | [Category] | Score: X/10
-    What: <one sentence>
-    Why it matters: <one sentence>
-    Recommended action: <one sentence>
 
-WATCH LIST
-Changes scored 5–6: briefer entries (competitor, category, one-line note).
-
-MARKET THEMES
-2–3 bullet points identifying patterns across competitors (e.g. "Three Tier 1 competitors added AI features this month").
-
-IMPLICATIONS BY TEAM
-  → Sales: <1–2 sentences of talk track guidance>
-  → Product: <1–2 sentences on feature prioritisation signals>
-  → Marketing: <1–2 sentences on GTM adjustments>
----
-
-Write in executive-friendly language: punchy, direct, no jargon. \
-Total length: 400–600 words."""
-
+# ── Newsletter generation ─────────────────────────────────────────────────────
 
 def generate_newsletter(changes: list[dict], month: int, year: int) -> str:
     """
-    Generate the monthly Strategic Synthesis from a list of scored change dicts.
+    Generate the monthly newsletter from a list of scored change dicts.
 
     Each change dict should have keys: competitor, tier, category, score,
     ai_summary, score_reasoning, url, date_detected.
@@ -81,7 +66,7 @@ def generate_newsletter(changes: list[dict], month: int, year: int) -> str:
     changes_text = _format_changes_for_prompt(changes)
     month_name = datetime(year, month, 1).strftime("%B %Y")
 
-    user_content = f"""Generate the Strategic Synthesis newsletter for {month_name}.
+    user_content = f"""Generate the competitive intelligence newsletter for {month_name}.
 
 This month's competitive changes ({len(changes)} total):
 
@@ -134,7 +119,7 @@ def email_newsletter(newsletter_text: str, month: int, year: int) -> bool:
         return False
 
     month_name = datetime(year, month, 1).strftime("%B %Y")
-    subject = f"Competitive Intelligence: Monthly Strategic Synthesis — {month_name}"
+    subject = f"Competitive Intelligence: {month_name}"
 
     payload = {
         "from": SMTP_FROM,
@@ -167,125 +152,288 @@ def email_newsletter(newsletter_text: str, month: int, year: int) -> bool:
 
 # ── HTML Renderer ─────────────────────────────────────────────────────────────
 
+BANNER_URL = "https://www.maximizer.com/wp-content/uploads/2026/04/header_banner.png"
+
+_SOCIAL_ICONS = [
+    ("https://www.facebook.com/MaximizerCRM",
+     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/89bece8c-7fe7-44ca-b0ec-a79ca93169dc/24x24.png",
+     "Facebook"),
+    ("https://www.linkedin.com/company/maximizer-software",
+     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/16481162-a5f0-411d-824d-99dea05652c3/24x24.png",
+     "LinkedIn"),
+    ("https://twitter.com/MaximizerCRM",
+     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/74afae1d-c53a-4668-a6af-683b68498f1e/25x24.png",
+     "Twitter"),
+    ("https://www.instagram.com/maximizercrm",
+     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/51ce28c9-bd45-419b-9488-d66326208f10/24x24.png",
+     "Instagram"),
+]
+
+_MAXIMIZER_LOGO = (
+    "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993"
+    "/e1bdfc53-8897-4d7d-90d0-8ebd6de73a71/472x72.png"
+)
+
+
 def _render_html(text: str, month_name: str) -> str:
-    """Convert plain-text newsletter to a styled HTML email."""
-
+    """Convert plain-text newsletter to a styled HTML email matching Maximizer's template."""
     sections = _parse_sections(text)
+    body_html = _build_body(sections, month_name)
 
-    html_sections = ""
+    social_tds = "".join(
+        f"""<td style="padding:0px 5px;">
+              <a href="{url}" target="_blank"
+                 style="display:inline-block; background-color:transparent; height:21px; width:21px;">
+                <img alt="{name}" title="{name}" src="{img}"
+                     style="height:21px; width:21px;" height="21" width="21">
+              </a>
+            </td>"""
+        for url, img, name in _SOCIAL_ICONS
+    )
 
-    # Executive Summary
-    if "EXECUTIVE SUMMARY" in sections:
-        html_sections += _section(
-            title="Executive Summary",
-            accent="#1B3A6B",
-            content=_paragraphs(sections["EXECUTIVE SUMMARY"]),
-        )
-
-    # Top Signals
-    if "TOP SIGNALS THIS MONTH" in sections:
-        html_sections += _section(
-            title="Top Signals This Month",
-            accent="#1B3A6B",
-            content=_render_signals(sections["TOP SIGNALS THIS MONTH"]),
-        )
-
-    # Watch List
-    if "WATCH LIST" in sections:
-        html_sections += _section(
-            title="Watch List",
-            accent="#1B3A6B",
-            content=_render_watchlist(sections["WATCH LIST"]),
-        )
-
-    # Market Themes
-    if "MARKET THEMES" in sections:
-        html_sections += _section(
-            title="Market Themes",
-            accent="#1B3A6B",
-            content=_render_bullets(sections["MARKET THEMES"]),
-        )
-
-    # Implications by Team
-    if "IMPLICATIONS BY TEAM" in sections:
-        html_sections += _section(
-            title="Implications by Team",
-            accent="#1B3A6B",
-            content=_render_implications(sections["IMPLICATIONS BY TEAM"]),
-        )
-
-    return f"""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+    return f"""<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1">
+  <meta name="viewport" content="width=device-width, initial-scale=1,
+        minimum-scale=1, maximum-scale=1">
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge">
   <style type="text/css">
-    body, p, div, td {{ font-family: arial, helvetica, sans-serif; font-size: 14px; color: #000000; }}
-    body {{ margin: 0; padding: 0; background-color: #f4f4f4; }}
+    body, p, div {{ font-family: arial, helvetica, sans-serif; font-size: 14px; }}
+    body {{ color: #000000; }}
+    body a {{ color: #1188E6; text-decoration: none; }}
     p {{ margin: 0; padding: 0; }}
-    a {{ color: #1188E6; text-decoration: none; }}
-    h2 {{ margin: 0; padding: 0; }}
+    table.wrapper {{ width: 100% !important; table-layout: fixed;
+                     -webkit-font-smoothing: antialiased; }}
+    img.max-width {{ max-width: 100% !important; }}
+    ul.ci-list {{ margin: 8px 0 8px 0; padding-left: 20px; }}
+    ul.ci-list li {{ margin-bottom: 6px; line-height: 22px; }}
   </style>
 </head>
 <body>
-  <table width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#f4f4f4">
-    <tr>
-      <td align="center" style="padding: 24px 0;">
-        <table width="600" cellpadding="0" cellspacing="0" border="0" style="max-width:600px; width:100%;" bgcolor="#ffffff">
+  <center class="wrapper" data-link-color="#1188E6"
+          data-body-style="font-size:14px; font-family:arial,helvetica,sans-serif;
+                           color:#000000; background-color:#FFFFFF;">
+    <div class="webkit">
+      <table cellpadding="0" cellspacing="0" border="0" width="100%"
+             class="wrapper" bgcolor="#FFFFFF">
+        <tr>
+          <td valign="top" bgcolor="#FFFFFF" width="100%">
+            <table width="100%" role="content-container" align="center"
+                   cellpadding="0" cellspacing="0" border="0">
+              <tr><td width="100%">
+                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                  <tr><td>
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0"
+                           style="width:100%; max-width:600px;" align="center">
+                      <tr>
+                        <td style="padding:0px 0px 0px 0px; color:#000000;
+                                   text-align:left;" bgcolor="#FFFFFF" width="100%" align="left">
 
-          <!-- Header -->
-          <tr>
-            <td bgcolor="#1B3A6B" style="padding: 28px 32px 24px 32px;">
-              <p style="font-size: 11px; color: #8BADD4; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px;">Maximizer Competitive Intelligence</p>
-              <h1 style="font-family: arial, helvetica, sans-serif; font-size: 22px; font-weight: bold; color: #ffffff; margin: 0 0 6px 0; line-height: 1.3;">Monthly Strategic Synthesis</h1>
-              <p style="font-size: 14px; color: #8BADD4; margin: 0;">{month_name}</p>
-            </td>
-          </tr>
+                          <!-- Banner image -->
+                          <table class="wrapper" role="module" border="0"
+                                 cellpadding="0" cellspacing="0" width="100%"
+                                 style="table-layout:fixed;">
+                            <tbody><tr>
+                              <td style="font-size:6px; line-height:10px;
+                                         padding:0px 0px 0px 0px;"
+                                  valign="top" align="center">
+                                <img class="max-width" border="0"
+                                     style="display:block; color:#000000;
+                                            text-decoration:none;
+                                            font-family:Helvetica,arial,sans-serif;
+                                            font-size:16px; max-width:100% !important;
+                                            width:100%; height:auto !important;"
+                                     width="600"
+                                     alt="Maximizer Competitive Intelligence"
+                                     src="{BANNER_URL}">
+                              </td>
+                            </tr></tbody>
+                          </table>
 
-          <!-- Body sections -->
-          {html_sections}
+                          {body_html}
 
-          <!-- Divider -->
-          <tr>
-            <td style="padding: 0 32px;">
-              <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                <tr><td height="1" bgcolor="#E0E5E5" style="font-size:1px; line-height:1px;">&nbsp;</td></tr>
-              </table>
-            </td>
-          </tr>
+                          <!-- Sign-off -->
+                          <table role="module" border="0" cellpadding="0"
+                                 cellspacing="0" width="100%" style="table-layout:fixed;">
+                            <tbody><tr>
+                              <td style="padding:24px 16px 24px 16px; line-height:22px;
+                                         text-align:inherit;" height="100%" valign="top">
+                                <div style="font-family:inherit; text-align:inherit;">
+                                  This report is for internal use only.<br>
+                                  <strong>The Maximizer Team</strong>
+                                </div>
+                              </td>
+                            </tr></tbody>
+                          </table>
 
-          <!-- Footer -->
-          <tr>
-            <td style="padding: 20px 32px 28px 32px; text-align: center;">
-              <p style="font-size: 12px; color: #888888; line-height: 1.6;">
-                <strong style="color: #343738;">Maximizer Services Inc.</strong><br>
-                Unit 260-60 Smithe St, Vancouver, BC V6B 0P5 Canada<br>
-                This report is for internal use only.
-              </p>
-            </td>
-          </tr>
+                          <!-- Divider -->
+                          <table role="module" border="0" cellpadding="0"
+                                 cellspacing="0" width="100%" style="table-layout:fixed;">
+                            <tbody><tr>
+                              <td style="padding:0px 0px 0px 0px;"
+                                  height="100%" valign="top">
+                                <table border="0" cellpadding="0" cellspacing="0"
+                                       align="center" width="100%" height="1px"
+                                       style="line-height:1px; font-size:1px;">
+                                  <tbody><tr>
+                                    <td style="padding:0px 0px 1px 0px;"
+                                        bgcolor="#E0E5E5"></td>
+                                  </tr></tbody>
+                                </table>
+                              </td>
+                            </tr></tbody>
+                          </table>
 
-        </table>
-      </td>
-    </tr>
-  </table>
+                          <!-- Social icons -->
+                          <table role="module" border="0" cellpadding="0"
+                                 cellspacing="0" width="100%" style="table-layout:fixed;">
+                            <tbody><tr>
+                              <td valign="top"
+                                  style="padding:12px 0px 0px 0px; font-size:10px;
+                                         line-height:6px;" align="center">
+                                <table align="center">
+                                  <tbody><tr>{social_tds}</tr></tbody>
+                                </table>
+                              </td>
+                            </tr></tbody>
+                          </table>
+
+                          <!-- Maximizer logo -->
+                          <table class="wrapper" role="module" border="0"
+                                 cellpadding="0" cellspacing="0" width="100%"
+                                 style="table-layout:fixed;">
+                            <tbody><tr>
+                              <td style="font-size:6px; line-height:10px;
+                                         padding:18px 0px 0px 0px;"
+                                  valign="top" align="center">
+                                <img class="max-width" border="0"
+                                     style="display:block; color:#000000;
+                                            text-decoration:none;
+                                            font-family:Helvetica,arial,sans-serif;
+                                            font-size:16px; max-width:25% !important;
+                                            width:25%; height:auto !important;"
+                                     width="150" alt="Maximizer" src="{_MAXIMIZER_LOGO}">
+                              </td>
+                            </tr></tbody>
+                          </table>
+
+                          <!-- Address -->
+                          <table role="module" border="0" cellpadding="0"
+                                 cellspacing="0" width="100%" style="table-layout:fixed;">
+                            <tbody><tr>
+                              <td style="padding:8px 0px 8px 0px; line-height:22px;
+                                         text-align:inherit;" height="100%" valign="top">
+                                <div style="font-family:inherit; text-align:center;">
+                                  <span style="font-weight:bold; font-size:14px;
+                                               color:#343738;">Maximizer Services Inc.</span>
+                                </div>
+                                <div style="font-family:inherit; text-align:center;">
+                                  <span style="font-size:12px; color:#343738;">
+                                    Unit 260-60 Smithe St, Vancouver, BC</span>
+                                </div>
+                                <div style="font-family:inherit; text-align:center;">
+                                  <span style="font-size:12px; color:#343738;">
+                                    V6B 0P5 Canada</span>
+                                </div>
+                              </td>
+                            </tr></tbody>
+                          </table>
+
+                        </td>
+                      </tr>
+                    </table>
+                  </td></tr>
+                </table>
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </div>
+  </center>
 </body>
 </html>"""
 
 
+# ── Section assembly ──────────────────────────────────────────────────────────
+
+def _build_body(sections: dict, month_name: str) -> str:
+    """Assemble all content sections into template-matching table modules."""
+    out = ""
+
+    # H1 title
+    out += _h1_module(f"Competitive Intelligence — {month_name}")
+
+    section_map = [
+        ("INTRODUCTION",     "Introduction",         _render_introduction),
+        ("COMPETITIVE NEWS", "Competitive News",     _render_news_stories),
+        ("PRODUCT UPDATES",  "Product Updates",      _render_product_updates),
+    ]
+
+    for key, title, renderer in section_map:
+        if key in sections and sections[key].strip():
+            out += _h2_module(title)
+            out += _text_module(renderer(sections[key]))
+
+    return out
+
+
+# ── Table module templates ────────────────────────────────────────────────────
+
+def _h1_module(title: str) -> str:
+    return f"""
+    <table role="module" border="0" cellpadding="0" cellspacing="0" width="100%"
+           style="table-layout:fixed;">
+      <tbody><tr>
+        <td style="padding:18px 16px 0px 16px; line-height:40px; text-align:inherit;"
+            height="100%" valign="top">
+          <h1 style="font-family:inherit; font-size:24px; margin:0;">
+            {_escape(title)}
+          </h1>
+        </td>
+      </tr></tbody>
+    </table>"""
+
+
+def _h2_module(title: str) -> str:
+    return f"""
+    <table role="module" border="0" cellpadding="0" cellspacing="0" width="100%"
+           style="table-layout:fixed;">
+      <tbody><tr>
+        <td style="padding:18px 16px 4px 16px; line-height:30px; text-align:inherit;"
+            height="100%" valign="top">
+          <h2 style="font-family:inherit; font-size:18px; margin:0;">
+            {_escape(title)}
+          </h2>
+        </td>
+      </tr></tbody>
+    </table>"""
+
+
+def _text_module(inner_html: str) -> str:
+    return f"""
+    <table role="module" border="0" cellpadding="0" cellspacing="0" width="100%"
+           style="table-layout:fixed;">
+      <tbody><tr>
+        <td style="padding:0px 16px 8px 16px; line-height:22px; text-align:inherit;"
+            height="100%" valign="top">
+          <div style="font-family:inherit; text-align:inherit;">{inner_html}</div>
+        </td>
+      </tr></tbody>
+    </table>"""
+
+
+# ── Section parsers ───────────────────────────────────────────────────────────
+
 def _parse_sections(text: str) -> dict:
     """Split plain-text newsletter into named sections."""
-    section_names = [
-        "EXECUTIVE SUMMARY",
-        "TOP SIGNALS THIS MONTH",
-        "WATCH LIST",
-        "MARKET THEMES",
-        "IMPLICATIONS BY TEAM",
-    ]
-    sections = {}
+    section_names = ["INTRODUCTION", "COMPETITIVE NEWS", "PRODUCT UPDATES"]
     pattern = "(" + "|".join(re.escape(s) for s in section_names) + ")"
     parts = re.split(pattern, text)
 
+    sections: dict[str, str] = {}
     current = None
     for part in parts:
         if part in section_names:
@@ -297,187 +445,24 @@ def _parse_sections(text: str) -> dict:
     return sections
 
 
-def _section(title: str, accent: str, content: str) -> str:
-    """Wrap content in a standard section block."""
-    return f"""
-          <tr>
-            <td style="padding: 28px 32px 0 32px;">
-              <h2 style="font-family: arial, helvetica, sans-serif; font-size: 18px; font-weight: bold;
-                         color: {accent}; margin: 0 0 14px 0; padding-bottom: 8px;
-                         border-bottom: 2px solid #E8EDF5;">
-                {title}
-              </h2>
-              {content}
-            </td>
-          </tr>
-          <tr><td style="padding: 20px 0 0 0;"></td></tr>"""
+# ── Markdown / artefact stripping ─────────────────────────────────────────────
 
-
-def _paragraphs(text: str) -> str:
-    """Render plain text as HTML paragraphs."""
-    paras = [p.strip() for p in text.split("\n\n") if p.strip()]
-    return "".join(
-        f'<p style="line-height: 1.7; color: #333333; margin-bottom: 10px;">{_escape(p)}</p>'
-        for p in paras
-    )
-
-
-def _render_signals(text: str) -> str:
-    """Render Top Signals section — score-badged cards."""
-    if not text.strip() or "no competitor changes" in text.lower():
-        return '<p style="color: #666666; font-style: italic;">No changes scored 7 or above this month.</p>'
-
-    lines = text.strip().splitlines()
-    out = ""
-    i = 0
-    while i < len(lines):
-        line = lines[i].strip()
-        # Detect a signal entry: • Competitor | Category | Score: X/10
-        if line.startswith(("•", "-", "*")) and "|" in line and "Score" in line:
-            header = line.lstrip("•-* ").strip()
-            parts = [p.strip() for p in header.split("|")]
-            competitor = parts[0] if len(parts) > 0 else ""
-            category   = parts[1] if len(parts) > 1 else ""
-            score_text = parts[2] if len(parts) > 2 else ""
-            score_num  = re.search(r"(\d+)", score_text)
-            score      = int(score_num.group(1)) if score_num else 0
-            badge_color = "#C0392B" if score >= 8 else "#E67E22"
-
-            body_lines = []
-            i += 1
-            while i < len(lines) and lines[i].strip() and not lines[i].strip().startswith(("•", "-", "*")):
-                body_lines.append(lines[i].strip())
-                i += 1
-
-            body_html = "".join(
-                f'<p style="line-height:1.6; color:#333333; margin: 4px 0;">{_format_signal_line(l)}</p>'
-                for l in body_lines if l
-            )
-
-            out += f"""
-              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 14px;">
-                <tr>
-                  <td style="background-color: #F7F9FC; border-left: 4px solid {badge_color};
-                              padding: 14px 16px; border-radius: 2px;">
-                    <table width="100%" cellpadding="0" cellspacing="0" border="0">
-                      <tr>
-                        <td>
-                          <span style="font-size:13px; font-weight:bold; color:#1B3A6B;">{_escape(competitor)}</span>
-                          <span style="font-size:12px; color:#666666; margin: 0 6px;">|</span>
-                          <span style="font-size:12px; color:#555555;">{_escape(category)}</span>
-                        </td>
-                        <td align="right">
-                          <span style="background-color:{badge_color}; color:#ffffff; font-size:11px;
-                                       font-weight:bold; padding: 3px 8px; border-radius: 10px;">
-                            {score}/10
-                          </span>
-                        </td>
-                      </tr>
-                    </table>
-                    <div style="margin-top: 8px;">{body_html}</div>
-                  </td>
-                </tr>
-              </table>"""
-        else:
-            if line:
-                out += f'<p style="line-height:1.7; color:#333333; margin-bottom:8px;">{_escape(line)}</p>'
-            i += 1
-
-    return out or '<p style="color:#666666; font-style:italic;">No changes scored 7 or above this month.</p>'
-
-
-def _render_watchlist(text: str) -> str:
-    """Render Watch List section — compact score-tagged rows."""
-    lines = [l.strip() for l in text.strip().splitlines() if l.strip()]
-    if not lines:
-        return '<p style="color:#666666; font-style:italic;">No changes in the 5–6 range this month.</p>'
-
-    out = ""
-    for line in lines:
-        line = line.lstrip("•-* ").strip()
-        if not line:
-            continue
-
-        # Try to extract score badge
-        score_match = re.search(r"Score[:\s]+(\d+)/10", line, re.IGNORECASE)
-        score = int(score_match.group(1)) if score_match else None
-
-        badge = ""
-        if score:
-            badge = f'<span style="background-color:#F39C12; color:#ffffff; font-size:11px; font-weight:bold; padding:2px 7px; border-radius:10px; margin-left:8px;">{score}/10</span>'
-            line = re.sub(r"\|?\s*Score[:\s]+\d+/10", "", line, flags=re.IGNORECASE).strip().rstrip("|").strip()
-
-        out += f"""
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:8px;">
-            <tr>
-              <td style="padding: 10px 14px; border-left: 3px solid #F39C12; background-color:#FFFBF0;">
-                <span style="font-size:13px; color:#333333; line-height:1.6;">{_escape(line)}</span>{badge}
-              </td>
-            </tr>
-          </table>"""
-
-    return out
-
-
-def _render_bullets(text: str) -> str:
-    """Render Market Themes as styled bullet points."""
-    lines = [l.strip().lstrip("•-* ") for l in text.strip().splitlines() if l.strip()]
-    if not lines:
-        return ""
-
-    items = "".join(
-        f"""<tr>
-              <td width="16" valign="top" style="padding: 3px 8px 8px 0; color:#1B3A6B; font-weight:bold; font-size:16px; line-height:1.4;">&#8226;</td>
-              <td style="padding-bottom:8px; line-height:1.7; color:#333333;">{_escape(l)}</td>
-            </tr>"""
-        for l in lines if l
-    )
-    return f'<table cellpadding="0" cellspacing="0" border="0" width="100%">{items}</table>'
-
-
-def _render_implications(text: str) -> str:
-    """Render Implications by Team with team-coloured labels."""
-    team_colors = {
-        "Sales":     "#27AE60",
-        "Product":   "#1188E6",
-        "Marketing": "#8E44AD",
-    }
-    lines = text.strip().splitlines()
-    out = ""
-    for line in lines:
-        line = line.strip().lstrip("→>- ").strip()
-        if not line:
-            continue
-        matched = False
-        for team, color in team_colors.items():
-            if line.lower().startswith(team.lower()):
-                body = re.sub(rf"^{team}\s*[:\-]?\s*", "", line, flags=re.IGNORECASE)
-                out += f"""
-          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom:10px;">
-            <tr>
-              <td style="padding:12px 16px; background-color:#F7F9FC; border-left:4px solid {color};">
-                <span style="font-size:12px; font-weight:bold; color:{color}; text-transform:uppercase;
-                             letter-spacing:1px;">{team}</span>
-                <p style="margin:4px 0 0 0; line-height:1.7; color:#333333;">{_escape(body)}</p>
-              </td>
-            </tr>
-          </table>"""
-                matched = True
-                break
-        if not matched and line:
-            out += f'<p style="line-height:1.7; color:#333333; margin-bottom:8px;">{_escape(line)}</p>'
-
-    return out
-
-
-def _format_signal_line(line: str) -> str:
-    """Bold the label prefix (What:, Why it matters:, Recommended action:) in signal body lines."""
-    match = re.match(r"^(What|Why it matters|Recommended action)\s*:", line, re.IGNORECASE)
-    if match:
-        label = match.group(0)
-        rest = line[len(label):].strip()
-        return f"<strong>{_escape(label)}</strong> {_escape(rest)}"
-    return _escape(line)
+def _preprocess(text: str) -> str:
+    """
+    Strip all Markdown artefacts from a section before rendering.
+    Order matters: bold/italic before lone-asterisk cleanup.
+    """
+    # 1. Horizontal rules
+    text = re.sub(r"^\s*---+\s*$", "", text, flags=re.MULTILINE)
+    # 2. Bold **text** → text
+    text = re.sub(r"\*\*([^*\n]+)\*\*", r"\1", text)
+    # 3. Italic *text* → text
+    text = re.sub(r"\*([^*\n]+)\*", r"\1", text)
+    # 4. Leading asterisk bullets "* item" → "- item"  (safe after bold/italic stripped)
+    text = re.sub(r"^[ \t]*\*[ \t]+", "- ", text, flags=re.MULTILINE)
+    # 5. Any remaining stray asterisks
+    text = re.sub(r"\*+", "", text)
+    return text.strip()
 
 
 def _escape(text: str) -> str:
@@ -488,6 +473,119 @@ def _escape(text: str) -> str:
             .replace(">", "&gt;")
             .replace('"', "&quot;")
     )
+
+
+def _safe(text: str) -> str:
+    """Preprocess then HTML-escape."""
+    return _escape(_preprocess(text))
+
+
+# ── Section renderers ─────────────────────────────────────────────────────────
+
+def _render_introduction(text: str) -> str:
+    """
+    Render Introduction: prose paragraphs followed by a bullet list of takeaways.
+    """
+    text = _preprocess(text)
+    lines = text.splitlines()
+
+    prose_lines: list[str] = []
+    bullet_lines: list[str] = []
+
+    for line in lines:
+        stripped = line.strip()
+        if not stripped:
+            continue
+        if stripped.startswith(("-", "•")):
+            bullet_lines.append(re.sub(r"^[-•]\s*", "", stripped))
+        else:
+            prose_lines.append(stripped)
+
+    out = ""
+    if prose_lines:
+        out += "<br>".join(_escape(l) for l in prose_lines)
+    if bullet_lines:
+        items = "".join(f"<li>{_escape(l)}</li>" for l in bullet_lines)
+        out += f'<ul class="ci-list">{items}</ul>'
+    return out
+
+
+def _render_news_stories(text: str) -> str:
+    """
+    Render Competitive News stories. Each story has a headline followed by
+    'What happened:', 'Why it matters:', and 'How we should respond:' labels.
+    """
+    text = _preprocess(text)
+    if not text.strip():
+        return "<em>No significant competitive news this period.</em>"
+
+    # Split into individual stories on blank lines
+    raw_stories = re.split(r"\n{2,}", text.strip())
+    stories_html: list[str] = []
+
+    for story_block in raw_stories:
+        if not story_block.strip():
+            continue
+        lines = [l.strip() for l in story_block.splitlines() if l.strip()]
+        if not lines:
+            continue
+
+        story_out = ""
+        # First non-label line is the headline
+        headline_done = False
+        for line in lines:
+            label_match = re.match(
+                r"^(What happened|Why it matters|How we should respond)\s*:(.*)$",
+                line, re.IGNORECASE
+            )
+            if label_match:
+                label = label_match.group(1).strip()
+                body = label_match.group(2).strip()
+                story_out += f"<br><strong>{_escape(label)}:</strong> {_escape(body)}"
+            else:
+                if not headline_done:
+                    story_out += f"<strong>{_escape(line)}</strong>"
+                    headline_done = True
+                else:
+                    story_out += f"<br>{_escape(line)}"
+
+        if story_out:
+            stories_html.append(story_out)
+
+    return "<br><br>".join(stories_html) if stories_html else \
+        "<em>No significant competitive news this period.</em>"
+
+
+def _render_product_updates(text: str) -> str:
+    """
+    Render Product Updates as a bullet list.
+    Non-bullet lines (e.g. a 'Maximizer updates' subheading) are rendered as bold.
+    """
+    text = _preprocess(text)
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if not lines:
+        return "<em>No product updates this period.</em>"
+
+    bullet_items: list[str] = []
+    non_bullets: list[str] = []
+    out_parts: list[str] = []
+
+    def _flush_bullets() -> None:
+        if bullet_items:
+            items = "".join(f"<li>{_escape(l)}</li>" for l in bullet_items)
+            out_parts.append(f'<ul class="ci-list">{items}</ul>')
+            bullet_items.clear()
+
+    for line in lines:
+        if line.startswith(("-", "•")):
+            content = re.sub(r"^[-•]\s*", "", line)
+            bullet_items.append(content)
+        else:
+            _flush_bullets()
+            out_parts.append(f"<strong>{_escape(line)}</strong>")
+
+    _flush_bullets()
+    return "".join(out_parts)
 
 
 # ── Prompt helpers ────────────────────────────────────────────────────────────
@@ -506,9 +604,7 @@ def _format_changes_for_prompt(changes: list[dict]) -> str:
 def _empty_newsletter(month: int, year: int) -> str:
     month_name = datetime(year, month, 1).strftime("%B %Y")
     return textwrap.dedent(f"""
-        COMPETITIVE INTELLIGENCE: MONTHLY STRATEGIC SYNTHESIS
-        {month_name}
-
+        INTRODUCTION
         No significant competitive changes were detected this month.
         All monitored competitor pages remained stable.
     """).strip()
