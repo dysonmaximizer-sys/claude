@@ -36,6 +36,31 @@ _BASE = "https://api.notion.com/v1"
 
 # ── Low-level helpers ──────────────────────────────────────────────────────────
 
+def _truncate_for_notion(text: str, limit: int = 2000) -> str:
+    """
+    Truncate text so it fits within Notion's rich_text length limit.
+
+    Notion counts content length in UTF-16 code units (matching JavaScript's
+    String.length), not Unicode code points. Characters outside the BMP
+    (emoji, some symbols) take 2 code units each, so Python's str slice of
+    2000 chars can exceed Notion's 2000-code-unit limit.
+
+    This helper truncates by encoding to UTF-16 LE, slicing to `limit*2`
+    bytes, and decoding back — discarding any half-surrogate at the cut.
+    """
+    if not text:
+        return text
+    encoded = text.encode("utf-16-le")
+    if len(encoded) <= limit * 2:
+        return text
+    truncated = encoded[: limit * 2]
+    try:
+        return truncated.decode("utf-16-le")
+    except UnicodeDecodeError:
+        # Cut landed mid-surrogate-pair — drop the last code unit and try again
+        return truncated[:-2].decode("utf-16-le", errors="ignore")
+
+
 def _check_status(r: requests.Response, method: str, path: str) -> None:
     """raise_for_status with the Notion error body included in the log."""
     if r.status_code >= 400:
@@ -134,7 +159,7 @@ def log_change(
         "URL": {"url": url},
         "Source Type": {"select": {"name": source_type}},
         "Category": {"select": {"name": category}},
-        "Raw Change": {"rich_text": [{"text": {"content": raw_change[:2000]}}]},
+        "Raw Change": {"rich_text": [{"text": {"content": _truncate_for_notion(raw_change)}}]},
         "Date Detected": {"date": {"start": detected_at or datetime.now(timezone.utc).isoformat()}},
         "Status": {"select": {"name": "Unscored"}},
         "Teams Alert Sent": {"checkbox": False},
@@ -158,7 +183,7 @@ def get_unscored_changes() -> list[dict]:
 def update_change_score(page_id: str, score: int, reasoning: str) -> None:
     _patch(f"/pages/{page_id}", {"properties": {
         "Significance Score": {"number": score},
-        "Score Reasoning": {"rich_text": [{"text": {"content": reasoning[:2000]}}]},
+        "Score Reasoning": {"rich_text": [{"text": {"content": _truncate_for_notion(reasoning)}}]},
         "Status": {"select": {"name": "Scored"}},
     }})
     logger.info("Scored change %s → %d/10", page_id, score)
@@ -166,7 +191,7 @@ def update_change_score(page_id: str, score: int, reasoning: str) -> None:
 
 def update_change_summary(page_id: str, summary: str) -> None:
     _patch(f"/pages/{page_id}", {"properties": {
-        "AI Summary": {"rich_text": [{"text": {"content": summary[:2000]}}]},
+        "AI Summary": {"rich_text": [{"text": {"content": _truncate_for_notion(summary)}}]},
     }})
 
 
