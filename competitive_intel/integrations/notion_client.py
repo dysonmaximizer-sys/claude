@@ -36,24 +36,35 @@ _BASE = "https://api.notion.com/v1"
 
 # ── Low-level helpers ──────────────────────────────────────────────────────────
 
+def _check_status(r: requests.Response, method: str, path: str) -> None:
+    """raise_for_status with the Notion error body included in the log."""
+    if r.status_code >= 400:
+        body_preview = (r.text or "")[:1500]
+        logger.error(
+            "Notion API %s %s → %d: %s",
+            method, path, r.status_code, body_preview,
+        )
+    r.raise_for_status()
+
+
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 def _post(path: str, body: dict) -> dict:
     r = requests.post(f"{_BASE}{path}", headers=_HEADERS, json=body, timeout=30)
-    r.raise_for_status()
+    _check_status(r, "POST", path)
     return r.json()
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 def _patch(path: str, body: dict) -> dict:
     r = requests.patch(f"{_BASE}{path}", headers=_HEADERS, json=body, timeout=30)
-    r.raise_for_status()
+    _check_status(r, "PATCH", path)
     return r.json()
 
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
 def _get(path: str) -> dict:
     r = requests.get(f"{_BASE}{path}", headers=_HEADERS, timeout=30)
-    r.raise_for_status()
+    _check_status(r, "GET", path)
     return r.json()
 
 
