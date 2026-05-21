@@ -130,4 +130,5 @@ python3 -m jobs.monthly_newsletter 2026 4
 - changedetection.io history array is **newest-first** (index 0 = most recent). The client diffs `history[i]` against `history[i+1]`.
 - Alert threshold is set in `config.py` as `ALERT_SCORE_THRESHOLD` — only changes scoring above this get summarised and alerted
 - Newsletter system prompt is loaded from `resources/newsletter_system_prompt.txt` at agent startup. Editing that file is all that's needed to change newsletter structure or tone — no code changes required.
-- The Changes Notion DB may still contain a `Battlecard Updated` checkbox property from earlier setups. It is no longer written or read by any code. Delete the property in Notion if you want a clean schema.
+- The Notion Changes DB schema matches the code. The legacy `Battlecard Updated` column was removed via `scripts/drop_battlecard_column.py` once battlecards were dropped from scope.
+- `scripts/` holds one-shot maintenance scripts. They are not part of the scheduled pipeline.
