@@ -12,10 +12,10 @@ load_dotenv(Path(__file__).parent / ".env", override=True)
 # ── API Keys ──────────────────────────────────────────────────────────────────
 ANTHROPIC_API_KEY = os.environ["ANTHROPIC_API_KEY"]
 NOTION_TOKEN = os.environ["NOTION_TOKEN"]
-VISUALPING_API_KEY = os.environ["VISUALPING_API_KEY"]
+CHANGEDETECTION_API_KEY = os.environ["CHANGEDETECTION_API_KEY"]
+CHANGEDETECTION_BASE_URL = os.environ["CHANGEDETECTION_BASE_URL"]
 
 # ── Notion Database IDs (populated after running setup_notion.py) ─────────────
-NOTION_COMPETITORS_DB_ID = os.environ.get("NOTION_COMPETITORS_DB_ID", "")
 NOTION_CHANGES_DB_ID = os.environ.get("NOTION_CHANGES_DB_ID", "")
 NOTION_PARENT_PAGE_ID = os.environ["NOTION_PARENT_PAGE_ID"]
 

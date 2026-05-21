@@ -33,11 +33,6 @@ def daily_poll_job():
     run()
 
 
-def monthly_score_job():
-    from jobs.monthly_score import run
-    run()
-
-
 def monthly_newsletter_job():
     from jobs.monthly_newsletter import run
     run()
@@ -51,20 +46,11 @@ def main():
         daily_poll_job,
         trigger=CronTrigger(hour=6, minute=0),
         id="daily_poll",
-        name="Daily Visualping poll",
+        name="Daily changedetection.io poll",
         misfire_grace_time=3600,
     )
 
-    # Monthly scoring — 1st of each month at 08:00 UTC
-    scheduler.add_job(
-        monthly_score_job,
-        trigger=CronTrigger(day=1, hour=8, minute=0),
-        id="monthly_score",
-        name="Monthly AI scoring + alerts",
-        misfire_grace_time=3600,
-    )
-
-    # Monthly newsletter — 1st of each month at 09:00 UTC (1hr after scoring)
+    # Monthly newsletter — 1st of each month at 09:00 UTC
     scheduler.add_job(
         monthly_newsletter_job,
         trigger=CronTrigger(day=1, hour=9, minute=0),
@@ -75,7 +61,6 @@ def main():
 
     logger.info("Scheduler started. Jobs:")
     logger.info("  • Daily poll:         daily at 06:00 UTC")
-    logger.info("  • Monthly scoring:    1st of month at 08:00 UTC")
     logger.info("  • Monthly newsletter: 1st of month at 09:00 UTC")
     logger.info("Press Ctrl+C to stop.\n")
 

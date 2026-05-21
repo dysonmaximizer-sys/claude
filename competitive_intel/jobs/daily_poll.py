@@ -1,7 +1,7 @@
 """
-Daily poll job — collects new competitive changes from Visualping, logs them
-to Notion, and immediately scores each one.  High-score changes (>= threshold)
-also get an AI summary, a Teams alert, and a battlecard update.
+Daily poll job — collects new competitive changes from changedetection.io, logs
+them to Notion, and immediately scores each one.  High-score changes
+(>= threshold) also get an AI summary and a Teams alert.
 
 Schedule: daily at 06:00 UTC (configured in GitHub Actions / scheduler.py)
 """
@@ -19,12 +19,12 @@ logger = logging.getLogger(__name__)
 
 def run() -> dict:
     """
-    Execute the daily Visualping poll and score every new change inline.
+    Execute the daily changedetection.io poll and score every new change inline.
 
     Returns a summary dict:
       {"new_changes": int, "scored": int, "alerted": int, "errors": int}
     """
-    from integrations.visualping_client import get_recent_changes
+    from integrations.changedetection_client import get_recent_changes
     from integrations.notion_client import (
         log_change,
         change_already_logged,
@@ -35,7 +35,6 @@ def run() -> dict:
     )
     from agents.scoring_agent import score_change
     from agents.summariser_agent import summarise_change
-    from agents.battlecard_updater import update_battlecard
     from integrations.teams_client import send_competitive_alert
     from config import ALERT_SCORE_THRESHOLD, COMPETITORS
 
@@ -44,7 +43,7 @@ def run() -> dict:
     try:
         changes = get_recent_changes(lookback_hours=25)
     except Exception as e:
-        logger.error("Failed to fetch changes from Visualping: %s", e)
+        logger.error("Failed to fetch changes from changedetection.io: %s", e)
         return {"new_changes": 0, "scored": 0, "alerted": 0, "errors": 1}
 
     logged = 0
@@ -135,21 +134,6 @@ def run() -> dict:
                 alerted += 1
         except Exception as e:
             logger.error("  → Teams alert failed for %s: %s", competitor, e)
-            errors += 1
-
-        # ── Step 5: Update battlecard ──────────────────────────────────────
-        try:
-            update_battlecard(
-                competitor_name=competitor,
-                tier=change["tier"],
-                category=refined_category,
-                score=score,
-                summary=summary,
-                url=change["url"],
-                change_page_id=page_id,
-            )
-        except Exception as e:
-            logger.error("  → Battlecard update failed for %s: %s", competitor, e)
             errors += 1
 
     logger.info(

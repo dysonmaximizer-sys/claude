@@ -156,22 +156,22 @@ BANNER_URL = "https://www.maximizer.com/wp-content/uploads/2026/04/header_banner
 
 _SOCIAL_ICONS = [
     ("https://www.facebook.com/MaximizerCRM",
-     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/89bece8c-7fe7-44ca-b0ec-a79ca93169dc/24x24.png",
+     "https://www.maximizer.com/wp-content/uploads/2026/04/icon_facebook.png",
      "Facebook"),
     ("https://www.linkedin.com/company/maximizer-software",
-     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/16481162-a5f0-411d-824d-99dea05652c3/24x24.png",
+     "https://www.maximizer.com/wp-content/uploads/2026/04/icon_linkedin.png",
      "LinkedIn"),
     ("https://twitter.com/MaximizerCRM",
-     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/74afae1d-c53a-4668-a6af-683b68498f1e/25x24.png",
+     "https://www.maximizer.com/wp-content/uploads/2026/04/icon_twitter.png",
      "Twitter"),
     ("https://www.instagram.com/maximizercrm",
-     "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993/51ce28c9-bd45-419b-9488-d66326208f10/24x24.png",
+     "https://www.maximizer.com/wp-content/uploads/2026/04/icon_instagram.png",
      "Instagram"),
 ]
 
 _MAXIMIZER_LOGO = (
-    "http://cdn.mcauto-images-production.sendgrid.net/34700707d6c99993"
-    "/e1bdfc53-8897-4d7d-90d0-8ebd6de73a71/472x72.png"
+    "https://www.maximizer.com/wp-content/uploads/2026/05/"
+    "Maximizer_Logo__LimeForest-1-scaled.png"
 )
 
 

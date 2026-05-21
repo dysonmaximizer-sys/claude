@@ -13,10 +13,8 @@ Usage:
   python setup_notion.py
 
 The script will:
-  - Create the Competitors database
   - Create the Changes database
-  - Create a Battlecard page for each competitor
-  - Print the DB IDs to add to your .env file
+  - Print the DB ID to add to your .env file
 """
 
 import sys
@@ -65,32 +63,6 @@ COMPETITORS = {
     "Pipedrive":  "Ankle Biter",
     "Advora":     "Ankle Biter",
 }
-
-
-def create_competitors_db() -> str:
-    """Create the Competitors tracking database."""
-    logger.info("Creating Competitors database...")
-    response = _create_database({
-        "parent": {"type": "page_id", "page_id": PARENT_PAGE_ID},
-        "title": [{"type": "text", "text": {"content": "Competitors"}}],
-        "properties": {
-            "Name": {"title": {}},
-            "Tier": {
-                "select": {
-                    "options": [
-                        {"name": "Tier 1", "color": "red"},
-                        {"name": "Tier 2", "color": "yellow"},
-                        {"name": "Ankle Biter", "color": "gray"},
-                    ]
-                }
-            },
-            "Notes": {"rich_text": {}},
-            "Last Updated": {"date": {}},
-        },
-    })
-    db_id = response["id"]
-    logger.info("  ✓ Competitors DB created: %s", db_id)
-    return db_id
 
 
 def create_changes_db() -> str:
@@ -152,89 +124,11 @@ def create_changes_db() -> str:
                 }
             },
             "Teams Alert Sent": {"checkbox": {}},
-            "Battlecard Updated": {"checkbox": {}},
         },
     })
     db_id = response["id"]
     logger.info("  ✓ Changes DB created: %s", db_id)
     return db_id
-
-
-def create_battlecard_page(competitor_name: str, tier: str) -> str:
-    """Create a structured battlecard Notion page for a competitor."""
-    response = notion.pages.create(
-        parent={"type": "page_id", "page_id": PARENT_PAGE_ID},
-        properties={
-            "title": [{"type": "text", "text": {"content": f"Battlecard: {competitor_name}"}}]
-        },
-        children=[
-            # Header
-            {
-                "object": "block", "type": "heading_1",
-                "heading_1": {"rich_text": [{"type": "text", "text": {"content": f"{competitor_name} Battlecard"}}]},
-            },
-            {
-                "object": "block", "type": "paragraph",
-                "paragraph": {"rich_text": [
-                    {"type": "text", "text": {"content": f"Tier: {tier} | Last Updated: —"}}
-                ]},
-            },
-            # Overview
-            {"object": "block", "type": "heading_2",
-             "heading_2": {"rich_text": [{"type": "text", "text": {"content": "Overview"}}]}},
-            {"object": "block", "type": "paragraph",
-             "paragraph": {"rich_text": [{"type": "text", "text": {"content": f"[Add overview of {competitor_name} here]"}}]}},
-            # Key Differentiators
-            {"object": "block", "type": "heading_2",
-             "heading_2": {"rich_text": [{"type": "text", "text": {"content": "Key Differentiators & Features"}}]}},
-            {"object": "block", "type": "paragraph",
-             "paragraph": {"rich_text": [{"type": "text", "text": {"content": "Feature | Them | Us"}}]}},
-            {"object": "block", "type": "paragraph",
-             "paragraph": {"rich_text": [{"type": "text", "text": {"content": "[Add feature comparison rows]"}}]}},
-            # Why We Win
-            {"object": "block", "type": "heading_2",
-             "heading_2": {"rich_text": [{"type": "text", "text": {"content": "Why We Win"}}]}},
-            {"object": "block", "type": "bulleted_list_item",
-             "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "[Add win reasons]"}}]}},
-            # Talk Tracks
-            {"object": "block", "type": "heading_2",
-             "heading_2": {"rich_text": [{"type": "text", "text": {"content": "Talk Tracks"}}]}},
-            {"object": "block", "type": "bulleted_list_item",
-             "bulleted_list_item": {"rich_text": [{"type": "text", "text": {"content": "[Add talk track bullets for Sales]"}}]}},
-            # Recent Intel (auto-populated by battlecard_updater.py)
-            {"object": "block", "type": "heading_2",
-             "heading_2": {"rich_text": [{"type": "text", "text": {"content": "Recent Intel"}}]}},
-            {"object": "block", "type": "paragraph",
-             "paragraph": {"rich_text": [{"type": "text", "text": {"content": "High-score changes are appended here automatically."}}]}},
-        ],
-    )
-    return response["id"]
-
-
-def populate_competitors_db(competitors_db_id: str) -> dict:
-    """Add a row for each competitor and link their battlecard page."""
-    from datetime import datetime, timezone
-
-    logger.info("Creating battlecard pages and populating Competitors database...")
-    page_ids = {}
-
-    for name, tier in COMPETITORS.items():
-        # Create battlecard page
-        battlecard_id = create_battlecard_page(name, tier)
-
-        # Add to Competitors DB
-        notion.pages.create(
-            parent={"database_id": competitors_db_id},
-            properties={
-                "Name": {"title": [{"text": {"content": name}}]},
-                "Tier": {"select": {"name": tier}},
-                "Last Updated": {"date": {"start": datetime.now(timezone.utc).isoformat()}},
-            },
-        )
-        page_ids[name] = battlecard_id
-        logger.info("  ✓ %s (%s) — battlecard: %s", name, tier, battlecard_id)
-
-    return page_ids
 
 
 def resolve_parent_page_id(raw_id: str) -> str:
@@ -280,17 +174,14 @@ def main():
     # Resolve the parent: if it's a database URL, create a container page first
     PARENT_PAGE_ID = resolve_parent_page_id(PARENT_PAGE_ID)
 
-    competitors_db_id = create_competitors_db()
     changes_db_id = create_changes_db()
-    populate_competitors_db(competitors_db_id)
 
     logger.info("\n=== Setup complete! ===\n")
-    logger.info("Add these to your .env file:\n")
-    logger.info("NOTION_COMPETITORS_DB_ID=%s", competitors_db_id)
+    logger.info("Add this to your .env file:\n")
     logger.info("NOTION_CHANGES_DB_ID=%s", changes_db_id)
     logger.info("\nThen add these as GitHub Actions secrets (Settings → Secrets → Actions):")
-    logger.info("  ANTHROPIC_API_KEY, NOTION_TOKEN, VISUALPING_API_KEY,")
-    logger.info("  NOTION_PARENT_PAGE_ID, NOTION_COMPETITORS_DB_ID, NOTION_CHANGES_DB_ID")
+    logger.info("  ANTHROPIC_API_KEY, NOTION_TOKEN, CHANGEDETECTION_API_KEY, CHANGEDETECTION_BASE_URL,")
+    logger.info("  NOTION_PARENT_PAGE_ID, NOTION_CHANGES_DB_ID")
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 """
 Monthly newsletter job — generates and distributes the Strategic Synthesis.
 
-Schedule: 1st of each month at 09:00 UTC (runs 1 hour after monthly_score.py)
+Schedule: 1st of each month at 09:00 UTC
 
 Pipeline:
   1. Fetch all scored changes from the previous month (score ≥ 1)

@@ -3,8 +3,7 @@ Notion integration — single source of truth for all competitor changes.
 
 Uses raw HTTP requests throughout to avoid notion-client version incompatibilities.
 
-Databases managed here:
-  - Competitors: one row per competitor, links to battlecard page
+Database managed here:
   - Changes: every detected change, with score, summary, and distribution status
 """
 
@@ -12,7 +11,6 @@ import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Optional
 
 import requests
 from dotenv import load_dotenv
@@ -25,7 +23,6 @@ logger = logging.getLogger(__name__)
 
 # Loaded directly from env (config.py imports us, so avoid circular import)
 _TOKEN = os.environ.get("NOTION_TOKEN", "")
-_COMPETITORS_DB = os.environ.get("NOTION_COMPETITORS_DB_ID", "")
 _CHANGES_DB = os.environ.get("NOTION_CHANGES_DB_ID", "")
 
 _HEADERS = {
@@ -117,8 +114,6 @@ def log_change(
     detected_at: str = "",
 ) -> str:
     """Write a new change entry to the Changes database. Returns the new page ID."""
-    competitor_page_id = get_competitor_page_id(competitor_name)
-
     properties: dict = {
         "Name": {
             "title": [{"text": {"content": f"{competitor_name} — {category} change"}}]
@@ -132,7 +127,6 @@ def log_change(
         "Date Detected": {"date": {"start": detected_at or datetime.now(timezone.utc).isoformat()}},
         "Status": {"select": {"name": "Unscored"}},
         "Teams Alert Sent": {"checkbox": False},
-        "Battlecard Updated": {"checkbox": False},
     }
 
     body = {"parent": {"database_id": _CHANGES_DB}, "properties": properties}
@@ -171,12 +165,6 @@ def mark_alert_sent(page_id: str) -> None:
     }})
 
 
-def mark_battlecard_updated(page_id: str) -> None:
-    _patch(f"/pages/{page_id}", {"properties": {
-        "Battlecard Updated": {"checkbox": True},
-    }})
-
-
 def get_monthly_changes(year: int, month: int, min_score: int = 0) -> list[dict]:
     """Return all scored changes from a given month, optionally filtered by min score."""
     from calendar import monthrange
@@ -200,44 +188,6 @@ def get_monthly_changes(year: int, month: int, min_score: int = 0) -> list[dict]
         {"and": conditions},
         sorts=[{"property": "Significance Score", "direction": "descending"}],
     )
-
-
-# ── Competitors Database ──────────────────────────────────────────────────────
-
-def get_competitor_page_id(competitor_name: str) -> Optional[str]:
-    """Look up a competitor's Notion page ID by name."""
-    if not _COMPETITORS_DB:
-        return None
-    results = _query_db(
-        _COMPETITORS_DB,
-        {"property": "Name", "title": {"equals": competitor_name}},
-    )
-    return results[0]["id"] if results else None
-
-
-def get_battlecard_page_id(competitor_name: str) -> Optional[str]:
-    """Return the battlecard Notion page ID linked to a competitor."""
-    comp_page_id = get_competitor_page_id(competitor_name)
-    if not comp_page_id:
-        return None
-    page = _get(f"/pages/{comp_page_id}")
-    relations = page.get("properties", {}).get("Battlecard Page", {}).get("relation", [])
-    return relations[0]["id"] if relations else None
-
-
-# ── Block operations (used by battlecard_updater) ─────────────────────────────
-
-def append_blocks(page_id: str, children: list) -> None:
-    _post(f"/blocks/{page_id}/children", {"children": children})
-
-
-def get_block_children(page_id: str) -> list:
-    data = _get(f"/blocks/{page_id}/children")
-    return data.get("results", [])
-
-
-def update_block(block_id: str, block_type: str, content: dict) -> None:
-    _patch(f"/blocks/{block_id}", {block_type: content})
 
 
 # ── Field extraction helper ───────────────────────────────────────────────────
@@ -270,6 +220,5 @@ def extract_change_fields(page: dict) -> dict:
         "score_reasoning": text_val("Score Reasoning"),
         "status": select_val("Status"),
         "teams_alert_sent": props.get("Teams Alert Sent", {}).get("checkbox", False),
-        "battlecard_updated": props.get("Battlecard Updated", {}).get("checkbox", False),
         "date_detected": props.get("Date Detected", {}).get("date", {}).get("start", ""),
     }
