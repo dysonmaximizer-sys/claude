@@ -105,6 +105,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 - Daily poll runs end-to-end: changedetection.io, Notion log, inline score, summarise (high-score only), Teams alert (high-score only).
 - Teams alerts post as Adaptive Cards via the Workflows webhook (confirmed by smoke test on 2026-05-22).
+- Teams newsletter announcement card posts correctly with accent styling (confirmed by smoke test on 2026-05-22).
 - changedetection.io history correctly parsed (newest-first ordering fixed).
 - Notion deduplication prevents double-logging.
 - Email delivery via Resend (maximizer.com domain verified).
@@ -118,7 +119,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ### Should verify
 - **First scheduled GitHub Actions run on the new Teams webhook** has not yet been observed in production. The first daily poll firing real alerts via the new code path runs at 06:00 UTC on 2026-05-23. Check the Actions tab the morning after to confirm.
-- **Newsletter Teams announcement card** has been built but not exercised. Smoke test available at `scripts/test_newsletter_announcement.py`. Will fire for real on 2026-06-01 at 09:00 UTC.
+- **End-to-end monthly newsletter (Notion to email to Teams)** has not been re-run since the Teams migration. The Teams announcement card is confirmed (smoke test 2026-05-22), but the full job (`jobs/monthly_newsletter.py`) hasn't been exercised. Either pre-test manually with `python3 -m jobs.monthly_newsletter 2026 4` or wait for the real run on 2026-06-01 at 09:00 UTC.
 
 ### Also pending
 - Expand `NEWSLETTER_RECIPIENTS` beyond Lewis when ready to go wider.
