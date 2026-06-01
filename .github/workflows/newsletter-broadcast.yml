@@ -1,17 +1,23 @@
-name: Newsletter Broadcast (Manual)
+name: Newsletter (Monthly Broadcast)
 
 on:
+  schedule:
+    # 1st of every month at 17:00 UTC = 09:00 PST.
+    # NOTE: GitHub cron does not observe DST, so during Pacific Daylight Time
+    # (~Mar–Nov) this fires at 10:00 Pacific. Use "0 16 1 * *" if you want
+    # 09:00 during PDT instead.
+    - cron: "0 17 1 * *"
   workflow_dispatch:
     inputs:
       target_year:
-        description: "Year (e.g. 2026)"
-        required: true
+        description: "Year (e.g. 2026) — leave blank for previous month"
+        required: false
       target_month:
-        description: "Month 1-12"
-        required: true
+        description: "Month 1-12 — leave blank for previous month"
+        required: false
       confirm:
-        description: 'Type SEND to confirm broadcast (case-sensitive)'
-        required: true
+        description: 'Type SEND to confirm a MANUAL broadcast (scheduled runs skip this)'
+        required: false
 
 jobs:
   broadcast-newsletter:
@@ -20,10 +26,13 @@ jobs:
     name: Broadcast newsletter to CI Newsletter audience
 
     steps:
-      - name: Confirmation gate
+      # Scheduled runs auto-send. Manual runs must type SEND to guard against
+      # accidental re-broadcasts.
+      - name: Confirmation gate (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if [ "${{ github.event.inputs.confirm }}" != "SEND" ]; then
-            echo "::error::Confirmation text must be exactly SEND. Got: ${{ github.event.inputs.confirm }}"
+            echo "::error::Manual broadcast requires confirm=SEND. Got: ${{ github.event.inputs.confirm }}"
             exit 1
           fi
       - name: Checkout
@@ -49,4 +58,9 @@ jobs:
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
           RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
         run: |
-          python -m jobs.monthly_newsletter --mode broadcast --year ${{ github.event.inputs.target_year }} --month ${{ github.event.inputs.target_month }}
+          # No --year/--month → the job defaults to the previous calendar month.
+          ARGS="--mode broadcast"
+          if [ -n "${{ github.event.inputs.target_year }}" ]; then
+            ARGS="$ARGS --year ${{ github.event.inputs.target_year }} --month ${{ github.event.inputs.target_month }}"
+          fi
+          python -m jobs.monthly_newsletter $ARGS

@@ -118,7 +118,15 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ## Status as of 2026-06-01
 
-### What just happened
+### Latest update — 2026-06-01 (end of day): shipped, sent, and verified
+- **Refactor committed and pushed to `main`** (commit `ae556f3`). The monthly cron and manual broadcast now run the new code.
+- **Newsletter Draft workflow ran successfully in GitHub Actions** — first proof the CI secrets resolve server-side (the new Resend API key + `RESEND_AUDIENCE_ID`). Draft email delivered to the reviewer.
+- **Real broadcast for May 2026 sent to the CI Newsletter audience.** `segment_id` was accepted, no 422 — the open issue below is RESOLVED.
+- **Formatting bug found and fixed** in `_render_news_stories()`: the Competitive News section was rendering every body paragraph bold and shattering each story into fragments (the renderer split on blank lines, which also separate intra-story label blocks). Replaced with a label-driven parser. Headlines and the three labels are bold; bodies are plain.
+- **Architecture changed to fully automatic (per Lewis's request).** The two-step draft→review→manual-broadcast flow is gone. `newsletter-draft.yml` was deleted. `newsletter-broadcast.yml` now runs on a monthly schedule (`cron: 0 17 1 * *` = 09:00 PST; note GitHub cron ignores DST, so it's 10:00 during PDT) and **auto-broadcasts to the CI Newsletter audience with no human review**. The manual `workflow_dispatch` trigger remains for ad-hoc re-sends and still requires `confirm=SEND`; scheduled runs skip that gate. There is no reviewer step anymore.
+  - Trade-off Lewis accepted: a bad newsletter (formatting regression, hallucinated claim) now ships straight to `sales@`, `customersuccess@`, `pm@` with no eye-check.
+
+### What just happened (earlier on 2026-06-01)
 - **2026-06-01 09:00 UTC monthly newsletter email never arrived at lewisdyson@maximizer.com.** Root cause not yet confirmed.
 - **A Teams "Monthly Strategic Synthesis" card DID post, but it was truncated and not useful.** Lewis wants it removed from the monthly path. Daily Teams alerts stay intact.
 - **Critical bug discovered:** `jobs/monthly_newsletter.py` exits 0 on email send failure. A green GitHub Actions run is NOT proof of delivery. Email errors are caught, logged, and swallowed. This needs fixing alongside the refactor (exit 1 on send failure).
@@ -132,18 +140,19 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ### Decisions made and implemented this session
 1. **Removed the monthly Teams summary card.** Daily Teams alerts stay intact.
-2. **Two-step draft → broadcast flow.** Cron generates draft and emails ONLY to Lewis for review. Separate manual `workflow_dispatch` triggers the broadcast to the full audience.
+2. **~~Two-step draft → broadcast flow.~~** SUPERSEDED 2026-06-01: replaced with a fully automatic monthly broadcast (no review step) at Lewis's request. See "Latest update" above. The draft workflow was deleted.
 3. **Broadcast target = Resend Audience "CI Newsletter"** (Lewis confirmed it exists). Uses Resend Broadcasts API (`POST /broadcasts` with `send: true`), NOT `/emails`.
 4. **One script with `--mode {draft,broadcast}` flag** + two GitHub Actions workflow YAMLs (cron-scheduled draft, manual broadcast with `confirm = "SEND"` text-input guardrail).
 5. **Regenerate from Notion at broadcast time** rather than persist a draft between runs — prior-month Notion data is immutable so re-runs produce near-identical content; no new state to manage.
 6. **`monthly_newsletter.py` now exits 1 on send failure** (deliberate change from prior behaviour) so GitHub Actions surfaces the failure instead of silently succeeding.
 
-### What Lewis needs to verify before the next test run
+### What Lewis needed to verify before the test run (DONE — kept for reference)
+These were verified during the 2026-06-01 test run; the draft CI run and broadcast both succeeded.
 GitHub repo → Settings → Secrets and variables → Actions:
 - `SMTP_FROM` = a `@maximizer.com` address on a Resend-verified domain (NOT `onboarding@resend.dev`)
-- `NEWSLETTER_RECIPIENTS` = comma-separated, includes `lewisdyson@maximizer.com` (no newlines)
-- Add new secret `RESEND_AUDIENCE_ID` = UUID of "CI Newsletter" audience (Resend → Audiences → copy ID)
-- Optionally add `DRAFT_REVIEWER` (defaults to `lewisdyson@maximizer.com` in code if unset)
+- `RESEND_AUDIENCE_ID` = UUID of "CI Newsletter" audience (`082d3537-5ee3-4a6b-81c5-a732a738eae8`) — added.
+- `DRAFT_REVIEWER` is optional (defaults to `lewisdyson@maximizer.com` in code if unset).
+- Note: there is no `NEWSLETTER_RECIPIENTS` secret and the workflows don't need one.
 
 Resend dashboard:
 - Confirm account is on a Marketing plan that includes the Broadcasts API. Free tier availability is ambiguous. If transactional-only, broadcast path fails at runtime — upgrade or fall back to looping `/emails` over audience contacts.
@@ -160,13 +169,11 @@ Resend dashboard:
 | 4 | `competitive_intel/integrations/teams_client.py` | `_build_newsletter_card()` and `send_newsletter_announcement()` deleted. Daily-flow functions kept. |
 | 5 | `competitive_intel/scripts/test_newsletter_announcement.py` | Deleted (plus matching `__pycache__/.pyc`). |
 | 6 | `.github/workflows/monthly-synthesis.yml` → `newsletter-draft.yml` | Renamed. Cron `0 9 1 * *` preserved. Runs `--mode draft`. `NEWSLETTER_RECIPIENTS` and `TEAMS_GENERAL_WEBHOOK` removed from this workflow's env. `DRAFT_REVIEWER` added. |
-| 7 | `.github/workflows/newsletter-broadcast.yml` | New. Manual `workflow_dispatch` only. Requires `confirm = "SEND"` (case-sensitive) as a first-step guardrail. Has `RESEND_AUDIENCE_ID` in env. |
+| 7 | `.github/workflows/newsletter-broadcast.yml` | Now runs on `cron: 0 17 1 * *` (auto-broadcast, no review) AND manual `workflow_dispatch` (requires `confirm = "SEND"`; scheduled runs skip the gate). Has `RESEND_AUDIENCE_ID` in env. `newsletter-draft.yml` was deleted. |
 
-### ⚠️ Known open issue: `segment_id` vs `audience_id`
+### ✅ RESOLVED: `segment_id` vs `audience_id`
 
-Resend's current `/broadcasts` API docs use the field name `audience_id`. The research workflow earlier surfaced a Resend changelog claiming a rename to `segment_id`. The implementation agent used `segment_id` per the brief but flagged this as ambiguous.
-
-**If the first broadcast returns HTTP 422 from Resend with a complaint about `segment_id`**, change the field name in `send_broadcast()` in `agents/newsletter_agent.py` to `audience_id`. One-line fix. The rest of the payload is correct.
+The May 2026 broadcast went out with `segment_id` and Resend accepted it (HTTP 2xx, no 422). The field name in `send_broadcast()` is correct as-is. No change needed. (If a future Resend API change ever rejects `segment_id`, the fallback is `audience_id` — one-line swap in `send_broadcast()`.)
 
 ### Test sequence (do this in order)
 
@@ -175,7 +182,7 @@ Resend's current `/broadcasts` API docs use the field name `audience_id`. The re
    - `SMTP_FROM` = verified `@maximizer.com` address (NOT `onboarding@resend.dev`)
    - `RESEND_AUDIENCE_ID` = "CI Newsletter" audience UUID (NEW — required for broadcast)
    - `DRAFT_REVIEWER` = `lewisdyson@maximizer.com` (NEW — optional, defaults in code)
-   - Old `NEWSLETTER_RECIPIENTS` can stay for now; delete once broadcast is verified working.
+   - There is **no `NEWSLETTER_RECIPIENTS` GitHub secret** — the draft/broadcast workflows don't use it. Nothing to delete on GitHub. (`NEWSLETTER_RECIPIENTS` survives only as a fallback constant in `config.py`, unused by any code path.)
 3. **Run draft locally for May:** `cd competitive_intel && python3 -m jobs.monthly_newsletter --mode draft --year 2026 --month 5`. Confirm the email arrives at Lewis's inbox.
 4. **Trigger broadcast via GitHub Actions UI:** Actions tab → Newsletter Broadcast (Manual) → Run workflow → year=2026, month=5, confirm=SEND. Confirm audience receives it. If 422 on `segment_id`, fix per above and re-run.
 5. **Wait for 2026-07-01 09:00 UTC cron** firing of `newsletter-draft.yml`. Confirm draft email arrives. Then manually trigger broadcast when ready.
@@ -190,9 +197,9 @@ Resend's current `/broadcasts` API docs use the field name `audience_id`. The re
 - Sources: https://resend.com/docs/api-reference/broadcasts/create-broadcast, https://resend.com/changelog/create-and-send-broadcasts-via-api
 
 ### Still pending (post-refactor)
-- Expand the "CI Newsletter" Resend Audience contacts beyond Lewis once draft/broadcast confirmed working.
+- The "CI Newsletter" Resend Audience currently holds **3 live internal addresses**: `sales@maximizer.com`, `customersuccess@maximizer.com`, `pm@maximizer.com`. (It is no longer test-only — the May 2026 broadcast went to these three.) Confirm these are the intended recipients and expand/trim as needed.
 - Add the real sales team to the Competitive Intel Teams chat (currently test participants only).
-- After first successful broadcast, **delete `NEWSLETTER_RECIPIENTS` from config.py and the GitHub secret** — nothing imports it anymore.
+- **`NEWSLETTER_RECIPIENTS` cleanup:** there is no GitHub secret to remove. Optionally delete the now-unused `NEWSLETTER_RECIPIENTS` constant from `config.py` — nothing imports it anymore.
 - Decide whether `TEAMS_GENERAL_WEBHOOK` stays in repo-level secrets (daily flow still needs it) or moves to environment-scoped secrets for the daily workflow only.
 
 ### Path note

@@ -589,45 +589,55 @@ def _render_introduction(text: str) -> str:
 
 def _render_news_stories(text: str) -> str:
     """
-    Render Competitive News stories. Each story has a headline followed by
-    'What happened:', 'Why it matters:', and 'How we should respond:' labels.
+    Render Competitive News stories. The model emits each story as a headline
+    followed by 'What happened:', 'Why it matters:', and 'How we should respond:'
+    blocks. A label may sit on its own line with the body on the following line,
+    or inline after the colon, with blank lines between blocks. Because intra-
+    story and between-story gaps are both single blank lines, we parse by label
+    rather than by splitting on blank lines.
     """
     text = _preprocess(text)
-    if not text.strip():
+    lines = [l.strip() for l in text.splitlines() if l.strip()]
+    if not lines:
         return "<em>No significant competitive news this period.</em>"
 
-    # Split into individual stories on blank lines
-    raw_stories = re.split(r"\n{2,}", text.strip())
-    stories_html: list[str] = []
+    label_re = re.compile(
+        r"^(What happened|Why it matters|How we should respond)\s*:\s*(.*)$",
+        re.IGNORECASE,
+    )
 
-    for story_block in raw_stories:
-        if not story_block.strip():
-            continue
-        lines = [l.strip() for l in story_block.splitlines() if l.strip()]
-        if not lines:
-            continue
+    stories: list = []
+    current = None
+    awaiting_body = False  # last label had no inline body, so the next line is it
 
-        story_out = ""
-        # First non-label line is the headline
-        headline_done = False
-        for line in lines:
-            label_match = re.match(
-                r"^(What happened|Why it matters|How we should respond)\s*:(.*)$",
-                line, re.IGNORECASE
-            )
-            if label_match:
-                label = label_match.group(1).strip()
-                body = label_match.group(2).strip()
-                story_out += f"<br><strong>{_escape(label)}:</strong> {_escape(body)}"
-            else:
-                if not headline_done:
-                    story_out += f"<strong>{_escape(line)}</strong>"
-                    headline_done = True
-                else:
-                    story_out += f"<br>{_escape(line)}"
+    for line in lines:
+        m = label_re.match(line)
+        if m:
+            label, inline_body = m.group(1).strip(), m.group(2).strip()
+            if current is None:
+                current = {"headline": "", "parts": []}
+                stories.append(current)
+            current["parts"].append([label, inline_body])
+            awaiting_body = not inline_body
+        elif awaiting_body and current is not None:
+            # Body line belonging to the most recent label.
+            current["parts"][-1][1] = (current["parts"][-1][1] + " " + line).strip()
+            awaiting_body = False
+        else:
+            # Non-label line that isn't a pending body → a new story headline.
+            current = {"headline": line, "parts": []}
+            stories.append(current)
+            awaiting_body = False
 
-        if story_out:
-            stories_html.append(story_out)
+    stories_html: list = []
+    for s in stories:
+        out = ""
+        if s["headline"]:
+            out += f"<strong>{_escape(s['headline'])}</strong>"
+        for label, body in s["parts"]:
+            out += f"<br><strong>{_escape(label)}:</strong> {_escape(body)}"
+        if out:
+            stories_html.append(out)
 
     return "<br><br>".join(stories_html) if stories_html else \
         "<em>No significant competitive news this period.</em>"
