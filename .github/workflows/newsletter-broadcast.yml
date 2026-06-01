@@ -2,11 +2,10 @@ name: Newsletter (Monthly Broadcast)
 
 on:
   schedule:
-    # 1st of every month at 17:00 UTC = 09:00 PST.
-    # NOTE: GitHub cron does not observe DST, so during Pacific Daylight Time
-    # (~Mar–Nov) this fires at 10:00 Pacific. Use "0 16 1 * *" if you want
-    # 09:00 during PDT instead.
-    - cron: "0 17 1 * *"
+    # 1st of every month at 16:00 UTC. GitHub cron ignores DST, so this lands
+    # at 09:00 Pacific during PDT (~Mar–Nov) and 08:00 Pacific during PST.
+    # Chosen to bias early (never later than 9am) for a morning newsletter.
+    - cron: "0 16 1 * *"
   workflow_dispatch:
     inputs:
       target_year:

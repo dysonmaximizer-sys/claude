@@ -123,8 +123,13 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 - **Newsletter Draft workflow ran successfully in GitHub Actions** — first proof the CI secrets resolve server-side (the new Resend API key + `RESEND_AUDIENCE_ID`). Draft email delivered to the reviewer.
 - **Real broadcast for May 2026 sent to the CI Newsletter audience.** `segment_id` was accepted, no 422 — the open issue below is RESOLVED.
 - **Formatting bug found and fixed** in `_render_news_stories()`: the Competitive News section was rendering every body paragraph bold and shattering each story into fragments (the renderer split on blank lines, which also separate intra-story label blocks). Replaced with a label-driven parser. Headlines and the three labels are bold; bodies are plain.
-- **Architecture changed to fully automatic (per Lewis's request).** The two-step draft→review→manual-broadcast flow is gone. `newsletter-draft.yml` was deleted. `newsletter-broadcast.yml` now runs on a monthly schedule (`cron: 0 17 1 * *` = 09:00 PST; note GitHub cron ignores DST, so it's 10:00 during PDT) and **auto-broadcasts to the CI Newsletter audience with no human review**. The manual `workflow_dispatch` trigger remains for ad-hoc re-sends and still requires `confirm=SEND`; scheduled runs skip that gate. There is no reviewer step anymore.
+- **Architecture changed to fully automatic (per Lewis's request).** The two-step draft→review→manual-broadcast flow is gone. `newsletter-draft.yml` was deleted. `newsletter-broadcast.yml` now runs on a monthly schedule and **auto-broadcasts to the CI Newsletter audience with no human review**. The manual `workflow_dispatch` trigger remains for ad-hoc re-sends and still requires `confirm=SEND`; scheduled runs skip that gate. There is no reviewer step anymore.
   - Trade-off Lewis accepted: a bad newsletter (formatting regression, hallucinated claim) now ships straight to `sales@`, `customersuccess@`, `pm@` with no eye-check.
+- **Schedule set to `cron: 0 16 1 * *` (16:00 UTC).** GitHub cron ignores DST, so this lands at 09:00 Pacific during PDT (~Mar–Nov) and 08:00 Pacific during PST — biased early so it's never later than 9am. Lewis delegated this decision.
+- **Resend API key: Lewis ADDED a new key (not rotated).** The old key stays valid, so `competitive_intel/.env` and `~/.zshrc` (release-automation system) need no update. No further sharing required.
+- **Audience confirmed correct:** `sales@maximizer.com`, `customersuccess@maximizer.com`, `pm@maximizer.com` are the intended recipients.
+- **Deleted local `competitive_intel/.env.bak`** (plaintext secrets backup). `.gitignore` already blocks `.env.bak` / `*.env.bak` so it can't be recreated and committed.
+- **First fully-automatic run: 2026-07-01 at 16:00 UTC**, sending the June 2026 newsletter. The scheduled-trigger path (cron fires, SEND gate skipped) has not executed yet — first live exercise is that run.
 
 ### What just happened (earlier on 2026-06-01)
 - **2026-06-01 09:00 UTC monthly newsletter email never arrived at lewisdyson@maximizer.com.** Root cause not yet confirmed.
@@ -169,7 +174,7 @@ Resend dashboard:
 | 4 | `competitive_intel/integrations/teams_client.py` | `_build_newsletter_card()` and `send_newsletter_announcement()` deleted. Daily-flow functions kept. |
 | 5 | `competitive_intel/scripts/test_newsletter_announcement.py` | Deleted (plus matching `__pycache__/.pyc`). |
 | 6 | `.github/workflows/monthly-synthesis.yml` → `newsletter-draft.yml` | Renamed. Cron `0 9 1 * *` preserved. Runs `--mode draft`. `NEWSLETTER_RECIPIENTS` and `TEAMS_GENERAL_WEBHOOK` removed from this workflow's env. `DRAFT_REVIEWER` added. |
-| 7 | `.github/workflows/newsletter-broadcast.yml` | Now runs on `cron: 0 17 1 * *` (auto-broadcast, no review) AND manual `workflow_dispatch` (requires `confirm = "SEND"`; scheduled runs skip the gate). Has `RESEND_AUDIENCE_ID` in env. `newsletter-draft.yml` was deleted. |
+| 7 | `.github/workflows/newsletter-broadcast.yml` | Now runs on `cron: 0 16 1 * *` (auto-broadcast, no review) AND manual `workflow_dispatch` (requires `confirm = "SEND"`; scheduled runs skip the gate). Has `RESEND_AUDIENCE_ID` in env. `newsletter-draft.yml` was deleted. |
 
 ### ✅ RESOLVED: `segment_id` vs `audience_id`
 
