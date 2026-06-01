@@ -4,8 +4,12 @@ Newsletter agent — generates the monthly Competitive Intelligence newsletter.
 Runs on the 1st of each month. Synthesises all scored changes from the previous
 month into a structured briefing, then:
   1. Saves the full newsletter to output/
-  2. Posts an announcement + preview to the Teams general channel
-  3. Emails the full newsletter to the configured recipient list
+  2. Distributes it via Resend, in one of two modes the caller chooses:
+       - send_draft_email()  → single reviewer via Resend /emails (review step)
+       - send_broadcast()    → full audience via Resend /broadcasts
+
+Teams announcement posting was removed from the monthly path; daily Teams
+alerts live in jobs/daily_poll.py and are unaffected.
 
 The system prompt is loaded from resources/newsletter_system_prompt.txt.
 Uses prompt caching on the system prompt.
@@ -25,7 +29,6 @@ from config import (
     CLAUDE_MODEL,
     RESEND_API_KEY,
     SMTP_FROM,
-    NEWSLETTER_RECIPIENTS,
 )
 
 logger = logging.getLogger(__name__)
@@ -106,27 +109,26 @@ def save_newsletter(newsletter_text: str, month: int, year: int) -> Path:
     return file_path
 
 
-def email_newsletter(newsletter_text: str, month: int, year: int) -> bool:
+def send_draft_email(html_body: str, subject: str, recipient: str) -> bool:
     """
-    Send the newsletter via Resend API with a styled HTML version.
-    Returns True on success, False if not configured.
+    Send a single-recipient draft via Resend /emails for review.
+
+    Returns True on 2xx, False otherwise. Uses logger.error on every failure
+    path so the caller can detect.
     """
     if not RESEND_API_KEY:
-        logger.warning(
-            "Resend API key not configured — email skipped. "
+        logger.error(
+            "Resend API key not configured — draft email skipped. "
             "Add RESEND_API_KEY to .env to enable email delivery."
         )
         return False
 
-    month_name = datetime(year, month, 1).strftime("%B %Y")
-    subject = f"Competitive Intelligence: {month_name}"
-
     payload = {
         "from": SMTP_FROM,
-        "to": NEWSLETTER_RECIPIENTS,
+        "to": [recipient],
         "subject": subject,
-        "text": newsletter_text,
-        "html": _render_html(newsletter_text, month_name),
+        "html": html_body,
+        "reply_to": "lewisdyson@maximizer.com",
     }
 
     try:
@@ -140,13 +142,79 @@ def email_newsletter(newsletter_text: str, month: int, year: int) -> bool:
             timeout=30,
         )
         response.raise_for_status()
-        logger.info("Newsletter emailed to: %s", ", ".join(NEWSLETTER_RECIPIENTS))
+        logger.info("Draft newsletter emailed to: %s", recipient)
         return True
     except requests.HTTPError as e:
-        logger.error("Resend API error: %s — %s", e, response.text)
+        logger.error("Resend API error sending draft: %s — %s", e, response.text)
         return False
     except requests.RequestException as e:
-        logger.error("Failed to send newsletter email: %s", e)
+        logger.error("Failed to send draft newsletter email: %s", e)
+        return False
+
+
+def send_broadcast(
+    html_body: str,
+    subject: str,
+    audience_id: str,
+    internal_name: str,
+) -> bool:
+    """
+    Send a broadcast to a Resend Audience (Segment) via the Broadcasts API.
+
+    Uses Resend's create-and-send pattern (single call with send=True). See
+    https://resend.com/changelog/create-and-send-broadcasts-via-api for the
+    documented behaviour.
+
+    Auto-injects an unsubscribe footer if "{{{RESEND_UNSUBSCRIBE_URL}}}" is
+    not already present in html_body — required for Gmail/Yahoo/M365 bulk
+    sender compliance.
+
+    Returns True on 2xx, False otherwise. Uses logger.error on every failure
+    path so the caller can detect.
+    """
+    if not RESEND_API_KEY:
+        logger.error(
+            "Resend API key not configured — broadcast skipped. "
+            "Add RESEND_API_KEY to .env to enable broadcast delivery."
+        )
+        return False
+
+    if "{{{RESEND_UNSUBSCRIBE_URL}}}" not in html_body:
+        html_body = html_body + (
+            '<p style="font-size:11px;color:#888;margin-top:24px">'
+            '<a href="{{{RESEND_UNSUBSCRIBE_URL}}}">Unsubscribe</a></p>'
+        )
+
+    payload = {
+        "segment_id": audience_id,
+        "from": SMTP_FROM,
+        "subject": subject,
+        "html": html_body,
+        "reply_to": "lewisdyson@maximizer.com",
+        "name": internal_name,
+        "send": True,
+    }
+
+    try:
+        response = requests.post(
+            "https://api.resend.com/broadcasts",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=30,
+        )
+        response.raise_for_status()
+        logger.info(
+            "Broadcast '%s' sent to audience %s", internal_name, audience_id
+        )
+        return True
+    except requests.HTTPError as e:
+        logger.error("Resend API error sending broadcast: %s — %s", e, response.text)
+        return False
+    except requests.RequestException as e:
+        logger.error("Failed to send broadcast: %s", e)
         return False
 
 
@@ -376,6 +444,15 @@ def _build_body(sections: dict, month_name: str) -> str:
         if key in sections and sections[key].strip():
             out += _h2_module(title)
             out += _text_module(renderer(sections[key]))
+
+    # Fixed "Help us improve" invitation. Appended deterministically (not
+    # model-generated) so it ships in every issue, identically.
+    out += _h2_module("Help Us Improve")
+    out += _text_module(
+        "Have ideas on how to make this newsletter more useful? Email "
+        '<a href="mailto:lewisdyson@maximizer.com">lewisdyson@maximizer.com</a> '
+        "with any improvements."
+    )
 
     return out
 

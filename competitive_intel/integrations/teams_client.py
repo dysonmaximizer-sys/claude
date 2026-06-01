@@ -135,57 +135,6 @@ def _build_alert_card(
     return card
 
 
-def _build_newsletter_card(
-    subject: str,
-    body_preview: str,
-    notion_url: str = "",
-) -> dict:
-    """Build an Adaptive Card announcing the monthly newsletter."""
-    preview_text = body_preview[:500] + ("…" if len(body_preview) > 500 else "")
-
-    body = [
-        {
-            "type": "Container",
-            "style": "accent",
-            "bleed": True,
-            "items": [
-                {
-                    "type": "TextBlock",
-                    "text": subject,
-                    "weight": "Bolder",
-                    "size": "Medium",
-                    "wrap": True,
-                },
-            ],
-        },
-        {
-            "type": "TextBlock",
-            "text": preview_text,
-            "wrap": True,
-            "spacing": "Medium",
-        },
-    ]
-
-    actions = []
-    if notion_url:
-        actions.append({
-            "type": "Action.OpenUrl",
-            "title": "Read Full Newsletter",
-            "url": notion_url,
-        })
-
-    card = {
-        "type": "AdaptiveCard",
-        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
-        "version": "1.5",
-        "body": body,
-    }
-    if actions:
-        card["actions"] = actions
-
-    return card
-
-
 # ── Send Functions ─────────────────────────────────────────────────────────────
 
 @retry(stop=stop_after_attempt(3), wait=wait_exponential(multiplier=1, min=2, max=10))
@@ -222,24 +171,4 @@ def send_competitive_alert(
     card = _build_alert_card(competitor, tier, category, score, summary, url, notion_url)
     _post_to_webhook(webhook, card)
     logger.info("Teams alert sent for %s (score %d)", competitor, score)
-    return True
-
-
-def send_newsletter_announcement(
-    subject: str,
-    body_preview: str,
-    notion_url: str = "",
-) -> bool:
-    """Post a newsletter announcement to the general Teams destination."""
-    webhook = _get_webhook()
-    if not webhook:
-        logger.warning(
-            "TEAMS_GENERAL_WEBHOOK not configured. Newsletter announcement "
-            "skipped. Add it to .env to enable Teams delivery."
-        )
-        return False
-
-    card = _build_newsletter_card(subject, body_preview, notion_url)
-    _post_to_webhook(webhook, card)
-    logger.info("Newsletter announcement sent to Teams")
     return True

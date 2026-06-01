@@ -99,7 +99,7 @@ Until webhooks are added, alerts are silently skipped — Teams isn't notified.
 
 **5a. Create a GitHub repo**
 ```bash
-cd "/Users/lewisdyson/Desktop/Claude Code"
+cd "/Users/lewisdyson/Claude Code"
 git init
 git add .
 git commit -m "Initial competitive intel system"

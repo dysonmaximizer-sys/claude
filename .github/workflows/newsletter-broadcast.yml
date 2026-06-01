@@ -1,39 +1,42 @@
-name: Monthly Strategic Synthesis
+name: Newsletter Broadcast (Manual)
 
 on:
-  schedule:
-    # 1st of every month at 09:00 UTC
-    - cron: "0 9 1 * *"
   workflow_dispatch:
     inputs:
       target_year:
-        description: "Override year (e.g. 2026) — leave blank for previous month"
-        required: false
+        description: "Year (e.g. 2026)"
+        required: true
       target_month:
-        description: "Override month 1–12 — leave blank for previous month"
-        required: false
+        description: "Month 1-12"
+        required: true
+      confirm:
+        description: 'Type SEND to confirm broadcast (case-sensitive)'
+        required: true
 
 jobs:
-  generate-newsletter:
+  broadcast-newsletter:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    name: Generate + distribute newsletter
+    name: Broadcast newsletter to CI Newsletter audience
 
     steps:
+      - name: Confirmation gate
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "SEND" ]; then
+            echo "::error::Confirmation text must be exactly SEND. Got: ${{ github.event.inputs.confirm }}"
+            exit 1
+          fi
       - name: Checkout
         uses: actions/checkout@v5
-
       - name: Set up Python
         uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: "pip"
           cache-dependency-path: competitive_intel/requirements.txt
-
       - name: Install dependencies
         run: pip install -r competitive_intel/requirements.txt
-
-      - name: Generate and send newsletter
+      - name: Broadcast newsletter
         working-directory: competitive_intel
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -42,13 +45,8 @@ jobs:
           CHANGEDETECTION_BASE_URL: ${{ secrets.CHANGEDETECTION_BASE_URL }}
           NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
           NOTION_CHANGES_DB_ID: ${{ secrets.NOTION_CHANGES_DB_ID }}
-          TEAMS_GENERAL_WEBHOOK: ${{ secrets.TEAMS_GENERAL_WEBHOOK }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SMTP_FROM: ${{ secrets.SMTP_FROM }}
-          NEWSLETTER_RECIPIENTS: ${{ secrets.NEWSLETTER_RECIPIENTS }}
+          RESEND_AUDIENCE_ID: ${{ secrets.RESEND_AUDIENCE_ID }}
         run: |
-          ARGS=""
-          if [ -n "${{ github.event.inputs.target_year }}" ]; then
-            ARGS="${{ github.event.inputs.target_year }} ${{ github.event.inputs.target_month }}"
-          fi
-          python -m jobs.monthly_newsletter $ARGS
+          python -m jobs.monthly_newsletter --mode broadcast --year ${{ github.event.inputs.target_year }} --month ${{ github.event.inputs.target_month }}

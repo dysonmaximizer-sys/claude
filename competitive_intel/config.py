@@ -28,6 +28,16 @@ TEAMS_GENERAL_WEBHOOK = os.environ.get("TEAMS_GENERAL_WEBHOOK", "")
 # ── Email (newsletter distribution) ───────────────────────────────────────────
 RESEND_API_KEY = os.environ.get("RESEND_API_KEY", "")
 SMTP_FROM = os.environ.get("SMTP_FROM", "onboarding@resend.dev")
+# Resend Audience (Segment) ID for the "CI Newsletter" audience — used by
+# --mode broadcast to send via Resend's Broadcasts API.
+RESEND_AUDIENCE_ID = os.environ.get("RESEND_AUDIENCE_ID", "")
+# Single reviewer who receives the draft email under --mode draft for eye-check
+# before broadcast.
+DRAFT_REVIEWER = os.environ.get("DRAFT_REVIEWER", "lewisdyson@maximizer.com")
+# NEWSLETTER_RECIPIENTS is retained only for the old code path during the
+# migration window. The new --mode draft path uses DRAFT_REVIEWER instead;
+# --mode broadcast uses RESEND_AUDIENCE_ID. Safe to remove once nothing
+# else imports NEWSLETTER_RECIPIENTS.
 NEWSLETTER_RECIPIENTS = [
     e.strip()
     for e in os.environ.get("NEWSLETTER_RECIPIENTS", "marketing@maximizer.com").split(",")
