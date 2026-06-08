@@ -3,7 +3,12 @@ Daily poll job — collects new competitive changes from changedetection.io, log
 them to Notion, and immediately scores each one.  High-score changes
 (>= threshold) also get an AI summary and a Teams alert.
 
-Schedule: daily at 06:00 UTC (configured in GitHub Actions / scheduler.py)
+Schedule: daily at 23:00 UTC (configured in GitHub Actions / scheduler.py),
+which lands inside PST/PDT business hours, after the changedetection.io crawl.
+
+Teams alerts are deferred until every change is logged, scored, and summarised,
+then grouped by underlying insight so one announcement spread across several of
+a competitor's pages fires a single alert instead of one per page.
 """
 
 import logging
@@ -35,6 +40,7 @@ def run() -> dict:
     )
     from agents.scoring_agent import score_change
     from agents.summariser_agent import summarise_change
+    from agents.dedup_agent import cluster_changes_by_insight
     from integrations.teams_client import send_competitive_alert
     from config import ALERT_SCORE_THRESHOLD, COMPETITORS
 
@@ -50,6 +56,7 @@ def run() -> dict:
     scored = 0
     alerted = 0
     errors = 0
+    pending_alerts: list[dict] = []  # alert-worthy changes, alerted after the loop
 
     for change in changes:
         competitor = change["competitor_name"]
@@ -115,26 +122,68 @@ def run() -> dict:
             summary = reasoning
             errors += 1
 
-        # ── Step 4: Teams alert ────────────────────────────────────────────
+        # ── Step 4: Queue for alerting (deferred until after the loop) ─────
+        # Don't alert inline. Collect alert-worthy changes so we can group a
+        # competitor's pages by insight first and alert once per insight.
+        competitor_slug = COMPETITORS.get(competitor, {}).get("slug", competitor.lower())
+        notion_url = f"https://www.notion.so/{page_id.replace('-', '')}"
+        pending_alerts.append({
+            "competitor": competitor,
+            "tier": change["tier"],
+            "category": refined_category,
+            "score": score,
+            "summary": summary,
+            "url": change["url"],
+            "page_id": page_id,
+            "competitor_slug": competitor_slug,
+            "notion_url": notion_url,
+            "raw_change": change["raw_change"],
+        })
+
+    # ── Step 5: De-duplicate by insight, then alert ────────────────────────
+    # One competitor's announcement often lands on several monitored pages in
+    # the same crawl. Group those by underlying insight and alert once per
+    # insight — a single normal alert card, picked from the cluster. Suppressed
+    # pages stay logged in Notion and still feed the monthly newsletter.
+    by_competitor: dict[str, list[dict]] = {}
+    for item in pending_alerts:
+        by_competitor.setdefault(item["competitor"], []).append(item)
+
+    for competitor, items in by_competitor.items():
         try:
-            competitor_slug = COMPETITORS.get(competitor, {}).get("slug", competitor.lower())
-            notion_url = f"https://www.notion.so/{page_id.replace('-', '')}"
-            sent = send_competitive_alert(
-                competitor=competitor,
-                tier=change["tier"],
-                category=refined_category,
-                score=score,
-                summary=summary,
-                url=change["url"],
-                competitor_slug=competitor_slug,
-                notion_url=notion_url,
-            )
-            if sent:
-                mark_alert_sent(page_id)
-                alerted += 1
+            clusters = cluster_changes_by_insight(competitor, items)
         except Exception as e:
-            logger.error("  → Teams alert failed for %s: %s", competitor, e)
-            errors += 1
+            logger.error("  → Clustering failed for %s (alerting each): %s", competitor, e)
+            clusters = [[i] for i in range(len(items))]
+
+        for cluster in clusters:
+            # Representative = highest score, then longest summary, then earliest.
+            rep = max(
+                (items[i] for i in cluster),
+                key=lambda it: (it["score"], len(it["summary"] or "")),
+            )
+            if len(cluster) > 1:
+                logger.info(
+                    "  → %s: %d pages share one insight — alerting 1, suppressing %d duplicate(s)",
+                    competitor, len(cluster), len(cluster) - 1,
+                )
+            try:
+                sent = send_competitive_alert(
+                    competitor=rep["competitor"],
+                    tier=rep["tier"],
+                    category=rep["category"],
+                    score=rep["score"],
+                    summary=rep["summary"],
+                    url=rep["url"],
+                    competitor_slug=rep["competitor_slug"],
+                    notion_url=rep["notion_url"],
+                )
+                if sent:
+                    mark_alert_sent(rep["page_id"])
+                    alerted += 1
+            except Exception as e:
+                logger.error("  → Teams alert failed for %s: %s", competitor, e)
+                errors += 1
 
     logger.info(
         "=== Daily poll complete: %d logged, %d scored, %d alerted, %d errors ===",

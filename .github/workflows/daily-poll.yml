@@ -2,8 +2,12 @@ name: Daily Competitive Poll
 
 on:
   schedule:
-    # Every day at 06:00 UTC
-    - cron: "0 6 * * *"
+    # Every day at 23:00 UTC. GitHub cron ignores DST, so this lands at
+    # 16:00 Pacific during PDT (~Mar–Nov) and 15:00 Pacific during PST.
+    # Chosen to run AFTER the changedetection.io scan crawl (which spreads
+    # detections across ~09:00–15:00 Pacific) so each poll captures that
+    # day's changes, while still firing inside PST/PDT business hours.
+    - cron: "0 23 * * *"
   workflow_dispatch: # allow manual trigger from GitHub Actions UI
 
 jobs:

@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-06-01
+**Last updated:** 2026-06-08
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -8,7 +8,7 @@
 ## What this system does
 
 Automated competitive intelligence pipeline that:
-1. **Daily (06:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, sends a Teams alert for high-score items.
+1. **Daily (23:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, then groups high-score changes by underlying insight and sends one Teams alert per insight. 23:00 UTC lands at 16:00 PDT / 15:00 PST — inside business hours and after the cd.io crawl finishes.
 2. **Monthly (1st, 09:00 UTC):** Queries Notion for the previous month's changes, generates a newsletter via Claude, emails a DRAFT to `DRAFT_REVIEWER` (Lewis) via Resend `/emails` for review.
 3. **Monthly broadcast (manual):** Once the draft is approved, Lewis triggers the `Newsletter Broadcast (Manual)` GitHub Actions workflow with `confirm = "SEND"`. That re-generates the newsletter and POSTs it to the Resend Audience "CI Newsletter" via Resend `/broadcasts`. No Teams card.
 
@@ -63,7 +63,7 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
 
-cd.io scan schedule: business days at 9am PST. The daily GitHub Actions poll runs at 06:00 UTC daily and uses a lookback window wide enough to catch all changes regardless of weekend gaps.
+cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The daily GitHub Actions poll runs at 23:00 UTC daily (16:00 PDT / 15:00 PST) — after the crawl completes and inside business hours — with a 25h lookback window wide enough to catch all changes regardless of weekend gaps.
 
 To add a new competitor to changedetection.io: log into the cd.io dashboard, click "Add a new change detection", paste the URL, and set the **Title** to include the competitor slug (e.g. "salesforce pricing") so `_match_competitor()` picks it up.
 
@@ -104,7 +104,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ## What's working
 
-- Daily poll runs end-to-end: changedetection.io, Notion log, inline score, summarise (high-score only), Teams alert (high-score only).
+- Daily poll runs end-to-end: changedetection.io, Notion log, inline score, summarise (high-score only), insight de-dup, Teams alert (one card per distinct insight).
 - Teams alerts post as Adaptive Cards via the Workflows webhook (confirmed by smoke test on 2026-05-22).
 - Teams newsletter announcement card posts correctly with accent styling (confirmed by smoke test on 2026-05-22).
 - changedetection.io history correctly parsed (newest-first ordering fixed).
@@ -116,9 +116,21 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-06-01
+## Status as of 2026-06-08
 
-### Latest update — 2026-06-01 (end of day): shipped, sent, and verified
+### Latest update — 2026-06-08: daily alert timing + duplicate-alert fix
+Triggered by Saturday's alert batch: it fired at ~1:37am local (the 06:00 UTC poll, overnight in North America) and sent **4 separate cards for one event** — Wealthbox's "Custom Objects" launch, which surfaced on the homepage, pricing, blog, and webinars pages (4 separate cd.io watches, 4 distinct URLs). The per-URL dedup (`change_already_logged`) correctly treated them as 4 changes; it just has no concept of "one announcement across many pages."
+
+- **Daily poll rescheduled `0 6 * * *` → `0 23 * * *`** in `.github/workflows/daily-poll.yml`. 23:00 UTC = 16:00 PDT / 15:00 PST. Chosen to run AFTER the cd.io crawl (detections spread ~09:00–15:00 Pacific) so each poll still captures that day's changes, while firing inside business hours. Not set to a 9am-equivalent slot on purpose — that would run mid-crawl and pick up half the day's changes a day late.
+- **Insight de-dup added.** New `agents/dedup_agent.py` (`cluster_changes_by_insight`) makes one Claude call per competitor-with-multiple-alert-worthy-changes and clusters them by underlying announcement. `jobs/daily_poll.py` now defers all Teams alerts until after the log/score/summarise loop (new Step 5), groups alert-worthy changes by competitor, clusters by insight, and sends **one alert per cluster** (representative = highest score, then longest summary, then earliest).
+  - **Alert appearance is unchanged** (Lewis's hard requirement): no digest card, no "Wealthbox digest" title. Each cluster fires a normal single-change card. The only change is that duplicate page-cards are suppressed.
+  - **Suppressed pages stay in Notion** (logged, scored, summarised; `Teams Alert Sent` stays False) and still feed the monthly newsletter. Nothing is dropped.
+  - **Safe fallback:** on any clustering failure (API error, malformed/non-partition response) the agent returns one cluster per change — i.e. today's one-alert-per-page behaviour. De-dup can never make things worse or merge incorrectly on error.
+  - **Trade-off:** two *genuinely unrelated* high-score changes for the same competitor in one poll land in separate clusters → still two alerts. Only same-event pages collapse.
+- **Validated against the real incident** (read-only dry run over Notion): the 4 Wealthbox pages clustered into 1 insight → 1 alert (representative `/blog/`, score 7). `py_compile` clean on both changed files.
+- **Both changes are live on `main`** (this commit). The daily workflow runs from `main`, so the new schedule + dedup take effect on the next 23:00 UTC run.
+
+### Earlier — 2026-06-01 (end of day): shipped, sent, and verified
 - **Refactor committed and pushed to `main`** (commit `ae556f3`). The monthly cron and manual broadcast now run the new code.
 - **Newsletter Draft workflow ran successfully in GitHub Actions** — first proof the CI secrets resolve server-side (the new Resend API key + `RESEND_AUDIENCE_ID`). Draft email delivered to the reviewer.
 - **Real broadcast for May 2026 sent to the CI Newsletter audience.** `segment_id` was accepted, no 422 — the open issue below is RESOLVED.
