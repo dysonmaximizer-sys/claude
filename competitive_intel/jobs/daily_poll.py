@@ -3,8 +3,10 @@ Daily poll job — collects new competitive changes from changedetection.io, log
 them to Notion, and immediately scores each one.  High-score changes
 (>= threshold) also get an AI summary and a Teams alert.
 
-Schedule: daily at 23:00 UTC (configured in GitHub Actions / scheduler.py),
-which lands inside PST/PDT business hours, after the changedetection.io crawl.
+Schedule: daily at 15:00 UTC (configured in GitHub Actions / scheduler.py),
+which lands at 08:00 Pacific (PDT) / 07:00 (PST). This runs before the day's
+cd.io crawl, so each morning's alert covers the prior day's detections via the
+25h lookback.
 
 Teams alerts are deferred until every change is logged, scored, and summarised,
 then grouped by underlying insight so one announcement spread across several of

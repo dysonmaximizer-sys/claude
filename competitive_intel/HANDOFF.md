@@ -8,7 +8,7 @@
 ## What this system does
 
 Automated competitive intelligence pipeline that:
-1. **Daily (23:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, then groups high-score changes by underlying insight and sends one Teams alert per insight. 23:00 UTC lands at 16:00 PDT / 15:00 PST — inside business hours and after the cd.io crawl finishes.
+1. **Daily (15:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, then groups high-score changes by underlying insight and sends one Teams alert per insight. 15:00 UTC lands at 08:00 Pacific (PDT) / 07:00 (PST) — a morning alert. Because 08:00 is before the day's cd.io crawl, each morning's alert covers the PRIOR day's detections (25h lookback).
 2. **Monthly (1st, 09:00 UTC):** Queries Notion for the previous month's changes, generates a newsletter via Claude, emails a DRAFT to `DRAFT_REVIEWER` (Lewis) via Resend `/emails` for review.
 3. **Monthly broadcast (manual):** Once the draft is approved, Lewis triggers the `Newsletter Broadcast (Manual)` GitHub Actions workflow with `confirm = "SEND"`. That re-generates the newsletter and POSTs it to the Resend Audience "CI Newsletter" via Resend `/broadcasts`. No Teams card.
 
@@ -63,7 +63,7 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
 
-cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The daily GitHub Actions poll runs at 23:00 UTC daily (16:00 PDT / 15:00 PST) — after the crawl completes and inside business hours — with a 25h lookback window wide enough to catch all changes regardless of weekend gaps.
+cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The daily GitHub Actions poll runs at 15:00 UTC daily (08:00 PDT / 07:00 PST) — a morning alert that runs before that day's crawl, so it reports the prior day's detections. The 25h lookback is wide enough to catch all changes regardless of weekend gaps (e.g. Friday's crawl is alerted Saturday 08:00).
 
 To add a new competitor to changedetection.io: log into the cd.io dashboard, click "Add a new change detection", paste the URL, and set the **Title** to include the competitor slug (e.g. "salesforce pricing") so `_match_competitor()` picks it up.
 
@@ -116,9 +116,14 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-06-08
+## Status as of 2026-06-12
 
-### Latest update — 2026-06-08: daily alert timing + duplicate-alert fix
+### Latest update — 2026-06-12: daily poll moved to 08:00 Pacific (morning alert)
+Supersedes the 23:00 UTC schedule decision below. Afternoon Pacific alerts weren't working for Lewis; he asked for 8am.
+- **Daily poll cron `0 23 * * *` → `0 15 * * *`** in `.github/workflows/daily-poll.yml`. 15:00 UTC = 08:00 PDT (now) / 07:00 PST (winter). GitHub cron can't follow DST, so this is biased early (like the newsletter cron) to stay a morning alert year-round and absorb the 10–60 min cron delay. "8am PST" read as 8am Pacific local; if exact-8am-in-winter is preferred instead, use `0 16 * * *` (9am PDT / 8am PST).
+- **Behaviour shift:** 08:00 runs BEFORE the day's cd.io crawl (~09:00–15:00 Pacific), so each morning's alert now covers the PRIOR day's detections via the 25h lookback. No changes dropped; Friday's crawl is alerted Saturday 08:00. The insight de-dup from 2026-06-08 is unchanged.
+
+### Earlier — 2026-06-08: daily alert timing + duplicate-alert fix
 Triggered by Saturday's alert batch: it fired at ~1:37am local (the 06:00 UTC poll, overnight in North America) and sent **4 separate cards for one event** — Wealthbox's "Custom Objects" launch, which surfaced on the homepage, pricing, blog, and webinars pages (4 separate cd.io watches, 4 distinct URLs). The per-URL dedup (`change_already_logged`) correctly treated them as 4 changes; it just has no concept of "one announcement across many pages."
 
 - **Daily poll rescheduled `0 6 * * *` → `0 23 * * *`** in `.github/workflows/daily-poll.yml`. 23:00 UTC = 16:00 PDT / 15:00 PST. Chosen to run AFTER the cd.io crawl (detections spread ~09:00–15:00 Pacific) so each poll still captures that day's changes, while firing inside business hours. Not set to a 9am-equivalent slot on purpose — that would run mid-crawl and pick up half the day's changes a day late.
