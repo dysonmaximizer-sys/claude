@@ -3,10 +3,11 @@ Daily poll job — collects new competitive changes from changedetection.io, log
 them to Notion, and immediately scores each one.  High-score changes
 (>= threshold) also get an AI summary and a Teams alert.
 
-Schedule: daily at 15:00 UTC (configured in GitHub Actions / scheduler.py),
-which lands at 08:00 Pacific (PDT) / 07:00 (PST). This runs before the day's
-cd.io crawl, so each morning's alert covers the prior day's detections via the
-25h lookback.
+Schedule: business days at 15:00 UTC (configured in GitHub Actions /
+scheduler.py), which lands at 08:00 Pacific (PDT) / 07:00 (PST). No weekend
+alerts. This runs before the day's cd.io crawl, so each morning's alert covers
+the prior day's detections; the 76h lookback bridges the weekend so Friday's
+crawl is alerted Monday morning.
 
 Teams alerts are deferred until every change is logged, scored, and summarised,
 then grouped by underlying insight so one announcement spread across several of
@@ -49,7 +50,11 @@ def run() -> dict:
     logger.info("=== Daily poll started ===")
 
     try:
-        changes = get_recent_changes(lookback_hours=25)
+        # 76h, not 24h: the poll runs business days only (see daily-poll.yml),
+        # so Monday's run must reach back across the weekend to catch Friday's
+        # crawl (~72h). Re-fetched changes already logged in Notion are skipped
+        # by change_already_logged(), so the wide window never double-alerts.
+        changes = get_recent_changes(lookback_hours=76)
     except Exception as e:
         logger.error("Failed to fetch changes from changedetection.io: %s", e)
         return {"new_changes": 0, "scored": 0, "alerted": 0, "errors": 1}

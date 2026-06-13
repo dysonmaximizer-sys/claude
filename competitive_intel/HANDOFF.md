@@ -8,7 +8,7 @@
 ## What this system does
 
 Automated competitive intelligence pipeline that:
-1. **Daily (15:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, then groups high-score changes by underlying insight and sends one Teams alert per insight. 15:00 UTC lands at 08:00 Pacific (PDT) / 07:00 (PST) — a morning alert. Because 08:00 is before the day's cd.io crawl, each morning's alert covers the PRIOR day's detections (25h lookback).
+1. **Business days (15:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, then groups high-score changes by underlying insight and sends one Teams alert per insight. 15:00 UTC lands at 08:00 Pacific (PDT) / 07:00 (PST) — a weekday morning alert, no weekend sends. Because 08:00 is before the day's cd.io crawl, each morning's alert covers the PRIOR day's detections. Lookback is 76h to bridge the weekend (Friday's crawl is alerted Monday).
 2. **Monthly (1st, 09:00 UTC):** Queries Notion for the previous month's changes, generates a newsletter via Claude, emails a DRAFT to `DRAFT_REVIEWER` (Lewis) via Resend `/emails` for review.
 3. **Monthly broadcast (manual):** Once the draft is approved, Lewis triggers the `Newsletter Broadcast (Manual)` GitHub Actions workflow with `confirm = "SEND"`. That re-generates the newsletter and POSTs it to the Resend Audience "CI Newsletter" via Resend `/broadcasts`. No Teams card.
 
@@ -63,7 +63,7 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
 
-cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The daily GitHub Actions poll runs at 15:00 UTC daily (08:00 PDT / 07:00 PST) — a morning alert that runs before that day's crawl, so it reports the prior day's detections. The 25h lookback is wide enough to catch all changes regardless of weekend gaps (e.g. Friday's crawl is alerted Saturday 08:00).
+cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The GitHub Actions poll runs business days at 15:00 UTC (08:00 PDT / 07:00 PST) — a weekday morning alert that runs before that day's crawl, so it reports the prior day's detections. The lookback is **76h** so Monday's run reaches back across the weekend to catch Friday's crawl (~72h); Friday's changes are alerted Monday 08:00. Re-fetched changes already in Notion are skipped by `change_already_logged()`, so the wide window never double-alerts.
 
 To add a new competitor to changedetection.io: log into the cd.io dashboard, click "Add a new change detection", paste the URL, and set the **Title** to include the competitor slug (e.g. "salesforce pricing") so `_match_competitor()` picks it up.
 
@@ -116,9 +116,16 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-06-12
+## Status as of 2026-06-13
 
-### Latest update — 2026-06-12: daily poll moved to 08:00 Pacific (morning alert)
+### Latest update — 2026-06-13: poll restricted to business days
+Saturday morning alerts were still firing (Friday's crawl was being alerted Saturday 08:00). Lewis asked for business days only.
+- **Daily poll cron `0 15 * * *` → `0 15 * * 1-5`** (Mon–Fri) in `.github/workflows/daily-poll.yml`. 15:00 UTC is the same weekday in Pacific, so no off-by-one. No Saturday/Sunday alerts.
+- **Lookback widened 25h → 76h** in `jobs/daily_poll.py`. Required, not optional: with weekday-only runs the poll that follows the weekend (Monday 08:00) must reach back ~72h to catch Friday's crawl, or Friday's changes would be dropped entirely. 76h = 72h weekend gap + buffer. The Notion dedup (`change_already_logged`) skips already-logged re-fetches, so the wider window does not cause duplicate alerts.
+- **Net effect:** Friday's detections now alert **Monday 08:00** instead of Saturday. Mon–Thu detections alert the next weekday morning as before.
+- **`scheduler.py` (VPS-only alternative) daily trigger aligned** to `mon-fri` 15:00 UTC to match production. Its monthly-newsletter trigger is still stale (09:00 UTC vs the live 16:00 UTC broadcast) — pre-existing drift, left as-is; fix if the VPS path is ever used.
+
+### Earlier — 2026-06-12: daily poll moved to 08:00 Pacific (morning alert)
 Supersedes the 23:00 UTC schedule decision below. Afternoon Pacific alerts weren't working for Lewis; he asked for 8am.
 - **Daily poll cron `0 23 * * *` → `0 15 * * *`** in `.github/workflows/daily-poll.yml`. 15:00 UTC = 08:00 PDT (now) / 07:00 PST (winter). GitHub cron can't follow DST, so this is biased early (like the newsletter cron) to stay a morning alert year-round and absorb the 10–60 min cron delay. "8am PST" read as 8am Pacific local; if exact-8am-in-winter is preferred instead, use `0 16 * * *` (9am PDT / 8am PST).
 - **Behaviour shift:** 08:00 runs BEFORE the day's cd.io crawl (~09:00–15:00 Pacific), so each morning's alert now covers the PRIOR day's detections via the 25h lookback. No changes dropped; Friday's crawl is alerted Saturday 08:00. The insight de-dup from 2026-06-08 is unchanged.

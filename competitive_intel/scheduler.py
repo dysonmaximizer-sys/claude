@@ -41,10 +41,11 @@ def monthly_newsletter_job():
 def main():
     scheduler = BlockingScheduler(timezone="UTC")
 
-    # Daily poll — every day at 06:00 UTC
+    # Daily poll — business days at 15:00 UTC (08:00 PDT / 07:00 PST).
+    # Mirrors .github/workflows/daily-poll.yml (the production path).
     scheduler.add_job(
         daily_poll_job,
-        trigger=CronTrigger(hour=6, minute=0),
+        trigger=CronTrigger(day_of_week="mon-fri", hour=15, minute=0),
         id="daily_poll",
         name="Daily changedetection.io poll",
         misfire_grace_time=3600,
@@ -60,7 +61,7 @@ def main():
     )
 
     logger.info("Scheduler started. Jobs:")
-    logger.info("  • Daily poll:         daily at 06:00 UTC")
+    logger.info("  • Daily poll:         business days at 15:00 UTC")
     logger.info("  • Monthly newsletter: 1st of month at 09:00 UTC")
     logger.info("Press Ctrl+C to stop.\n")
 
