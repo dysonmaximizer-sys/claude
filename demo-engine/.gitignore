@@ -1,0 +1,3 @@
+manifests/
+.env
+__pycache__/
