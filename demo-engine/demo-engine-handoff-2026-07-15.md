@@ -34,9 +34,15 @@ and ~95% complete.
   self-serve (gated on demand) → P5 recording-analysis loop.
 
 ## Open items & blockers
+- GitHub push blocked: stored credential for github.com expired
+  (remote: dysonmaximizer-sys/claude, https). Two local commits waiting.
+  Lewis must mint a new GitHub token/credential; Claude cannot handle it.
+- Lewis UI-verified 2026-07-15: story looks right. Two issues he found
+  (Marina's blank Date Last Contacted; times displaying non-Pacific) were
+  BOTH FIXED same day — see CLAUDE.md for the tz rule (7b) and the
+  LastContactDate finding. All 6 record times shifted +7h and verified;
+  audit notes swept.
 - Marina's birthday UDF was set via API — visually confirm it shows in UI.
-- "Last contacted" derivation unverified (does it update from back-dated
-  interactions?).
 - "Account up since April" (tour step 4) is dealer-feed data, NOT
   fabricable via CRM API — needs product conversation before Storylane
   capture, or the capture avoids that panel.

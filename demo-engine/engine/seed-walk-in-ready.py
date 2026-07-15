@@ -50,9 +50,18 @@ TODAY = datetime.now()
 
 
 def d(days_offset: int, hm: str = "10:00") -> str:
-    """Local-naive datetime string, days_offset relative to today."""
+    """Datetime string for the API, days_offset relative to today.
+
+    hm is the INTENDED Pacific wall-clock time. The Octopus API stores naive
+    datetimes as UTC and the tenant displays them in Pacific, so we convert
+    Pacific -> UTC here (validated 2026-07-15: unconverted times displayed
+    7h early, e.g. calls at 3am)."""
+    from zoneinfo import ZoneInfo
     day = TODAY + timedelta(days=days_offset)
-    return day.strftime(f"%Y-%m-%dT{hm}:00")
+    hour, minute = int(hm[:2]), int(hm[3:5])
+    local = day.replace(hour=hour, minute=minute, second=0, microsecond=0,
+                        tzinfo=ZoneInfo("America/Vancouver"))
+    return local.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%S")
 
 
 def call(endpoint: str, payload: dict, quiet: bool = False) -> dict:

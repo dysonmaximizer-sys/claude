@@ -25,6 +25,10 @@ report results, don't make him read code.
    ages 65/71/18).
 7. **Dates are relative, never hardcoded.** Stories are seeded the morning
    of a recording and must be true that day.
+7b. **Times are Pacific, converted to UTC before sending.** The API stores
+   naive datetimes as UTC and the tenant displays Pacific; unconverted
+   times show 7-8h early (validated 2026-07-15: a 10:00 call displayed as
+   3am). Use zoneinfo America/Vancouver -> UTC (see `d()` in the seeder).
 8. **Python 3.9 on Lewis's Mac:** `Optional[str]`, never `str | None`.
 
 ## Auth
@@ -77,8 +81,19 @@ Blocked:
   history only enters via real Outlook capture. Design stories around
   calls + notes, or send real emails between demo mailboxes.
 
-Open:
-- **"Last contacted" date:** assumed derived from interactions; verify.
+- **Date Last Contacted** = assignable UDF `Udf/$TYPEID(60059)` — set it
+  directly with a date string ("2026-06-10"); it does NOT populate from
+  back-dated interactions (validated 2026-07-15: Marina's stayed blank
+  despite her June call). "Days Since Last Contacted" ($TYPEID(838)) is a
+  formula off it — never write.
+- **Note queries:** link field is `ParentKey` (NOT AbEntryKey); Note has no
+  CreationDate property and DateTime rejects $GT — read all notes for the
+  parent and filter client-side.
+- **Audit notes observed** (auto-logged on the parent entry, stamped now):
+  "Hotlist Task Created/Modified: ...", "Opportunity created for: ...".
+  Sweep these after every seed/update run (rule 5).
+- **PAT user is LDYSON, display name "Barb Smith"** — audit notes say
+  "Barb Smith" but keys decode to User\LDYSON; same account.
 
 ## Workflow for "set up story X"
 

@@ -43,6 +43,17 @@ MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "manif
 TODAY = datetime.now()
 
 
+def pac(day: datetime, hm: str) -> str:
+    """Intended Pacific wall-clock time -> UTC string for the API.
+    The API stores naive datetimes as UTC; the tenant displays Pacific
+    (validated 2026-07-15: unconverted times displayed 7h early)."""
+    from zoneinfo import ZoneInfo
+    hour, minute = int(hm[:2]), int(hm[3:5])
+    local = day.replace(hour=hour, minute=minute, second=0, microsecond=0,
+                        tzinfo=ZoneInfo("America/Vancouver"))
+    return local.astimezone(ZoneInfo("UTC")).strftime("%Y-%m-%dT%H:%M:%S")
+
+
 def call(endpoint: str, payload: dict, quiet: bool = False) -> dict:
     r = requests.post(
         f"{BASE}/{endpoint}",
@@ -160,8 +171,8 @@ def main() -> None:
         "Description": "Marina called asking whether to convert Daria's RESP to instalments for "
                        "first-year tuition or take the lump sum. Not yet answered - open item for the review.",
         "Type": "60001",
-        "StartDate": when.strftime("%Y-%m-%dT11:15:00"),
-        "EndDate": when.strftime("%Y-%m-%dT11:27:00"),
+        "StartDate": pac(when, "11:15"),
+        "EndDate": pac(when, "11:27"),
         "User": "$CURRENTUSER()",
         "AbEntryKey": hh,
         "Direction": 1,
@@ -170,7 +181,7 @@ def main() -> None:
              "June call - open RESP question")
     data = call("Create", {"Note": {"Data": {
         "Key": None, "ParentKey": hh,
-        "DateTime": when.strftime("%Y-%m-%dT11:30:00"),
+        "DateTime": pac(when, "11:30"),
         "Text": "OPEN ITEM: Marina asked (call) - RESP maturity: instalments vs lump sum for Daria's "
                 "first year. Promised options at the annual review.",
     }}})
