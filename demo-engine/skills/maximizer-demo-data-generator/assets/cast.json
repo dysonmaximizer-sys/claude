@@ -1,0 +1,3640 @@
+{
+  "meta": {
+    "source": "Maximizer Address Book export, 77 records, IDs preserved",
+    "date_format": "%Y-%m-%d",
+    "output_columns": [
+      "Company",
+      "First Name",
+      "Last Name",
+      "Address Line 1",
+      "Address Line 2",
+      "City / Town",
+      "State / County / Province",
+      "Website",
+      "Account Manager",
+      "Email Address",
+      "Department",
+      "Division",
+      "Phone 1",
+      "Mr/Ms",
+      "Position",
+      "Country",
+      "Creation Date",
+      "Creator",
+      "Email opt-in type",
+      "IDentification",
+      "Last Modified Date",
+      "Lead Status",
+      "Modified By",
+      "Sales Lead",
+      "Territory",
+      "Territory Status",
+      "Zip / Postal Code",
+      "Entry Type",
+      "Next KYC Review",
+      "Last KYC Review",
+      "Days Since Last KYC Review",
+      "Birthdate"
+    ],
+    "formula_fields_never_written": [
+      "Days Since Last KYC Review"
+    ],
+    "kyc_cycle_days": 365,
+    "enrichment_note": "Missing basic fields filled with deterministic fake data 2026-07-02: emails @mail.test, 555 phones, fictional street addresses, contacts inherit household/company address. All fabricated values are clearly fake and safe (reserved domains, 555 numbers).",
+    "canonical_home": "demo-engine/cast/cast.json (git) - the skill's bundled assets/cast.json is a fallback copy",
+    "engine_protected_records": {
+      "note": "Created and owned by the Demo Engine via API - a bulk CSV refresh must never create, rename, or collide with these. Keys live in manifests/.",
+      "records": [
+        "Sokolov Family (Household)",
+        "Viktor Sokolov",
+        "Marina Sokolova",
+        "Daria Sokolova"
+      ]
+    }
+  },
+  "records": [
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Bozik",
+        "Address Line 1": "6175 Lakeshore Rd",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-9698",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2026-05-29",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260529252141215290017C",
+        "Last Modified Date": "2026-05-29",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "T7S 8E0",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Cameron Family",
+        "Address Line 1": "1323 2nd Ave.",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 601-8555",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251337067160003C",
+        "Last Modified Date": "2026-06-22",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "K7Y 3P7",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Hartfield Family",
+        "Address Line 1": "1335 Gibson Rd",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-8560",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200624252001302150353C",
+        "Last Modified Date": "2024-04-03",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V1Y7R1",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Jones Family",
+        "Address Line 1": "223 Main St",
+        "Address Line 2": "",
+        "City / Town": "Seattle",
+        "State / County / Province": "WA",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-3834",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150226252336011640001C",
+        "Last Modified Date": "2024-04-05",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "34235",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Lewis Household",
+        "Address Line 1": "1915 Despina Mills, North Renato",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "WA",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "jnapoli@gmail.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-3475",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416252221075500002C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "41857-2356",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Myles, Rick and Melissa",
+        "Address Line 1": "125 Harbour Street",
+        "Address Line 2": "",
+        "City / Town": "San Diego",
+        "State / County / Province": "CA",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(780) 555-5951",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150324251752418950198C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "90210",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Poulin, Jennifer and Wil",
+        "Address Line 1": "13230 Chalmers Drive",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(780) 555-8136",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251412469090005C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "T7T 0G6",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Renaud Household",
+        "Address Line 1": "2645 Prairie Rose Blvd",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 555-4347",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2026-06-23",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260623252152473450028C",
+        "Last Modified Date": "2026-06-23",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V4G 4J3",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Roberts Household",
+        "Address Line 1": "1064 Birchwood Cres",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-4421",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "211207251621032200062C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V5R 2P4",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Robertson Household",
+        "Address Line 1": "2245 Wellington St W",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-8685",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210915251823458800149C",
+        "Last Modified Date": "2024-04-03",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V0Y 2B6",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Rogers Household",
+        "Address Line 1": "336 Arnold Ave",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-4818",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150123250045246270010C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V8S3L7",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Smith Household",
+        "Address Line 1": "2850 Prairie Rose Blvd",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-7499",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210514251719307370066C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "T2T 1K9",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Smith Household",
+        "Address Line 1": "4089 Okanagan Landing Rd",
+        "Address Line 2": "",
+        "City / Town": "Edmonton",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(780) 555-3250",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210528251651258230095C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "T8S 3G9",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Smith, Celine and Pete",
+        "Address Line 1": "1234 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "ON",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-9496",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251420346160007C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V3R 4A1",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Thomas Household",
+        "Address Line 1": "679 Conroy Station, Myeshamouth, NM",
+        "Address Line 2": "",
+        "City / Town": "Dallas",
+        "State / County / Province": "",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "james@gmail.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 289-7890",
+        "Mr/Ms": "Mr.",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251634101030003C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "28875-8352",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "",
+        "Last Name": "Vincent  Household",
+        "Address Line 1": "5796 Wellington St W",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-4553",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210913251733320280117C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V5X 4T8",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Bernie",
+        "Last Name": "Jones",
+        "Address Line 1": "223 Main St",
+        "Address Line 2": "",
+        "City / Town": "Seattle",
+        "State / County / Province": "WA",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "bernie.jones@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "602-000-0000",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150226252336011640001C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "34235",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1952-02-26"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Bill",
+        "Last Name": "Roberts",
+        "Address Line 1": "1064 Birchwood Cres",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "bill.roberts@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-4421",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "211207251621032200062C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V5R 2P4",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1982-08-16"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Bob",
+        "Last Name": "Rogers",
+        "Address Line 1": "336 Arnold Ave",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "bob.rogers@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-4818",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150123250045246270010C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V8S3L7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1973-10-31"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Brad",
+        "Last Name": "Hartfield",
+        "Address Line 1": "1335 Gibson Rd",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "brad.hartfield@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 555-6054",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200624252001302150353C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V1Y7R1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1969-12-24"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Brad",
+        "Last Name": "Smith",
+        "Address Line 1": "4089 Okanagan Landing Rd",
+        "Address Line 2": "",
+        "City / Town": "Edmonton",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "brad.smith@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(780) 555-3250",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210528251651258230095C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T8S 3G9",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1961-04-14"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Carlos",
+        "Last Name": "Renaud",
+        "Address Line 1": "2645 Prairie Rose Blvd",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "carlosrenaud@gomail.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(555) 012-7890",
+        "Mr/Ms": "Mr.",
+        "Position": "Lawyer",
+        "Country": "Canada",
+        "Creation Date": "2026-06-23",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260623252152473450028C",
+        "Last Modified Date": "2026-06-23",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V4G 4J3",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1960-07-10"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Celene",
+        "Last Name": "Smith",
+        "Address Line 1": "1234 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "ON",
+        "Website": "www.maximizer.com",
+        "Account Manager": "David Carter",
+        "Email Address": "escona@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "604-601-8000",
+        "Mr/Ms": "Ms.",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251420346160007C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V3R 4A1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1955-01-28"
+      },
+      "date_rules": {
+        "Birthdate": {
+          "rule": "turns",
+          "age": 71,
+          "in_days": 35
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "milestone-71"
+      ],
+      "note": "Turns 71 in 5 weeks. RRSP-to-RRIF conversion deadline story (Canadian age-71 rule)."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Deb",
+        "Last Name": "Vincent",
+        "Address Line 1": "5796 Wellington St W",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "deb.vincent@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-4553",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210913251733320280117C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V5X 4T8",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1979-04-10"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Elena",
+        "Last Name": "Thomas",
+        "Address Line 1": "679 Conroy Station, Myeshamouth, NM",
+        "Address Line 2": "",
+        "City / Town": "Dallas",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "elena@gmail.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 289-7890",
+        "Mr/Ms": "Ms.",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251634101030003C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "28875-8352",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1959-05-16"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Galena",
+        "Last Name": "Bozik",
+        "Address Line 1": "6175 Lakeshore Rd",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "galenabozik@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-9698",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2026-05-29",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260529252141215290017C",
+        "Last Modified Date": "2026-05-29",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T7S 8E0",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1963-05-27"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Household",
+        "Last Name": "Harris",
+        "Address Line 1": "Suite 830 7900 Bobby Springs, West Pinkie",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "TX",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "jnapoli@gmail.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 289-7890",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416252218478820001C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "52313",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Jameson",
+        "Last Name": "Thomas",
+        "Address Line 1": "679 Conroy Station, Myeshamouth, NM",
+        "Address Line 2": "",
+        "City / Town": "Dallas",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "jameson.thomas@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 289-7890",
+        "Mr/Ms": "Mr.",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251634101030003C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "28875-8352",
+        "Entry Type": "Contact",
+        "Next KYC Review": "2023-04-16",
+        "Last KYC Review": "2023-04-16",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1959-04-01"
+      },
+      "date_rules": {
+        "Birthdate": {
+          "rule": "turns",
+          "age": 65,
+          "in_days": 21
+        },
+        "Last KYC Review": {
+          "rule": "days_from_today",
+          "days": -12
+        },
+        "Next KYC Review": {
+          "rule": "days_from_today",
+          "days": 353
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "milestone-65",
+        "kyc-current"
+      ],
+      "note": "Turns 65 in 3 weeks. Insurance policy renewal / retirement-milestone workflows. KYC freshly completed."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Jane",
+        "Last Name": "Jones",
+        "Address Line 1": "223 Main St",
+        "Address Line 2": "",
+        "City / Town": "Seattle",
+        "State / County / Province": "WA",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "trevor.jones@escona.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "604-000-0000",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150226252336011640001C",
+        "Last Modified Date": "2023-06-22",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "34235",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1950-02-23"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Jane",
+        "Last Name": "Robertson",
+        "Address Line 1": "2245 Wellington St W",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "jane.robertson@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-8685",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210915251823458800149C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V0Y 2B6",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1962-04-17"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Jennifer",
+        "Last Name": "Poulin",
+        "Address Line 1": "13230 Chalmers Drive",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "www.maximizer.com",
+        "Account Manager": "David Carter",
+        "Email Address": "jnapoli@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "664-681-8473",
+        "Mr/Ms": "Ms.",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251412469090005C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T7T 0G6",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1954-07-17"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Jessica",
+        "Last Name": "Roberts",
+        "Address Line 1": "1234 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "ON",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "jnapoli@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "604-601-8000",
+        "Mr/Ms": "Ms.",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251420346160007C",
+        "Last Modified Date": "2023-06-22",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V3R 4A1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1975-02-03"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Jim",
+        "Last Name": "Smith",
+        "Address Line 1": "2850 Prairie Rose Blvd",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "jim.smith@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-7499",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210514251719307370066C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T2T 1K9",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1974-02-24"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Joe",
+        "Last Name": "Robertson",
+        "Address Line 1": "2245 Wellington St W",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "joe.robertson@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-8685",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "210915251823458800149C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V0Y 2B6",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1997-06-16"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Joey",
+        "Last Name": "Poulin",
+        "Address Line 1": "13230 Chalmers Drive",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "joey.poulin@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(780) 555-8136",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251412469090005C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T7T 0G6",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1989-08-25"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "John",
+        "Last Name": "Smith",
+        "Address Line 1": "4885 Wellington St W",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "ON",
+        "Website": "",
+        "Account Manager": "David Dennis",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-7773",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "190827252123532390235C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "K5N 4L6",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Lou",
+        "Last Name": "Cameron",
+        "Address Line 1": "1323 2nd Ave.",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "jnapoli@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "403-289-7890",
+        "Mr/Ms": "Mr.",
+        "Position": "Husband",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251337067160003C",
+        "Last Modified Date": "2026-03-17",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "K7Y 3P7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "2017-10-05",
+        "Last KYC Review": "2017-10-05",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1953-05-12"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "days_from_today",
+          "days": -420
+        },
+        "Next KYC Review": {
+          "rule": "days_from_today",
+          "days": -55
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "kyc-overdue"
+      ],
+      "note": "KYC review 55 days overdue. Compliance alert / overdue-review workflow demos."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Lou",
+        "Last Name": "Harris",
+        "Address Line 1": "Suite 830 7900 Bobby Springs, West Pinkie",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "TX",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "lou@outlook.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 289-7890",
+        "Mr/Ms": "Mr.",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416252218478820001C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "52313",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1959-05-15"
+      },
+      "date_rules": {
+        "Birthdate": {
+          "rule": "turns",
+          "age": 65,
+          "in_days": 45
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "milestone-65"
+      ],
+      "note": "Second 65th-birthday candidate, ~6 weeks out. Backup for renewal workflow demos."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Luke",
+        "Last Name": "Tremblay",
+        "Address Line 1": "4846 Okanagan Landing Rd",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "marketing@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-9726",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2026-06-23",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260529252151351070017C",
+        "Last Modified Date": "2026-06-23",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T7K 4A8",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1988-10-28"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Marcella",
+        "Last Name": "Bielsa",
+        "Address Line 1": "2645 Prairie Rose Blvd",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "marcella.bielsa@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(555) 012-7891",
+        "Mr/Ms": "Mrs.",
+        "Position": "Notary",
+        "Country": "Canada",
+        "Creation Date": "2026-06-23",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260623252152473450028C",
+        "Last Modified Date": "2026-06-23",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V4G 4J3",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1956-03-08"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Margaret",
+        "Last Name": "Tremblay",
+        "Address Line 1": "4846 Okanagan Landing Rd",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "margaretremblay010@gmail.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-8843",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2026-05-29",
+        "Creator": "Lewis Dyson",
+        "Email opt-in type": "",
+        "IDentification": "260529252151351070017C",
+        "Last Modified Date": "2026-06-23",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "T7K 4A8",
+        "Entry Type": "Household",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Melissa",
+        "Last Name": "Myles",
+        "Address Line 1": "125 Harbour Street",
+        "Address Line 2": "",
+        "City / Town": "San Diego",
+        "State / County / Province": "CA",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "melissa.myles@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(780) 555-5951",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150324251752418950198C",
+        "Last Modified Date": "2024-03-27",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "90210",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1941-10-20"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "estate-planning"
+      ],
+      "note": "Oldest client (b. 1941). Estate planning and beneficiary conversation stories."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Nancy",
+        "Last Name": "Cameron",
+        "Address Line 1": "1323 2nd Ave.",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "nancy.cameron@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "403-421-1898",
+        "Mr/Ms": "Ms.",
+        "Position": "Wife",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251337067160003C",
+        "Last Modified Date": "2026-06-22",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "K7Y 3P7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "2017-01-31",
+        "Last KYC Review": "2017-01-31",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1963-10-09"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "days_from_today",
+          "days": -351
+        },
+        "Next KYC Review": {
+          "rule": "days_from_today",
+          "days": 14
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "kyc-due-soon"
+      ],
+      "note": "KYC due in 2 weeks. Upcoming-review dashboards and reminder automations."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Paige",
+        "Last Name": "Hartfield",
+        "Address Line 1": "1335 Gibson Rd",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "paige.hartfield@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-8560",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200624252001302150353C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V1Y7R1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1975-02-04"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Paula",
+        "Last Name": "Cameron",
+        "Address Line 1": "1323 2nd Ave.",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "paula.cameron@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 601-8000",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251337067160003C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "K7Y 3P7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "2006-02-28"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "minor-child"
+      ],
+      "note": "Cameron child. Household/beneficiary views."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Pete",
+        "Last Name": "Smith",
+        "Address Line 1": "1234 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "ON",
+        "Website": "www.maximizer.com",
+        "Account Manager": "David Carter",
+        "Email Address": "escona@maximizer.com",
+        "Department": "Professional Services",
+        "Division": "",
+        "Phone 1": "604-601-8000",
+        "Mr/Ms": "Mr.",
+        "Position": "CFO",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251420346160007C",
+        "Last Modified Date": "2023-06-22",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V3R 4A1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1950-10-11"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Rick",
+        "Last Name": "Myles",
+        "Address Line 1": "125 Harbour Street",
+        "Address Line 2": "",
+        "City / Town": "San Diego",
+        "State / County / Province": "CA",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "rick.myles@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "232-323-2322",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "150324251752418950198C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "90210",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1978-03-16"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Robert",
+        "Last Name": "Roberts",
+        "Address Line 1": "1234 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "ON",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "robert.roberts@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 555-9496",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251420346160007C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V3R 4A1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1992-10-04"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Roberto",
+        "Last Name": "Cameron",
+        "Address Line 1": "1323 2nd Ave.",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "roberto.cameron@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 601-8555",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251337067160003C",
+        "Last Modified Date": "2026-03-17",
+        "Lead Status": "",
+        "Modified By": "Lewis Dyson",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "K7Y 3P7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "2007-09-09"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "minor-child"
+      ],
+      "note": "Cameron child."
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Sophia",
+        "Last Name": "Harris",
+        "Address Line 1": "Suite 830 7900 Bobby Springs, West Pinkie",
+        "Address Line 2": "",
+        "City / Town": "Ottawa",
+        "State / County / Province": "TX",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "sophia.harris@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(403) 289-7890",
+        "Mr/Ms": "Ms.",
+        "Position": "",
+        "Country": "United States",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416252218478820001C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "52313",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1959-05-15"
+      },
+      "date_rules": {
+        "Last KYC Review": {
+          "rule": "seeded_window",
+          "min_days": -330,
+          "max_days": -40
+        },
+        "Next KYC Review": {
+          "rule": "kyc_cycle"
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "background-client"
+      ]
+    },
+    {
+      "fields": {
+        "Company": "",
+        "First Name": "Wilson",
+        "Last Name": "Poulin",
+        "Address Line 1": "13230 Chalmers Drive",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "jnapoli@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "604-601-8000",
+        "Mr/Ms": "Mr.",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130708251412469090005C",
+        "Last Modified Date": "2023-06-22",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "T7T 0G6",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1949-05-17"
+      },
+      "date_rules": {
+        "Birthdate": {
+          "rule": "turns",
+          "age": 77,
+          "in_days": 5
+        },
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "birthday-this-week"
+      ],
+      "note": "Birthday in 5 days (77th, non-milestone). Happy-birthday message automation demos."
+    },
+    {
+      "fields": {
+        "Company": "ABC Business Solutions I",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "333 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "www.abcbusinesssolutio.example.com",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-3170",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200211250425282060023C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "D3DR2E",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "ABC Business Solutions I",
+        "First Name": "Bob",
+        "Last Name": "Nye",
+        "Address Line 1": "333 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Calgary",
+        "State / County / Province": "AB",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "bob.nye@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(613) 555-3170",
+        "Mr/Ms": "",
+        "Position": "Office Manager",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200211250425282060023C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "D3DR2E",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1964-09-27"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Advocis Publishing Inc",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "325 Wharf Street",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "www.acmevictoria.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "info@acme-victoria.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 123-1234",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180918250005160110004C",
+        "Last Modified Date": "2024-04-11",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V9L3R4",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Advocis Publishing Inc",
+        "First Name": "Bill",
+        "Last Name": "Graham",
+        "Address Line 1": "325 Wharf Street",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "www.acmerichmond.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "bill.graham@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 123-1234",
+        "Mr/Ms": "",
+        "Position": "President",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180918250005160110004C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V9L3R4",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1975-07-17"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Advocis Publishing Inc",
+        "First Name": "Nagham",
+        "Last Name": "Smith",
+        "Address Line 1": "325 Wharf Street",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "www.acmevictoria.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "nagham.smith@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 123-1234",
+        "Mr/Ms": "",
+        "Position": "Operations Director",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180918250005160110004C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V9L3R4",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1961-12-03"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Advocis Publishing Inc",
+        "First Name": "Tasha",
+        "Last Name": "Graham",
+        "Address Line 1": "325 Wharf Street",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "www.acmevictoria.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "tasha@acmevictoria.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 123-1234",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180918250005160110004C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V9L3R4",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "2010-12-01"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": [
+        "minor-child"
+      ],
+      "note": "Graham child."
+    },
+    {
+      "fields": {
+        "Company": "Church's Chicken",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "3434 Fraser St",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "www.churchschicken.example.com",
+        "Account Manager": "Barb Smith",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-4776",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200211252232100480591C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V4E1W2",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Church's Chicken",
+        "First Name": "Bill",
+        "Last Name": "Church",
+        "Address Line 1": "3434 Fraser St",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "bill@churcheschicken.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 000-0000",
+        "Mr/Ms": "",
+        "Position": "Partner",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200211252232100480591C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V4E1W2",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1989-02-24"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Dr. Don Simmons Inc",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "23234 Harbour St",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "www.drdonsimmonsinc.example.com",
+        "Account Manager": "David Carter",
+        "Email Address": "escona@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 000-0000",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "170830251913540080081C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V3E1W3",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Guardian Risk Managers",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "15252 32 Ave #205, Surrey, BC",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "www.guardianriskmanage.example.com",
+        "Account Manager": "David Carter",
+        "Email Address": "advisor@guardian.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 522-8870",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251625352200001C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V3Z 0R7",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Guardian Risk Managers",
+        "First Name": "Karen",
+        "Last Name": "Wiznes",
+        "Address Line 1": "15252 32 Ave #205, Surrey, BC",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "karen.wiznes@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 522-8870",
+        "Mr/Ms": "Ms.",
+        "Position": "CFO",
+        "Country": "Canada",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251625352200001C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V3Z 0R7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1953-05-30"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Holmes and Company Law F",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "1500 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "www.holmesandcompanyla.example.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(902) 555-9365",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180531250305045670007C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V5S2E3",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Holmes and Company Law F",
+        "First Name": "Rick",
+        "Last Name": "Williams",
+        "Address Line 1": "1500 Main Street",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "Rick@rick.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 502-0003",
+        "Mr/Ms": "",
+        "Position": "Lawyer",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180531250305045670007C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V5S2E3",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1986-09-10"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Maximizer Services",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "210-10720 Cambie Road",
+        "Address Line 2": "",
+        "City / Town": "Richmond",
+        "State / County / Province": "BC",
+        "Website": "www.escona.com",
+        "Account Manager": "David Carter",
+        "Email Address": "info@escona.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 444-4444",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130705251600122470010C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V2E4F5",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Maximizer Services",
+        "First Name": "Bill",
+        "Last Name": "Diamond",
+        "Address Line 1": "210-10720 Cambie Road",
+        "Address Line 2": "",
+        "City / Town": "Richmond",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "bill@abc.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 123-0200",
+        "Mr/Ms": "",
+        "Position": "Lawyer",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130705251600122470010C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V2E4F5",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1972-11-23"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Maximizer Services",
+        "First Name": "Mary",
+        "Last Name": "Gratton",
+        "Address Line 1": "210-10720 Cambie Road",
+        "Address Line 2": "",
+        "City / Town": "Richmond",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "mary.gratton@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "604-000-0000",
+        "Mr/Ms": "",
+        "Position": "Partner",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130705251600122470010C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V2E4F5",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1944-04-12"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Maximizer Services",
+        "First Name": "Simon",
+        "Last Name": "McKinney",
+        "Address Line 1": "210-10720 Cambie Road",
+        "Address Line 2": "",
+        "City / Town": "Richmond",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "mckinney.simon@maximizer.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "412-123-4455",
+        "Mr/Ms": "Mr.",
+        "Position": "Operations Director",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "130705251600122470010C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V2E4F5",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1953-07-31"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Pusher Incorporated Law",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "1455",
+        "Address Line 2": "",
+        "City / Town": "Courtenay",
+        "State / County / Province": "BC",
+        "Website": "www.pusherincorporated.example.com",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 000-0000",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180531250404166550006C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V4E3W1",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Pusher Incorporated Law",
+        "First Name": "Tammy",
+        "Last Name": "Pusher",
+        "Address Line 1": "1455",
+        "Address Line 2": "",
+        "City / Town": "Courtenay",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "tammy@tammy.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 000-0000",
+        "Mr/Ms": "",
+        "Position": "Lawyer",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180531250404166550006C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V4E3W1",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1975-03-12"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Square One Insurance Services",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "1410-650 W Georgia St, Vancouver, BC",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "www.squareoneinsurance.example.com",
+        "Account Manager": "Barb Smith",
+        "Email Address": "square@insurance.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(855) 331-6933",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251628193670002C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V6B 4N7",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Square One Insurance Services",
+        "First Name": "Rick",
+        "Last Name": "Cameron Diaz",
+        "Address Line 1": "1410-650 W Georgia St, Vancouver, BC",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Barb Smith",
+        "Email Address": "rick.camerondiaz@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(855) 331-6933",
+        "Mr/Ms": "Mr.",
+        "Position": "CFO",
+        "Country": "Canada",
+        "Creation Date": "2024-04-16",
+        "Creator": "Barb Smith",
+        "Email opt-in type": "",
+        "IDentification": "240416251628193670002C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V6B 4N7",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1953-05-03"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Vera Burger",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "2400 Cornwall St",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "www.veraburger.example.com",
+        "Account Manager": "David Carter",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-4173",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200211252316375240003C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V8R4G5",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Vera Burger",
+        "First Name": "Bill",
+        "Last Name": "Burgerson",
+        "Address Line 1": "2400 Cornwall St",
+        "Address Line 2": "",
+        "City / Town": "Vancouver",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "David Carter",
+        "Email Address": "bill.burgerson@mail.test",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(604) 000-0000",
+        "Mr/Ms": "",
+        "Position": "Owner",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "200211252316375240003C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V8R4G5",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1956-01-21"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Viking Communications",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "1335 Gibson Rd",
+        "Address Line 2": "",
+        "City / Town": "Kelowna",
+        "State / County / Province": "BC",
+        "Website": "www.vikingcommunications.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "info@vikingcommunications.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 223-2223",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180918250024150830004C",
+        "Last Modified Date": "2023-05-09",
+        "Lead Status": "",
+        "Modified By": "BRAD (Deleted)",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V1Y7R1",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Wyatt Accounting Firm",
+        "First Name": "",
+        "Last Name": "",
+        "Address Line 1": "225 Wharf Street",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "www.wyattaccountingfir.example.com",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(250) 555-5025",
+        "Mr/Ms": "",
+        "Position": "",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180531250322244780005C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unassigned",
+        "Zip / Postal Code": "V1W2E3",
+        "Entry Type": "Company",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": ""
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    },
+    {
+      "fields": {
+        "Company": "Wyatt Accounting Firm",
+        "First Name": "Michael",
+        "Last Name": "Shannon",
+        "Address Line 1": "225 Wharf Street",
+        "Address Line 2": "",
+        "City / Town": "Victoria",
+        "State / County / Province": "BC",
+        "Website": "",
+        "Account Manager": "Lewis Dyson",
+        "Email Address": "michael@michael.com",
+        "Department": "",
+        "Division": "",
+        "Phone 1": "(444) 455-4444",
+        "Mr/Ms": "",
+        "Position": "Accountant",
+        "Country": "Canada",
+        "Creation Date": "2023-05-09",
+        "Creator": "BRAD (Deleted)",
+        "Email opt-in type": "",
+        "IDentification": "180531250322244780005C",
+        "Last Modified Date": "2024-04-16",
+        "Lead Status": "",
+        "Modified By": "Barb Smith",
+        "Sales Lead": "No",
+        "Territory": "",
+        "Territory Status": "Unknown",
+        "Zip / Postal Code": "V1W2E3",
+        "Entry Type": "Contact",
+        "Next KYC Review": "",
+        "Last KYC Review": "",
+        "Days Since Last KYC Review": "",
+        "Birthdate": "1963-07-07"
+      },
+      "date_rules": {
+        "Last Modified Date": {
+          "rule": "seeded_window",
+          "min_days": -21,
+          "max_days": -1
+        }
+      },
+      "tags": []
+    }
+  ]
+}

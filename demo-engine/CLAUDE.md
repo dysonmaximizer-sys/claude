@@ -43,8 +43,16 @@ chat; never commit it.
 - `engine/` — seeders and validation scripts
 - `stories/` — one spec per story slot (aha moments, not screen detail)
 - `manifests/` — created-record keys per seeded story (gitignored)
-- `cast/` — persistent cast registry (real Maximizer IDs; source of truth)
+- `cast/` — persistent cast registry: `cast.json`, 77 records with real
+  Maximizer IDs and date RULES (canonical since 2026-07; the
+  maximizer-demo-data-generator skill bundles a fallback copy — when the
+  cast changes, update BOTH and re-upload the skill). Its meta lists
+  engine_protected_records the CSV refresh must never touch.
 - `docs/` — validation findings and API notes
+- `skills/` — source of truth for the two claude.ai skills:
+  `maximizer-demo-engine` (stories, API seeding — this repo's front end)
+  and `maximizer-demo-data-generator` (bulk cast-refresh CSV only).
+  Edit here, commit, then re-upload to claude.ai so they stay in lockstep.
 
 ## Validated tenant knowledge (tested July 2026)
 
