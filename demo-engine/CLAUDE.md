@@ -27,8 +27,14 @@ report results, don't make him read code.
    of a recording and must be true that day.
 7b. **Times are Pacific, converted to UTC before sending.** The API stores
    naive datetimes as UTC and the tenant displays Pacific; unconverted
-   times show 7-8h early (validated 2026-07-15: a 10:00 call displayed as
-   3am). Use zoneinfo America/Vancouver -> UTC (see `d()` in the seeder).
+   times show hours early (validated 2026-07-15: a 10:00 call displayed as
+   3am). Always convert via zoneinfo America/Vancouver -> UTC (see `d()`
+   in the seeder) — never hardcode an offset: B.C. adopted PERMANENT
+   daylight time in 2026 (UTC-7 year-round from Nov 1, 2026; no more
+   fall-back), and zoneinfo already knows this.
+   WATCH ITEM (first week of Nov 2026): if Maximizer's tenant timezone
+   follows US Pacific (which still falls back), all displayed times will
+   drift 1h early after Nov 1. Check one appointment time in the UI then.
 8. **Python 3.9 on Lewis's Mac:** `Optional[str]`, never `str | None`.
 
 ## Auth
@@ -90,10 +96,12 @@ Blocked:
   calls + notes, or send real emails between demo mailboxes.
 
 - **Date Last Contacted** = assignable UDF `Udf/$TYPEID(60059)` — set it
-  directly with a date string ("2026-06-10"); it does NOT populate from
+  directly with a date string ("2026-06-10"). It does NOT populate from
   back-dated interactions (validated 2026-07-15: Marina's stayed blank
-  despite her June call). "Days Since Last Contacted" ($TYPEID(838)) is a
-  formula off it — never write.
+  despite her June call), but same-day actions CAN auto-set it (the
+  household picked up the seed date, likely from appointment/task
+  creation). The refresh script rolls it wherever set. "Days Since Last
+  Contacted" ($TYPEID(838)) is a formula off it — never write.
 - **Note queries:** link field is `ParentKey` (NOT AbEntryKey); Note has no
   CreationDate property and DateTime rejects $GT — read all notes for the
   parent and filter client-side.

@@ -57,8 +57,13 @@ UI check); `.env` created at repo root with PAT, confirmed gitignored.
 Commit/push still pending Lewis's go-ahead.
 4. Have Lewis eyeball Sokolov household vs `stories/walk-in-ready.md`
    checklist, then record the Storylane capture.
-5. Build the refresh script (roll dates on manifest records + sweep audit
-   notes) — this is the Phase 2 core.
+5. ~~Build the refresh script~~ DONE 2026-07-16: `engine/refresh-story.py`
+   (generic, manifest-driven, --dry-run and --as-of for testing, Pacific
+   day-math via zoneinfo, rolls Date Last Contacted, sweeps audit notes,
+   read-back verified). Live-tested: rolled the story +1 day on 2026-07-16.
+   Manifest now carries a "refreshed" anchor date. Skills uploaded to
+   claude.ai (maximizer-demo-engine new; demo-data-generator corrected);
+   sources in `skills/`, keep in lockstep per CLAUDE.md.
 6. Draft Meena one-pager from `docs/` + validation results (Lewis will ask).
 
 ## Tool knowledge & gotchas
