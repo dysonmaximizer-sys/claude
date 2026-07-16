@@ -50,53 +50,10 @@
         "Marina Sokolova",
         "Daria Sokolova"
       ]
-    }
+    },
+    "bozik_removed": "2026-07-16: Bozik/Galena rows deleted from tenant (wizard-test orphans) and from this registry"
   },
   "records": [
-    {
-      "fields": {
-        "Company": "",
-        "First Name": "",
-        "Last Name": "Bozik",
-        "Address Line 1": "6175 Lakeshore Rd",
-        "Address Line 2": "",
-        "City / Town": "Calgary",
-        "State / County / Province": "AB",
-        "Website": "",
-        "Account Manager": "Barb Smith",
-        "Email Address": "",
-        "Department": "",
-        "Division": "",
-        "Phone 1": "(403) 555-9698",
-        "Mr/Ms": "",
-        "Position": "",
-        "Country": "Canada",
-        "Creation Date": "2026-05-29",
-        "Creator": "Lewis Dyson",
-        "Email opt-in type": "",
-        "IDentification": "260529252141215290017C",
-        "Last Modified Date": "2026-05-29",
-        "Lead Status": "",
-        "Modified By": "Lewis Dyson",
-        "Sales Lead": "No",
-        "Territory": "",
-        "Territory Status": "Unassigned",
-        "Zip / Postal Code": "T7S 8E0",
-        "Entry Type": "Household",
-        "Next KYC Review": "",
-        "Last KYC Review": "",
-        "Days Since Last KYC Review": "",
-        "Birthdate": ""
-      },
-      "date_rules": {
-        "Last Modified Date": {
-          "rule": "seeded_window",
-          "min_days": -21,
-          "max_days": -1
-        }
-      },
-      "tags": []
-    },
     {
       "fields": {
         "Company": "",
@@ -1200,50 +1157,6 @@
       "tags": [
         "background-client"
       ]
-    },
-    {
-      "fields": {
-        "Company": "",
-        "First Name": "Galena",
-        "Last Name": "Bozik",
-        "Address Line 1": "6175 Lakeshore Rd",
-        "Address Line 2": "",
-        "City / Town": "Calgary",
-        "State / County / Province": "AB",
-        "Website": "",
-        "Account Manager": "Barb Smith",
-        "Email Address": "galenabozik@maximizer.com",
-        "Department": "",
-        "Division": "",
-        "Phone 1": "(403) 555-9698",
-        "Mr/Ms": "",
-        "Position": "",
-        "Country": "Canada",
-        "Creation Date": "2026-05-29",
-        "Creator": "Lewis Dyson",
-        "Email opt-in type": "",
-        "IDentification": "260529252141215290017C",
-        "Last Modified Date": "2026-05-29",
-        "Lead Status": "",
-        "Modified By": "Lewis Dyson",
-        "Sales Lead": "No",
-        "Territory": "",
-        "Territory Status": "Unknown",
-        "Zip / Postal Code": "T7S 8E0",
-        "Entry Type": "Contact",
-        "Next KYC Review": "",
-        "Last KYC Review": "",
-        "Days Since Last KYC Review": "",
-        "Birthdate": "1963-05-27"
-      },
-      "date_rules": {
-        "Last Modified Date": {
-          "rule": "seeded_window",
-          "min_days": -21,
-          "max_days": -1
-        }
-      },
-      "tags": []
     },
     {
       "fields": {

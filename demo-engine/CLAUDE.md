@@ -80,6 +80,33 @@ Works:
   (`Udf/$NAME(WM_KYC etc.\Personal\Birthdate)`), not the bare field name.
   DOB Month / 65th / 71st Birthday Date are formula UDFs (Assignable=False)
   — never write them. Discover any UDF via Schema read: $TREE /AbEntry.
+- **Addresses (validated 2026-07-16):** AbEntry address fields are a
+  sub-object. READS of `Address/City` etc. through AbEntry Scope are
+  UNRELIABLE (return null even when set) — the only trustworthy read is
+  the Address object itself: Read `{"Address": {..., "Criteria":
+  {"SearchQuery": {"ParentKey": {"$EQ": <abentry key>}}}}}`. Entries can
+  hold several address variants (Description "*Main Address" Default=true
+  plus household copies); the UI shows the default. WRITES work via
+  AbEntry Update with nested `"Address": {"Key": <address key>, ...fields}`
+  (Code 0 means stored even though an immediate AbEntry-scope read may
+  show null — verify via the Address-object read).
+- **Segmentation** = enum UDF `Udf/$TAG(WME_CLIENTINFO_SEGMENTATION)`,
+  values 1=A Client, 2=B, 3=C, 4=D, 5=Gold. Write the key as a plain
+  string ("2"); reads return a list (["2"]).
+- **Next KYC Review** = date UDF `Udf/$TAG(WME_CLIENTINFO_REV_NEXTKYC)`,
+  accepts "YYYY-MM-DD".
+- **Type queries:** searching Type=Household returns ALL entries (the
+  tenant's ~82 dedupe to Individual/Contact/Company); households are
+  Company-typed internally (Sokolov Family). Count by deduped keys, never
+  by summing type queries.
+- **Rate limit:** the API returns 429 on fast loops. Pace bulk runs at
+  ~0.35s per call and honor Retry-After (see call() in
+  seed-busy-calendar.py). Budget ~1 min per 100 calls.
+- **Partial reads lie.** Address/City, Address/Default, and other
+  sub-object fields can return null/false on one read and the real value
+  on the next depending on the Scope requested. NEVER conclude data is
+  missing from a single AbEntry-scope read; confirm via the sub-object
+  read (Address by ParentKey) before writing "fixes".
 - **Task create shape:** `Activity` + `DateTime` + `AbEntryKey`.
   Subject, DueDate, and Description are NOT Task properties.
   Other assignable Task fields: AssignedTo, Priority, Completed, Alarm.

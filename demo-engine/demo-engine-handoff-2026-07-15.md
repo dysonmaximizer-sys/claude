@@ -1,5 +1,27 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-07-15 · Session: Cowork
+Updated: 2026-07-16 · Session: Claude Code
+
+## 2026-07-16 session (tour-prep pass)
+- **Profiles complete book-wide:** all 82 entries have full default
+  addresses (street/city/prov/postal/Canada), every client has
+  Segmentation (A/B/C/D/Gold spread; Sokolovs = Gold) and Next KYC Review
+  (spread 1-11 months; Sokolovs = 2027-04-15; pre-existing story-slot
+  values untouched). Verified via the reliable Address-by-ParentKey read.
+- **Bozik orphans deleted** (malformed May-29 wizard-test remnants:
+  first-nameless Individual + Galena Bozik Contact) — removed from tenant
+  AND from both cast.json copies (75 cast records remain).
+- **Busy calendar seeded:** 16 appointments Mon Jul 13 - Tue Jul 21, 7
+  linked to cast members (incl. Marina birthday call Jul 21). Own story
+  (stories/busy-calendar.md), seeder (engine/seed-busy-calendar.py),
+  manifest. Reseed per recording week; don't partial-week refresh.
+- **Walk In Ready tour beats now data-true:** 2:45 review today, spring
+  history, June RESP call+note+task+opportunity, Marina's birthday Jul 21
+  (next week). STILL BLOCKED: "account up since April" (dealer feed).
+- New tenant knowledge in CLAUDE.md: address sub-object read/write,
+  Segmentation/KYC UDF tags, 429 pacing, partial-read flakiness.
+- Open question for Lewis: book is 82 entries; See Your Whole Book needs
+  ~300 households (its own tour script says so) — bulk expansion is a
+  separate job awaiting his go.
 
 ## Context
 Internal tool ("Demo Engine") that generates and refreshes demo data in
