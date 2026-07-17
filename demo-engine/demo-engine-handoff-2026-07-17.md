@@ -1,5 +1,37 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-07-16 · Session: Claude Code
+Updated: 2026-07-17 · Session: Cowork
+
+## 2026-07-17 session (Sail Through Audits seed)
+- **Story 2 seeded: Sail Through Audits** (Demo Centre gated tour 2).
+  Renaud Family household (Ottawa) + Philippe (68) + Céline (65), NINE
+  years of history: 9 annual-review appointments + matching advice notes
+  (oldest 2017-07), 9 phone calls with direction/duration, profiles set
+  (Segmentation A, Next KYC +6mo, Date Last Contacted -9d). Open task
+  "Compile CIRO audit file" due +4d. 31 records + 1 patch call, manifest
+  `manifests/sail-through-audits-manifest.json`. Spec:
+  `stories/sail-through-audits.md`. Audit sweep ran (1 note); read-back
+  verified.
+- **NEW BLOCKED FINDING (in CLAUDE.md): Document create.** DocumentObject
+  rejects AbEntryKey/DocData/ParentKey shapes (ErrorCode -1023). Trails
+  carry documents via notes. Next avenue if needed: Schema $TREE /Document.
+- **Patch script** `engine/fix-sail-through-audits.py`: adds one incoming
+  call 9 days back (Céline OAS question) so Date Last Contacted matches a
+  real interaction — Lewis to run it (command in the script header). Fold
+  a years_ago=0 call into the seeder before any fresh re-seed.
+- **Tour script step 3 softened** (Demo Centre/maximizer-demo-centre-tour-
+  drafts.md): "every client conversation" replaces "every client email"
+  because email history can't be fabricated; build note added there.
+- **.env went missing from repo root** (created 2026-07-15 per this
+  handoff, absent 2026-07-17) — Lewis recreated it. If it vanishes again,
+  suspect a cleanup tool; consider documenting PAT storage location.
+- **Sandbox cannot reach api.maximizer.com** (Cowork network allowlist).
+  Engine runs stay on Lewis's Mac via pasted one-liners.
+- Pre-capture checklist for this story: Lewis eyeballs Renaud household
+  (9-year span, no >18mo gaps, task visible, no audit notes); runs the
+  patch script; sends 2-3 real emails between demo mailboxes; composes
+  Adam's CIRO forward natively in demo Outlook (asset in Demo Centre;
+  never Resend). Voice decision pending: this tour is second-person
+  Bridget while Walk In Ready moved to third-person Adam.
 
 ## 2026-07-16 session (tour-prep pass)
 - **Profiles complete book-wide:** all 82 entries have full default

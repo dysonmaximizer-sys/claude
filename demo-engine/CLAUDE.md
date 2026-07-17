@@ -121,6 +121,13 @@ Blocked:
   (email), 60003 (appointment), 60004 (task) on create/update. Email
   history only enters via real Outlook capture. Design stories around
   calls + notes, or send real emails between demo mailboxes.
+- **Document create: shape unknown (probed 2026-07-17).** DocumentObject
+  rejects properties `AbEntryKey`, `DocData` (ErrorCode -1023,
+  "doesn't support property"); `ParentKey`+`DocData` also rejected.
+  Three shapes tried in seed-sail-through-audits.py's probe_documents().
+  Next step if documents become story-critical: Schema read $TREE
+  /Document to discover assignable properties before trying again.
+  Until then, story trails carry "documents" via notes.
 
 - **Date Last Contacted** = assignable UDF `Udf/$TYPEID(60059)` — set it
   directly with a date string ("2026-06-10"). It does NOT populate from

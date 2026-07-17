@@ -106,13 +106,22 @@ Do not override this rule under any circumstance.
 
 Always begin with:
 ```
-[Month Year] Release Notes Preview
+What's New in Maximizer: [Month] [YYYY]
 ```
-Example: `October 2025 Release Notes Preview`
+Example: `What's New in Maximizer: October 2025`
 
 - No emojis
-- No introductory paragraph
-- Start immediately with the first feature
+
+### 1a. Intro Sentence (required)
+
+Immediately after the title, include exactly **one sentence** in Maximizer's voice that says what the email is and introduces the release notes, so it doesn't launch straight into features without context.
+
+- One sentence only, plain and value-led, no hype, no em dashes
+- Name the month and that these are the upcoming Maximizer Cloud release notes
+- Example: `Here's a preview of the new features and improvements coming in the June 2026 Maximizer Cloud release.`
+- Populates the `{{INTRO_SENTENCE}}` token in `email_template.html`
+
+Then start the first feature.
 
 ---
 
@@ -233,7 +242,9 @@ The Maximizer Team
 ## OUTPUT TEMPLATE (USE EXACTLY)
 
 ```
-[Month Year] Release Notes Preview
+What's New in Maximizer: [Month] [YYYY]
+
+[One-sentence intro in Maximizer's voice introducing the release notes.]
 
 [Feature Title]
 
@@ -260,17 +271,4 @@ The Maximizer Team
 [Link to Release Notes]
 
 The Maximizer Team
-```
-
----
-
-## OPTIONAL: FEEDBACK BLOCK
-
-Only include if explicitly requested. Format exactly:
-
-```
-Share your feedback
-
-We'd love to hear your thoughts on these updates.
-You can provide feedback through the in-app Feedback option, via Maximizer Support, or by reaching out to your Customer Success Manager.
 ```
