@@ -1,6 +1,21 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-22 session, part 3 (Sail Through Audits — insurance door)
+- **Story seeded: sail-through-audits-insurance** (distinct slug; the
+  FA-door Renaud/CIRO story of the same tour name is untouched). Per
+  Lewis: the CHEN family — Michael (52, logistics owner) + Grace (50),
+  Guelph ON. 27 records: 8 years of review appointments + suitability
+  notes (needs analyses signed, CI 2020, key-person 2021, seg fund 2022,
+  documented DI DECLINE 2023 — compliance-gold), 7 calls (latest: MGA
+  review notice, 3 days ago), task "Compile compliance file" due +5d.
+  Owners = MASTER per rule 10. No CIRO anywhere in this data. Verified
+  by read-backs; 1 audit note swept.
+- Manual before capture: policy rows + 4 document uploads
+  (docs/audits-insurance-manual-entries.md; Claude can generate the
+  fake PDFs on request) + the reviewer's email composed natively in the
+  demo mailbox.
+
 ## 2026-07-22 session, part 2 (Lewis feedback: no Lewis in demo data)
 - **NEW HARD RULE 10 in CLAUDE.md:** owner-type fields (Opportunity
   Leader, Task AssignedTo, InteractionLog User) are set explicitly in
