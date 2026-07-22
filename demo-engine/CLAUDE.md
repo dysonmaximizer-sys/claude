@@ -36,6 +36,7 @@ report results, don't make him read code.
    follows US Pacific (which still falls back), all displayed times will
    drift 1h early after Nov 1. Check one appointment time in the UI then.
 8. **Python 3.9 on Lewis's Mac:** `Optional[str]`, never `str | None`.
+9. No absolutist claims in value props: no every, all, never, zero. Claims must be plausible to a skeptical buyer. Punchy school.
 
 ## Auth
 
@@ -99,6 +100,24 @@ Works:
   tenant's ~82 dedupe to Individual/Contact/Company); households are
   Company-typed internally (Sokolov Family). Count by deduped keys, never
   by summing type queries.
+- **Insurance/coverage surface on AbEntry (validated 2026-07-22):**
+  **Life Insurance** = enum `Udf/$NAME(WM_Client Info\Additional
+  Info\Life Insurance)` (2=Yes, 1=No). **RESP balance** = currency
+  `Udf/$NAME(WM_KYC etc.\Balance Sheet\Liquid\RESP)`. **Named
+  beneficiary for life policies** = enum (Estate Planning folder, 2=Yes).
+  **Evaluate/initiate insurance plan** = enum 1-5 (Financial Planning
+  objectives). There is NO critical-illness or disability UDF — a CI/DI
+  "gap" is shown by absence plus recorded history (notes). Policy rows
+  (amounts, terms, conversion windows) remain the API-invisible Accounts
+  module: manual UI entry only.
+- **Person-level vs household UDFs:** Next/Last Insurance Needs Review
+  ($TYPEID(550)/$TYPEID(842)) write Code 0 on a household but store
+  NOTHING; they only persist on Individuals/Contacts (validated
+  2026-07-22). Segmentation, RESP balance, Date Last Contacted DO store
+  on households. When a household UDF write matters, always read back.
+- **Household create requires `CompanyName`** — `LastName` shapes fail
+  with "mandatory field" (ErrorCode -10010); the CLAUDE.md shape is the
+  only validated one.
 - **Rate limit:** the API returns 429 on fast loops. Pace bulk runs at
   ~0.35s per call and honor Retry-After (see call() in
   seed-busy-calendar.py). Budget ~1 min per 100 calls.
@@ -129,6 +148,33 @@ Blocked:
   /Document to discover assignable properties before trying again.
   Until then, story trails carry "documents" via notes.
 
+- **FA Intelligence renewal tiles (probed 2026-07-21):** NO Account /
+  Policy / Holding / Asset / Investment / InsurancePolicy /
+  FinancialAccount schema roots exist — the "Accounts - Upcoming
+  Renewals" tiles read AbEntry UDFs where they read anything writable.
+  Writable: **GIC Expiry Date** = `Udf/$TYPEID(575)` ("WM_Client
+  Info\GIC Expiry Date", date). **Group Benefits renewal** =
+  `Udf/$TYPEID(1082)` ("WME_Group Benefits - Companies\If yes, when is
+  their renewal date?", date, lives on Company entries). **Next / Last
+  Insurance Needs Review** = `Udf/$TYPEID(550)` / `Udf/$TYPEID(842)`
+  (dates, assignable). Formula, never write: Insurance Age $TYPEID(837),
+  Days Since Last Insurance Review $TYPEID(1003). Managed Segregated
+  Funds / Managed Mortgages / Annuities: no matching AbEntry UDFs —
+  likely the FSE Accounts module with no exposed API surface. CLOSED
+  2026-07-21: full schema enumeration (84 roots) has no Accounts-style
+  object, and /Custom, /CustomChild, /UdoDefinition are empty shells
+  (0 rows). The Accounts module is API-invisible, period. Feeding the
+  renewal tiles = manual UI entry only (see
+  docs/fa-intelligence-manual-accounts.md). Do not probe this again.
+  The report's "This Fiscal Year" filter: fiscal year = CALENDAR year
+  (inferred 2026-07-21 from KYC chart bucketing ending in December).
+  Keep seeded renewal/review dates inside the current calendar year or
+  the tiles drop them.
+- **Bill Graham is a broken record (2026-07-21):** AbEntry Update on him
+  returns Code 0 but UDF values read back null (confirmed twice, two
+  runs). He was already a suspected May-2026 wizard-test orphan (see
+  handoff). Never target him for stories or report seeding; candidate
+  for deletion after Lewis verifies nothing real hangs off him.
 - **Date Last Contacted** = assignable UDF `Udf/$TYPEID(60059)` — set it
   directly with a date string ("2026-06-10"). It does NOT populate from
   back-dated interactions (validated 2026-07-15: Marina's stayed blank

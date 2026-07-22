@@ -1,5 +1,35 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-07-17 · Session: Cowork
+Updated: 2026-07-22 · Session: Claude Code
+
+## 2026-07-22 session (Find the Coverage Gaps — insurance door)
+- **Story seeded: Find the Coverage Gaps** (insurance door, gated tour 2).
+  Tremblay Family household (Burnaby BC): Marc (42, self-employed, term
+  life $500K on record) + Sophie (39, $350K) + Leo (9) + Chloe (6).
+  RESP $38K, Segmentation B, Life Insurance = Yes + named beneficiaries
+  on both adults, insurance objective 4/5, Last Insurance Needs Review
+  -14mo / Next +3wk (on the ADULTS — person-level UDFs no-op on
+  households, new CLAUDE.md entry). The gap is RECORDED, not implied:
+  last year's review note says CI/DI discussed and deferred; Sophie's
+  call 5 weeks ago asks the DI question. Task +10d, opportunity
+  "Family protection review - CI and DI" $3,600 close +45d.
+  9 records in manifests/find-the-coverage-gaps-manifest.json.
+- **5 cast clients dressed as step-3 gap-list rows** (Simon McKinney,
+  Bill Diamond, Mary Gratton, Jennifer Poulin, Joey Poulin): Life = Yes,
+  reviews due/overdue. PRIOR VALUES captured in the manifest under
+  "modified"; cleanup restores them.
+- **Manual policy rows required** (Accounts module API-invisible):
+  docs/coverage-gaps-manual-policies.md — 7 rows, ~7 min, incl. two
+  term-conversion windows closing Oct/Nov 2026. Without them any screen
+  showing a policy LIST cannot be staged.
+- New CLAUDE.md knowledge: Life Insurance enum + RESP currency +
+  beneficiary/objective UDFs; person-level vs household UDF behavior;
+  household create REQUIRES CompanyName (LastName shape fails -10010).
+- NOTE: walk-in-ready + busy-calendar stories are now ~6 days stale
+  (seeded Jul 15/16; busy-calendar week was Jul 13-17). Refresh
+  walk-in-ready via refresh-story.py; RESEED busy-calendar (weekday
+  drift) before any FA-door capture.
+- Committed the stranded 2026-07-21 session files (probes, FA
+  Intelligence work, see-your-whole-book) that were sitting uncommitted.
 
 ## 2026-07-17 session (Sail Through Audits seed)
 - **Story 2 seeded: Sail Through Audits** (Demo Centre gated tour 2).
@@ -16,8 +46,14 @@ Updated: 2026-07-17 · Session: Cowork
   carry documents via notes. Next avenue if needed: Schema $TREE /Document.
 - **Patch script** `engine/fix-sail-through-audits.py`: adds one incoming
   call 9 days back (Céline OAS question) so Date Last Contacted matches a
-  real interaction — Lewis to run it (command in the script header). Fold
-  a years_ago=0 call into the seeder before any fresh re-seed.
+  real interaction — APPLIED 2026-07-17 (32 records now in manifest; the
+  script refuses to run twice). Fold a years_ago=0 call into the seeder
+  before any fresh re-seed.
+- **Git note:** repo ROOT is `~/Claude Code`, not `demo-engine/` — never
+  `git add -A` from inside demo-engine (it stages the whole parent repo;
+  swept in unrelated files once, fixed with reset --soft + restore).
+  Scope adds to `demo-engine/`. Check `resources/hubspot_upload.py` for
+  hardcoded keys before it is ever committed/pushed.
 - **Tour script step 3 softened** (Demo Centre/maximizer-demo-centre-tour-
   drafts.md): "every client conversation" replaces "every client email"
   because email history can't be fabricated; build note added there.
