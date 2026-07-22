@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-06-08
+**Last updated:** 2026-07-22
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -116,9 +116,17 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-06-13
+## Status as of 2026-07-22
 
-### Latest update — 2026-06-13: poll restricted to business days
+### Latest update — 2026-07-22: Resend API key rotated
+Lewis **rotated** the Resend API key (not "added" like the 2026-06-01 change — the old key is now dead). Confirmed dead: a read-only `GET https://api.resend.com/domains` with the key still in local `.env` returned `400 "API key is invalid"`.
+- **GitHub Actions secret `RESEND_API_KEY` updated by Lewis** (the monthly broadcast reads this, NOT `.env`). This is the only key store the scheduled newsletter uses. `SMTP_FROM`, `RESEND_AUDIENCE_ID` unchanged.
+- **Local `competitive_intel/.env` still held the OLD (dead) key during this session.** It must be updated to the new key for any local/manual run (draft or broadcast). Lewis was given a Terminal procedure (silent `read -rs` → rewrite the `RESEND_API_KEY=` line in `.env`); **completion unconfirmed at session end — verify before trusting a local run.**
+- **The daily poll does NOT use Resend** (Teams + Notion + Anthropic only), so it was unaffected by the rotation.
+- **How to test the key WITHOUT sending email:** `GET https://api.resend.com/domains` with `Authorization: Bearer <key>` → `200` = valid, `400/401` = bad. Full end-to-end test: `python3 -m jobs.monthly_newsletter --mode draft --year 2026 --month 5` emails the newsletter to `DRAFT_REVIEWER` (Lewis) only, never the audience.
+- **The GitHub secret itself can only be truly exercised by a real broadcast** (scheduled 1st of month). Do NOT fire a manual `workflow_dispatch` with `confirm=SEND` just to test — it sends a live newsletter to `sales@` / `customersuccess@` / `pm@`. Trust the validated key + secret, or accept a real send.
+
+### Earlier — 2026-06-13: poll restricted to business days
 Saturday morning alerts were still firing (Friday's crawl was being alerted Saturday 08:00). Lewis asked for business days only.
 - **Daily poll cron `0 15 * * *` → `0 15 * * 1-5`** (Mon–Fri) in `.github/workflows/daily-poll.yml`. 15:00 UTC is the same weekday in Pacific, so no off-by-one. No Saturday/Sunday alerts.
 - **Lookback widened 25h → 76h** in `jobs/daily_poll.py`. Required, not optional: with weekday-only runs the poll that follows the weekend (Monday 08:00) must reach back ~72h to catch Friday's crawl, or Friday's changes would be dropped entirely. 76h = 72h weekend gap + buffer. The Notion dedup (`change_already_logged`) skips already-logged re-fetches, so the wider window does not cause duplicate alerts.
@@ -268,3 +276,5 @@ python3 -m scripts.test_teams_alert
 - Teams webhook is the Power Automate Workflows flow, not a classic Office 365 Connector. The flow validates incoming JSON as Adaptive Card 1.5 and rejects anything else with 400 `InvalidBotAdaptiveCard`. Don't go back to MessageCard.
 - The Notion Changes DB schema matches the code. The legacy `Battlecard Updated` column was removed via `scripts/drop_battlecard_column.py`. The 11 legacy battlecard pages and the defunct `Competitors` database were archived via `scripts/archive_battlecard_pages.py` and `scripts/archive_competitors_database.py`.
 - `scripts/` holds one-shot maintenance scripts. They are not part of the scheduled pipeline.
+- **Secret stores are separate copies that must stay in sync.** `RESEND_API_KEY` (and every other secret) exists both in local `competitive_intel/.env` (used only by local/manual runs) and in GitHub Actions secrets (used by the scheduled CI). Rotating a key means updating **both**; updating only one leaves the other stale.
+- **Lewis's Mac (Apple Silicon / arm64) has neither Homebrew nor the `gh` CLI installed** (checked 2026-07-22). Setting a GitHub Actions secret from Terminal therefore requires installing Homebrew → `brew install gh` → `gh auth login` first. The zero-install path is the GitHub web UI: repo → Settings → Secrets and variables → Actions. GitHub never displays a secret value; the "Updated" timestamp is the only confirmation it took.
