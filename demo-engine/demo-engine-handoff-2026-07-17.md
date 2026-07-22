@@ -1,6 +1,31 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-22 session, part 2 (Lewis feedback: no Lewis in demo data)
+- **NEW HARD RULE 10 in CLAUDE.md:** owner-type fields (Opportunity
+  Leader, Task AssignedTo, InteractionLog User) are set explicitly in
+  every seeder — persona users per door (Adam = wealth, Ingrid =
+  insurance, per Notion Personas and ICPs), MASTER "Barb Smith" until
+  those user accounts exist. Root cause: PAT user LDYSON has
+  First/Last = Lewis Dyson; defaults leak his name on First+Last
+  surfaces.
+- **All existing story records reassigned to Barb Smith** (25 fields
+  across walk-in-ready, find-the-coverage-gaps, sail-through-audits,
+  see-your-whole-book), verified by read-back; reassignment audit notes
+  swept (3).
+- **Seeder retrofit:** coverage-gaps seeder now sets OWNER_USER
+  (env-overridable). REMAINING RETROFIT: walk-in-ready,
+  sail-through-audits, see-your-whole-book, busy-calendar seeders still
+  default owners — fix before any re-seed.
+- **Lewis's two account-level actions (Claude cannot create accounts):**
+  1. Create demo users for the personas in Administrator: "Adam" +
+     surname of his choice (wealth door), "Ingrid" + surname (insurance
+     door). Then tell Claude to re-own the stories per door.
+  2. Decide the recording login: appointments/calendar and record
+     Creator stamps follow the logged-in user. If he records as LDYSON,
+     consider renaming that account's First/Last (e.g. to the persona)
+     in Administrator so no surface shows "Lewis Dyson".
+
 ## 2026-07-22 session (Find the Coverage Gaps — insurance door)
 - **Story seeded: Find the Coverage Gaps** (insurance door, gated tour 2).
   Tremblay Family household (Burnaby BC): Marc (42, self-employed, term

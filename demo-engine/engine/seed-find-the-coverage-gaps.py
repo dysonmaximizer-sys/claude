@@ -58,6 +58,11 @@ INS_OBJECTIVE = "Udf/$NAME(Financial Planning\\Financial Objectives (1 - low, 5 
 
 TODAY = datetime.now(PACIFIC)
 
+# Rule 10 (CLAUDE.md): owner-type fields are set explicitly so Lewis's
+# name never appears. Insurance-door owner = Ingrid's user once it
+# exists; MASTER ("Barb Smith") until then. Override via env.
+OWNER_USER = os.environ.get("DEMO_OWNER_USER", "VXNlcglNQVNURVI=")
+
 # clients never to touch, and story-slot names left to their own stories
 EXCLUDE_NAMES = ["sokolov", "renaud", "tremblay", "bill graham", "jameson thomas",
                  "lou cameron", "nancy cameron", "celene smith", "wilson poulin",
@@ -171,13 +176,13 @@ def seed() -> None:
                        "is if Marc is off work for six months. No disability coverage in place. "
                        "Promised options ahead of the review.",
         "Type": "60001", "StartDate": pac(-36, "10:40"), "EndDate": pac(-36, "10:52"),
-        "User": "$CURRENTUSER()", "AbEntryKey": hh, "Direction": 1,
+        "User": OWNER_USER, "AbEntryKey": hh, "Direction": 1,
     }}, "Compatibility": COMPAT})
     remember(manifest, "InteractionLog", created_key(data, "InteractionLog"), "Sophie's DI question call")
 
     data = call("Create", {"Task": {"Data": {
         "Key": None, "Activity": "Prepare CI and DI options for the Tremblay review",
-        "DateTime": pac(10, "17:00"), "AbEntryKey": hh,
+        "DateTime": pac(10, "17:00"), "AbEntryKey": hh, "AssignedTo": OWNER_USER,
     }}, "Compatibility": COMPAT})
     remember(manifest, "Task", created_key(data, "Task"), "CI/DI options task")
 
@@ -187,6 +192,7 @@ def seed() -> None:
         "Description": "Life coverage solid; CI/DI deferred at last review and Sophie has now "
                        "asked directly. Marc self-employed. Present options at the review.",
         "Status": 2, "ForecastRevenue": 3600, "CloseDate": pac(45, "12:00") + "Z",
+        "Leader": OWNER_USER,
     }}, "Compatibility": COMPAT})
     remember(manifest, "Opportunity", created_key(data, "Opportunity"), "Family protection review opportunity")
 

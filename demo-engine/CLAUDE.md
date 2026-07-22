@@ -37,6 +37,20 @@ report results, don't make him read code.
    drift 1h early after Nov 1. Check one appointment time in the UI then.
 8. **Python 3.9 on Lewis's Mac:** `Optional[str]`, never `str | None`.
 9. No absolutist claims in value props: no every, all, never, zero. Claims must be plausible to a skeptical buyer. Punchy school.
+10. **Lewis's name must not appear in demo data** (rule added on his
+   feedback, 2026-07-22). Owner-type fields left to default fall back to
+   the PAT user LDYSON, whose First/Last name is Lewis Dyson — and some
+   surfaces render First+Last, not the display name. So every seeder
+   sets these EXPLICITLY on create: Opportunity `Leader`, Task
+   `AssignedTo`, InteractionLog `User`. Correct owner = the persona of
+   the door: **Adam the Advisor** (wealth/FA stories) or **Ingrid the
+   Insurance Advisor** (insurance stories) — per the Notion persona
+   pages (Personas and ICPs). Until Adam/Ingrid user accounts exist in
+   the tenant, use **MASTER** (`VXNlcglNQVNURVI=`, displays "Barb
+   Smith"). Note creators and record Creator stamps cannot be reassigned
+   — mitigate via the LDYSON account rename (Lewis's call) and audit
+   sweeps. Appointments stay owned by whichever login records the demo
+   (they must appear on that calendar).
 
 ## Auth
 
@@ -188,8 +202,14 @@ Blocked:
 - **Audit notes observed** (auto-logged on the parent entry, stamped now):
   "Hotlist Task Created/Modified: ...", "Opportunity created for: ...".
   Sweep these after every seed/update run (rule 5).
-- **PAT user is LDYSON, display name "Barb Smith"** — audit notes say
-  "Barb Smith" but keys decode to User\LDYSON; same account.
+- **PAT user is LDYSON: DisplayName "Barb Smith", but FirstName/LastName
+  are Lewis Dyson** — which is why his real name leaks on surfaces that
+  render First+Last (validated 2026-07-22, user-list read). Tenant users
+  (enabled): MASTER "Barb Smith" (the clean demo identity), DDENNIS
+  "David Dennis", DJACKSON "Deb Jackson", JYIM "David Carter", plus
+  service accounts. NO Adam or Ingrid users yet (see rule 10). User list
+  read: `{"User": {..., "Criteria": {"SearchQuery": {"LastName":
+  {"$LIKE": "%"}}}}}` — Key $NE null and Disabled filters are rejected.
 
 ## Workflow for "set up story X"
 
