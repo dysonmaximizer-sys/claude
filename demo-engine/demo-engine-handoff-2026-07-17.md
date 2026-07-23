@@ -1,6 +1,21 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-22 session, part 5 (Business+ first story: Monday Pipeline Review)
+- Seeded on the Business+ tenant: 12 open opportunities across 5 owners
+  (Michelle Boone = VP persona per Lewis; Amanda/Douglas/Jane/David as
+  reps), 8 calls, 5 notes, 5 team tasks. Review moments: hot deal
+  closing Friday (Walley World 85K), slipped close date (Cyberdyne 60K),
+  3 stale deals quiet 4-6 weeks. Manifest:
+  manifests/bizplus/monday-pipeline-review-manifest.json.
+- TENANT LIMITS discovered (docs/bizplus-tenant.md): Opportunity DELETE
+  Access-Denied for the PAT (creates permanent; stray probe repurposed
+  into the Alpha Beta deal); stages are per-deal instances (assign in
+  UI); email create blocked like FSE; no auto audit notes observed.
+- Lewis actions for this tenant: grant Opportunity-delete to the API
+  user; rename LDYSON (displays "Lewis Dyson" here); decide on the
+  zombie-pipeline hygiene pass (61 open 2022-2023 sample deals).
+
 ## 2026-07-22 session, part 4 (Business+ tenant scaffolding)
 - Second demo environment added: Business+ edition tenant. `bizplus.env`
   at repo root (gitignored, placeholder awaiting Lewis's PAT);

@@ -54,3 +54,25 @@ here, that unlocks richer B2B trails than FSE allows.
 Env: `bizplus.env` at repo root. Manifests: `manifests/bizplus/`.
 Stories: `stories/bizplus/`. Never cross-source env files (CLAUDE.md
 Auth & environments).
+
+## Write-probe results (2026-07-22, after recon)
+
+- **Opportunity create WORKS** with the minimal shape: AbEntryKey +
+  Objective + Status + ForecastRevenue + CloseDate ("YYYY-MM-DD") +
+  Leader. No process/stage needed at create.
+- **Opportunity DELETE: Access Denied** (-30002) for this PAT. Creates
+  are PERMANENT until Lewis grants Opportunity-delete in Administrator.
+  Cleanup fallback: rename + Status 4. Never create probe opportunities
+  here again without a repurposing plan.
+- **Stages/processes are per-deal INSTANCES** (147 deals = 147 distinct
+  CurrentSalesStage keys; FieldOptions empty; SalesProcess/SalesStage
+  object reads fail). Deals are created stage-less; stages assigned in
+  the UI. Never write CurrentSalesStage/SalesProcessKey (rule 4).
+- **Email interactions BLOCKED on create** (-10002), same as FSE,
+  despite 60002 appearing in the type list. Calls (60001) work.
+- **Audit notes: none observed** after 30 creates + 1 update (sweep
+  found 0). Tenant may not auto-log like FSE does; keep sweeping anyway.
+- **Zombie pipeline:** 61 sample opportunities from 2022-2023 sit OPEN.
+  Filter captures to 2026 dates, or run a one-time hygiene pass
+  (permanent - needs Lewis's explicit go).
+- Task create accepts AssignedTo; Note uses ParentKey; both delete fine.
