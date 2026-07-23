@@ -1,6 +1,18 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-23 session, part 2 (After the Yes - Business+ sales door)
+- Story seeded from Demo Centre/maximizer-demo-centre-sales-tour-drafts
+  .md: "Client Onboarding" workflow TEMPLATE created via API (6
+  sequential merge-field tasks - templates are API-creatable, instances
+  are NOT; new knowledge in docs/bizplus-tenant.md). Hero moment: Total
+  Serve won TODAY $54K (David), onboarding deliberately unstarted (the
+  capture's live click). Cohort of 6 recent wins for "six in flight"
+  (Briazz/Multicerv/House Works/Sistemos/Widdmann/Franklin Simon).
+- WAITING ON LEWIS: start Client Onboarding on the 6 cohort companies
+  in the UI (instances are UI-only), then say "onboardings started" -
+  Claude backdates one active task so one run shows behind.
+
 ## 2026-07-23 session (Sales Intelligence backfill + re-check)
 - RE-CHECK of Lewis's admin fixes: STILL incomplete (FSE + Business+
   LDYSON First/Last remain Lewis Dyson; Business+ opportunity delete

@@ -101,3 +101,19 @@ Auth & environments).
   trend, Amanda leads leaderboard), manifest
   manifests/bizplus/sales-intelligence-history-manifest.json; the 12
   pipeline deals dressed with teams/types/StartDate (priors captured).
+
+## Workflow API surface (validated 2026-07-23)
+
+- **Templates ARE creatable via API**: Workflow (Name, Description,
+  IsSequential, HasStages, Category ["1"]=sales/["2"]=service) +
+  WorkflowTaskTemplate (WorkflowKey, Sequence, Subject,
+  DateOffsetUnit 3 = days, DateOffsetValue, AssignedToExpression -
+  observed expression: "AccountManager"). "Client Onboarding" template
+  created 2026-07-23 (6 tasks, in after-the-yes manifest).
+- **Instances are NOT creatable**: every meaningful WorkflowInstance
+  field (WorkflowKey, ParentKey, WithKey...) is read-only. Starting a
+  workflow on a record is UI-only. Staging "runs in flight" = Lewis
+  clicks; make one "behind" by backdating its active Task afterward.
+- Native templates shipped in tenant: Proposal and Quote Preparation,
+  Engage New Clients after Onboarding, Quarterly Review for Key
+  Clients, Contract Renewal.
