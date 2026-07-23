@@ -80,3 +80,24 @@ Auth & environments).
   Filter captures to 2026 dates, or run a one-time hygiene pass
   (permanent - needs Lewis's explicit go).
 - Task create accepts AssignedTo; Note uses ParentKey; both delete fine.
+
+## Sales Intelligence dashboard (validated 2026-07-23)
+
+- Empty tiles root cause: report counts deals on REAL sales teams;
+  API-created deals default to SalesTeam 65535 ("*Single User"), which
+  team reporting ignores. Always set SalesTeam explicitly. Teams: NA
+  West `U2FsZXNUZWFtCTQ=`, NA East `U2FsZXNUZWFtCTM=`, EMEA
+  `U2FsZXNUZWFtCTU=`, ANZ `U2FsZXNUZWFtCTY=` (via FieldOptions
+  SalesTeam; direct SalesTeam object reads fail).
+- Assignable on Opportunity and used by tiles: StartDate (avg deal
+  age), ActualRevenue (won revenue), RevenueType (60001 New / 60002
+  Existing Business), Product (1-6), Category (1 Products / 2
+  Services). SalesProcessSetupKey/SalesStageSetupKey are assignable but
+  their FieldOptions are EMPTY - no process catalog in this tenant.
+  The dashboard's Process filter ("Sales Process") may exclude
+  process-less deals; if tiles stay empty after data exists, change
+  that dropdown at capture time.
+- History seeded 2026-07-23: 36 deals 2025-2026 (won/lost, growth
+  trend, Amanda leads leaderboard), manifest
+  manifests/bizplus/sales-intelligence-history-manifest.json; the 12
+  pipeline deals dressed with teams/types/StartDate (priors captured).

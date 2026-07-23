@@ -1,6 +1,19 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-23 session (Sales Intelligence backfill + re-check)
+- RE-CHECK of Lewis's admin fixes: STILL incomplete (FSE + Business+
+  LDYSON First/Last remain Lewis Dyson; Business+ opportunity delete
+  still denied). Fix steps re-issued; verify again on his word.
+- Sales Intelligence dashboard populated (Business+): root cause of
+  empty tiles = deals defaulting to *Single User team. 36 historical
+  deals seeded (2025 full year ~$560K won; 2026 YTD 14 won $617K
+  actual, growth story, Amanda tops leaderboard; 8 lost for win-rate).
+  12 live pipeline deals dressed (real teams, RevenueType, Product,
+  Category, StartDate; priors in manifest). All rule-10 owners.
+- Dashboard knowledge in docs/bizplus-tenant.md incl. the Process
+  filter caveat (no process catalog in tenant).
+
 ## 2026-07-22 session, part 7 (verification of Lewis's admin changes)
 - VERIFIED, all three incomplete: (1) FSE LDYSON rename did not take
   (First/Last still Lewis Dyson); (2) Business+ LDYSON display is now
