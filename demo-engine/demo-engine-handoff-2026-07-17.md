@@ -1,6 +1,15 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-22 session, part 7 (verification of Lewis's admin changes)
+- VERIFIED, all three incomplete: (1) FSE LDYSON rename did not take
+  (First/Last still Lewis Dyson); (2) Business+ LDYSON display is now
+  "Sam Suzuki" but First/Last still Lewis Dyson - the leaking fields;
+  (3) Business+ Opportunity-delete still Access Denied for the PAT
+  user (grant likely applied to the wrong user/checkbox). Fix steps
+  given to Lewis; re-verify on his word. Delete-test stray neutralized
+  ("Archived - duplicate entry", Status 5, backdated).
+
 ## 2026-07-22 session, part 6 (zombie pipeline cleanup, Lewis-approved)
 - All 61 open 2023-dated sample opportunities in the Business+ tenant
   marked Status 5 Abandoned (deletes blocked; update was the tool).

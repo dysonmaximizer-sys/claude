@@ -6,8 +6,9 @@ knowledge" — nothing from the FSE tenant applies here unless re-proven.
 
 ## Users (rule 10)
 
-- **LDYSON exists here too and is WORSE:** DisplayName "Lewis Dyson"
-  (FSE at least masked it as Barb Smith). Never leave owner defaults;
+- **LDYSON display renamed to "Sam Suzuki" (2026-07-22) but First/Last
+  are STILL Lewis Dyson** - the leaking fields. Finish the rename in
+  Administrator (First: Sam, Last: Suzuki). Never leave owner defaults;
   Lewis should rename this account's display + first/last in this
   tenant's Administrator, or record with another login.
 - Clean demo identities: **MASTER = "Michelle Boone"** (interim rule-10
@@ -60,10 +61,13 @@ Auth & environments).
 - **Opportunity create WORKS** with the minimal shape: AbEntryKey +
   Objective + Status + ForecastRevenue + CloseDate ("YYYY-MM-DD") +
   Leader. No process/stage needed at create.
-- **Opportunity DELETE: Access Denied** (-30002) for this PAT. Creates
-  are PERMANENT until Lewis grants Opportunity-delete in Administrator.
-  Cleanup fallback: rename + Status 4. Never create probe opportunities
-  here again without a repurposing plan.
+- **Opportunity DELETE: Access Denied** (-30002) for this PAT.
+  RE-VERIFIED 2026-07-22 AFTER Lewis attempted the grant - still
+  denied, so the grant reached the wrong user or the wrong checkbox
+  (it must be on LDYSON, the PAT's user). Creates are PERMANENT until
+  fixed. Cleanup fallback: rename + Status 5, backdate. Do NOT create
+  delete-test probes; two strays already neutralized ("Archived -
+  duplicate entry" + the repurposed Alpha Beta story deal).
 - **Stages/processes are per-deal INSTANCES** (147 deals = 147 distinct
   CurrentSalesStage keys; FieldOptions empty; SalesProcess/SalesStage
   object reads fail). Deals are created stage-less; stages assigned in
