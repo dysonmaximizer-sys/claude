@@ -1,6 +1,18 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-22 session, part 4 (Business+ tenant scaffolding)
+- Second demo environment added: Business+ edition tenant. `bizplus.env`
+  at repo root (gitignored, placeholder awaiting Lewis's PAT);
+  `manifests/bizplus/` + `stories/bizplus/`; CLAUDE.md Auth section now
+  covers both tenants and the cross-tenant safety rule.
+- `engine/probe-bizplus-tenant.py`: read-only recon (users incl. rule-10
+  name check, book size with rule-1 volume guard, schema roots, UDF
+  folders, sales processes, interaction types). RUN THIS FIRST; findings
+  go to docs/bizplus-tenant.md. No Business+ stories exist yet - design
+  them after recon (different edition, likely no wealth UDFs; audience
+  is probably VP Sales, not advisors).
+
 ## 2026-07-22 session, part 3 (Sail Through Audits — insurance door)
 - **Story seeded: sail-through-audits-insurance** (distinct slug; the
   FA-door Renaud/CIRO story of the same tour name is untouched). Per

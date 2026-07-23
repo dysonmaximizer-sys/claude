@@ -52,12 +52,25 @@ report results, don't make him read code.
    sweeps. Appointments stay owned by whichever login records the demo
    (they must appear on that calendar).
 
-## Auth
+## Auth & environments
 
-PAT in `.env` at the REPO ROOT (gitignored) as MAXIMIZER_PAT. Load with
-`set -a; source .env; set +a`. Optional MAXIMIZER_BASE_URL (default
-https://api.maximizer.com/octopus). Never ask Lewis to paste the token into
-chat; never commit it.
+TWO demo tenants, one env file each at the REPO ROOT (both gitignored,
+both hold MAXIMIZER_PAT + optional MAXIMIZER_BASE_URL). Never ask Lewis
+to paste a token into chat; never commit one.
+
+- **FSE tenant** (default): `.env` — `set -a; source .env; set +a`.
+  Everything under "Validated tenant knowledge" below is THIS tenant.
+- **Business+ tenant**: `bizplus.env` — `set -a; source bizplus.env;
+  set +a`. Its knowledge lives in `docs/bizplus-tenant.md`, NOT here —
+  do not assume any FSE field ID, pick-list value, user, or module
+  exists there. First contact is always the read-only probe
+  (`engine/probe-bizplus-tenant.py`).
+
+Cross-tenant safety: record keys are tenant-specific. Business+ work
+uses `manifests/bizplus/` and `stories/bizplus/`; never point an FSE
+seeder, refresher, or cleanup at the Business+ env (or vice versa) —
+whichever env file was sourced last decides where writes land, so
+source the right one in the SAME command as the run.
 
 ## Layout
 
