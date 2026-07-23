@@ -1,6 +1,15 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-07-22 · Session: Claude Code
 
+## 2026-07-22 session, part 6 (zombie pipeline cleanup, Lewis-approved)
+- All 61 open 2023-dated sample opportunities in the Business+ tenant
+  marked Status 5 Abandoned (deletes blocked; update was the tool).
+  Prior states captured in
+  manifests/bizplus/pipeline-hygiene-2026-07-22.json - reversible by
+  updating each key back to prior_status. Verified after: EXACTLY the
+  12 Monday-Pipeline-Review deals remain open. No capture-time filter
+  needed anymore.
+
 ## 2026-07-22 session, part 5 (Business+ first story: Monday Pipeline Review)
 - Seeded on the Business+ tenant: 12 open opportunities across 5 owners
   (Michelle Boone = VP persona per Lewis; Amanda/Douglas/Jane/David as
