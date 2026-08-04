@@ -590,11 +590,13 @@ def _render_introduction(text: str) -> str:
 def _render_news_stories(text: str) -> str:
     """
     Render Competitive News stories. The model emits each story as a headline
-    followed by 'What happened:', 'Why it matters:', and 'How we should respond:'
-    blocks. A label may sit on its own line with the body on the following line,
-    or inline after the colon, with blank lines between blocks. Because intra-
-    story and between-story gaps are both single blank lines, we parse by label
-    rather than by splitting on blank lines.
+    followed by 'What happened:' and 'Why it matters:' blocks. A label may sit
+    on its own line with the body on the following line, or inline after the
+    colon, with blank lines between blocks. Because intra-story and between-
+    story gaps are both single blank lines, we parse by label rather than by
+    splitting on blank lines. 'How we should respond:' was removed from the
+    newsletter (2026-08-04) but stays in the label regex so a stray emission
+    is parsed and dropped instead of being misread as a story headline.
     """
     text = _preprocess(text)
     lines = [l.strip() for l in text.splitlines() if l.strip()]
@@ -635,6 +637,8 @@ def _render_news_stories(text: str) -> str:
         if s["headline"]:
             out += f"<strong>{_escape(s['headline'])}</strong>"
         for label, body in s["parts"]:
+            if label.lower() == "how we should respond":
+                continue
             out += f"<br><strong>{_escape(label)}:</strong> {_escape(body)}"
         if out:
             stories_html.append(out)

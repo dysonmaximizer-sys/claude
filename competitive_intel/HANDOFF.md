@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-07-22
+**Last updated:** 2026-08-04
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -9,8 +9,8 @@
 
 Automated competitive intelligence pipeline that:
 1. **Business days (15:00 UTC):** Polls changedetection.io for competitor page changes, logs to Notion, scores each change inline, then groups high-score changes by underlying insight and sends one Teams alert per insight. 15:00 UTC lands at 08:00 Pacific (PDT) / 07:00 (PST) — a weekday morning alert, no weekend sends. Because 08:00 is before the day's cd.io crawl, each morning's alert covers the PRIOR day's detections. Lookback is 76h to bridge the weekend (Friday's crawl is alerted Monday).
-2. **Monthly (1st, 09:00 UTC):** Queries Notion for the previous month's changes, generates a newsletter via Claude, emails a DRAFT to `DRAFT_REVIEWER` (Lewis) via Resend `/emails` for review.
-3. **Monthly broadcast (manual):** Once the draft is approved, Lewis triggers the `Newsletter Broadcast (Manual)` GitHub Actions workflow with `confirm = "SEND"`. That re-generates the newsletter and POSTs it to the Resend Audience "CI Newsletter" via Resend `/broadcasts`. No Teams card.
+2. **Monthly (first business day, 16:00 UTC):** Queries Notion for the previous month's changes, generates a newsletter via Claude, and auto-broadcasts it to the Resend Audience "CI Newsletter" via Resend `/broadcasts` — no draft/review step (removed 2026-06-01). The cron fires on the 1st–3rd; a business-day gate in `newsletter-broadcast.yml` lets only the first business day on/after the 1st send (the 1st if it's a weekday, otherwise the following Monday). No Teams card.
+3. **Manual re-send (ad hoc):** Lewis can trigger the broadcast workflow via `workflow_dispatch` with `confirm = "SEND"` (the business-day gate does not apply to manual runs).
 
 Runs on **GitHub Actions** (workflow YAMLs at the repo root in `.github/workflows/`). Local runs via `scheduler.py` (APScheduler) are an alternative if hosted on a VPS. Local CLI runs are for testing only.
 
@@ -116,9 +116,15 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-07-22
+## Status as of 2026-08-04
 
-### Latest update — 2026-07-22: Resend API key rotated
+### Latest update — 2026-08-04: newsletter moved to business days; "How we should respond" removed
+Two changes, effective from the September 2026 cycle onward.
+- **Broadcast cron `0 16 1 * *` → `0 16 1-3 * *`** in `.github/workflows/newsletter-broadcast.yml`, plus a new "Business-day gate" step. Scheduled runs on the 2nd/3rd (and a weekend 1st) exit early with `send=false`; only the first business day on/after the 1st broadcasts — the 1st if it's a weekday, otherwise the following Monday. Verified by simulation across all seven weekday cases: exactly one send per month, never two. Skipped runs show green in Actions with all steps after the gate skipped. Manual `workflow_dispatch` runs bypass the gate (still require `confirm=SEND`). A run on the 2nd/3rd still defaults to the previous calendar month, so content is unaffected.
+- **"How we should respond" removed from the newsletter.** Deleted from `resources/newsletter_system_prompt.txt` (both the content instruction and the required formatting label). Stories now carry only "What happened:" and "Why it matters:". Defensively, `_render_news_stories()` in `agents/newsletter_agent.py` keeps the label in its parse regex but drops the part at render time, so a stray emission can't be misparsed as a story headline. Verified with a functional test (label + body dropped, adjacent stories intact); `py_compile` clean.
+- **`scheduler.py` (unused VPS path) not updated** — its monthly trigger was already stale (day=1, 09:00 UTC) and now also lacks the business-day logic. Fix only if the VPS path is ever used.
+
+### Earlier — 2026-07-22: Resend API key rotated
 Lewis **rotated** the Resend API key (not "added" like the 2026-06-01 change — the old key is now dead). Confirmed dead: a read-only `GET https://api.resend.com/domains` with the key still in local `.env` returned `400 "API key is invalid"`.
 - **GitHub Actions secret `RESEND_API_KEY` updated by Lewis** (the monthly broadcast reads this, NOT `.env`). This is the only key store the scheduled newsletter uses. `SMTP_FROM`, `RESEND_AUDIENCE_ID` unchanged.
 - **Local `competitive_intel/.env` still held the OLD (dead) key during this session.** It must be updated to the new key for any local/manual run (draft or broadcast). Lewis was given a Terminal procedure (silent `read -rs` → rewrite the `RESEND_API_KEY=` line in `.env`); **completion unconfirmed at session end — verify before trusting a local run.**

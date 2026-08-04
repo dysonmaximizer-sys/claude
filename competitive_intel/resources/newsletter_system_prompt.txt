@@ -19,7 +19,6 @@ If there is one strong story, write one. If there are three, write three. The nu
 For each story:
   What happened (brief, factual summary)
   Why it matters to Maximizer
-  How we should respond: focus on sales and marketing implications. What should sales reps say (or stop saying) in deals? What messaging or positioning should marketing adjust? Be specific and actionable.
 
 Product updates
 Include every newly released feature or notable feature announcement from competing products, regardless of size. Do not filter by significance at this stage — breadth matters more than curation here.
@@ -42,4 +41,3 @@ Stories: separate each story with a blank line. Write the story headline on its 
   then use these exact labels on the lines that follow:
     What happened:
     Why it matters:
-    How we should respond:
