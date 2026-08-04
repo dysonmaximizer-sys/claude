@@ -118,7 +118,13 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ## Status as of 2026-08-04
 
-### Latest update — 2026-08-04: newsletter moved to business days; "How we should respond" removed
+### Latest update — 2026-08-04 (later): "RECOMMENDED ACTION" removed from Teams alerts
+Follow-on to the newsletter change below, same rationale.
+- **Summariser prompt no longer produces it:** `agents/summariser_agent.py` SYSTEM_PROMPT now asks for WHAT and WHY IT MATTERS only. Summaries written to Notion (`AI Summary`) going forward have two sections, not three. Historical Notion summaries keep their RECOMMENDED ACTION lines (not migrated — they only feed the newsletter as input context, and the newsletter prompt no longer asks for response guidance).
+- **Defensive strip in the card builder:** `_build_alert_card()` in `integrations/teams_client.py` drops any `RECOMMENDED ACTION:` line from the summary before rendering, so a stray emission can never reach the chat. Verified with a functional card test (label + body stripped, WHAT/WHY intact); `py_compile` clean.
+- Takes effect on the next daily poll run after this lands on `main`.
+
+### Earlier — 2026-08-04: newsletter moved to business days; "How we should respond" removed
 Two changes, effective from the September 2026 cycle onward.
 - **Broadcast cron `0 16 1 * *` → `0 16 1-3 * *`** in `.github/workflows/newsletter-broadcast.yml`, plus a new "Business-day gate" step. Scheduled runs on the 2nd/3rd (and a weekend 1st) exit early with `send=false`; only the first business day on/after the 1st broadcasts — the 1st if it's a weekday, otherwise the following Monday. Verified by simulation across all seven weekday cases: exactly one send per month, never two. Skipped runs show green in Actions with all steps after the gate skipped. Manual `workflow_dispatch` runs bypass the gate (still require `confirm=SEND`). A run on the 2nd/3rd still defaults to the previous calendar month, so content is unaffected.
 - **"How we should respond" removed from the newsletter.** Deleted from `resources/newsletter_system_prompt.txt` (both the content instruction and the required formatting label). Stories now carry only "What happened:" and "Why it matters:". Defensively, `_render_news_stories()` in `agents/newsletter_agent.py` keeps the label in its parse regex but drops the part at render time, so a stray emission can't be misparsed as a story headline. Verified with a functional test (label + body dropped, adjacent stories intact); `py_compile` clean.

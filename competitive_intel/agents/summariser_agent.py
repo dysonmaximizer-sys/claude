@@ -23,13 +23,11 @@ wealth management and insurance advisory firms.
 When summarising a competitor change, your output must:
 1. State clearly WHAT changed (1 sentence)
 2. Explain WHY it matters to Maximizer (1–2 sentences) — focus on deal impact, market shift, or positioning threat
-3. Suggest a RECOMMENDED ACTION for the relevant team (1 sentence)
 
 Format your response exactly like this (no markdown, no extra commentary):
 
 WHAT: <what changed>
 WHY IT MATTERS: <why it matters to Maximizer>
-RECOMMENDED ACTION: <what the team should do>
 
 Keep the entire response under 100 words. Use plain, direct language — no jargon."""
 

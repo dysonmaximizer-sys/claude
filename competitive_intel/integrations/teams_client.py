@@ -64,6 +64,14 @@ def _build_alert_card(
     notion_url: str = "",
 ) -> dict:
     """Build an Adaptive Card for a competitive change alert."""
+    # RECOMMENDED ACTION was removed from alerts (2026-08-04). The summariser
+    # prompt no longer produces it; this strip is a backstop so a stray
+    # emission never reaches the card.
+    summary = "\n".join(
+        line for line in summary.splitlines()
+        if not line.strip().upper().startswith("RECOMMENDED ACTION:")
+    ).strip()
+
     score_emoji = "🔴" if score >= 8 else "🟡"
 
     if score >= 8:
