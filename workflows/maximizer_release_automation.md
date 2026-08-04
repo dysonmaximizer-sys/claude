@@ -307,6 +307,8 @@ After saving all files, output the following message to the operator:
 
 ## Step 6 — CS Team Notification (Review Deadline)
 
+> **Note (2026-07): this step is OPTIONAL.** The CS team is already inside the Release Notes audience, so they receive the broadcast itself. The separate review email was skipped in July 2026; send it only if a cycle specifically needs pre-publish CS review.
+
 On the review deadline date (trigger + 2 business days), send an internal email to the CS team via Resend.
 
 **From:** `marketing@maximizer.com`
@@ -354,7 +356,7 @@ On the publish date (7 days before end of month, adjusted to a business day), th
 
 ### 7a — Publish Zendesk Article
 - Publish `zendesk_article.md` to Zendesk Guide as the official release notes article in the **Release Notes → Cloud** section (`ID: 23951413801741`)
-- Set the article **Title** field to `Maximizer Cloud – {{Month}} {{Year}} ({{Year}} M{{Month number}})` — e.g. `Maximizer Cloud – May 2026 (2026 M5)`. Always include the `({{Year}} M{{Month number}})` release number for consistency with prior release articles. Do NOT also place a title heading in the body.
+- Set the article **Title** field to `Maximizer Cloud – {{Month}} {{Year}}.{{Month number}}` — e.g. `Maximizer Cloud – July 2026.7`. (New convention from 2026-07, Lewis-directed; the old `Maximizer Cloud – June 2026 (2026 M6)` style is retired, pre-July 2026 articles keep their existing titles.) Do NOT also place a title heading in the body.
 - After publishing, retrieve the live article URL and identify the anchor for the first content section
 - **Immediately** write `zendesk_article_url` (full URL + anchor) to `release_payload.json`
 
@@ -378,6 +380,8 @@ Images are already embedded as HubSpot CDN `<img>` URLs when `email_draft.html` 
 - In `email_draft.html`, replace `{{LEARN_MORE_URL}}` (or the `[Link to Release Notes]` placeholder if still present) with the value from `zendesk_article_url` — do not manually construct this URL
 - Send the updated email via Resend to the **Release Notes** audience (`$RESEND_AUDIENCE_ID`)
 - Use the subject line from `email_subject.txt`
+
+**Test send first (standing step since 2026-07, required):** before creating the broadcast, email the operator a copy of the final HTML via the standard `/emails` endpoint — from `marketing@maximizer.com` to `lewisdyson@maximizer.com`, subject prefixed `[DRAFT] `. Wait for the operator's explicit approval before proceeding to the broadcast.
 
 Resend sends to a contact list via the **Broadcasts** API (two-step: create then send):
 

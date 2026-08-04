@@ -26,14 +26,14 @@ These rules override any default formatting behaviour. Follow them exactly on ev
 14. **Edition and Area on separate rows.** Put `Edition: ...` and `Area: ...` on their own lines with a blank line between them so they render as two separate rows. A single line break between them collapses into one combined string in HTML (`Edition: X Area: Y`).
 15. **No "Screenshots" label before images.** Do NOT write a `Screenshots` heading/label or a `Screenshot:` caption prefix before visual content. Place images inline beneath the relevant section with no label or caption prefix.
 16. **Image sizing (manual, during content prep).** Resize each image so it is proportionate to the body text — roughly the article content-column width (≈650px max), aspect ratio preserved. Do not insert excessively zoomed-in crops or images that span multiple screens inline.
-17. **Article Title field naming convention.** The Zendesk Title field must read `Maximizer Cloud – {{Month}} {{Year}} ({{Year}} M{{Month number}})` — e.g. `Maximizer Cloud – May 2026 (2026 M5)`. Always include the `({{Year}} M{{Month number}})` release number for consistency with prior release articles.
+17. **Article Title field naming convention.** The Zendesk Title field must read `Maximizer Cloud – {{Month}} {{Year}}.{{Month number}}` — e.g. `Maximizer Cloud – July 2026.7`. (New convention from 2026-07, Lewis-directed. The old `Maximizer Cloud – June 2026 (2026 M6)` style is retired; pre-July 2026 articles keep their existing titles.)
 18. **Edition naming convention.** The Loop page uses shorthand; the published article uses full names. Convert: `FSE` → `Financial Services Edition`, `FSE+` → `Financial Services Edition +`, `Base` → `Base Edition`, `Sales Leader` → `Sales Leader Edition`, `All` → `All Editions`. Keep `Business+` exactly as written. Join multiple editions with a comma and space, e.g. `Financial Services Edition +, Business+`. (Area names — `Web` / `Mobile` / `Outlook` — are used as-is.)
 
 ---
 
 ## TEMPLATE START
 
-<!-- Zendesk article TITLE field (set on the article, NOT written in the body): Maximizer Cloud – {{Month}} {{Year}} ({{Year}} M{{Month number}})  e.g. Maximizer Cloud – May 2026 (2026 M5) -->
+<!-- Zendesk article TITLE field (set on the article, NOT written in the body): Maximizer Cloud – {{Month}} {{Year}}.{{Month number}}  e.g. Maximizer Cloud – July 2026.7 -->
 
 Release Date: {{Month DD, YYYY}}
 
