@@ -1,5 +1,22 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-08-11 · Session: Cowork
+Updated: 2026-08-14 · Session: Claude Code
+
+## 2026-08-14 session (webinar-mcgill-catch - BLOCKED on FSE token)
+- Recording day for the Aug 19 Focal webinar story. Seeder
+  engine/seed-webinar-mcgill.py reviewed against CLAUDE.md: validated
+  shapes all correct; two fixes applied (incremental manifest save per
+  rule 3; FieldOptions compat aligned to AbEntryKey 2.0).
+- RUN BLOCKED: FSE PAT rejected, "Authentication failed, invalid
+  Token" (-20003). .env intact and unmodified since Jul 15 - the token
+  was created Jul 15, so a 30-day expiry lands exactly today. NOTHING
+  was created in the tenant; the failed run's empty stub manifest was
+  removed. Seeder is ready to run unchanged once Lewis puts a fresh
+  FSE PAT in .env. Business+ token untested today (created ~Jul 22;
+  if 30-day, it dies ~Aug 21 - BEFORE the Aug 19 webinar is safe, but
+  renew both while in there).
+- NOTE: walk-in-ready and all FSE stories are 3-4 weeks stale (see the
+  08-11 note); the webinar story seeds fresh so it is unaffected, but
+  do not capture other FSE tours without refresh/reseed.
 
 ## 2026-08-11 note (Cowork content session; engine touched lightly)
 - The ~Jul 20-21 Cowork engine work (FA Intelligence probes/updates,
