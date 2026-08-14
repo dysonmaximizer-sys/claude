@@ -1,5 +1,27 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-07-22 · Session: Claude Code
+Updated: 2026-08-11 · Session: Cowork
+
+## 2026-08-11 note (Cowork content session; engine touched lightly)
+- The ~Jul 20-21 Cowork engine work (FA Intelligence probes/updates,
+  Accounts-module closure, see-your-whole-book) was already committed and
+  folded in by the Jul 22-23 Claude Code sessions below. This note adds
+  only what they don't carry:
+- **Everything seeded Jul 15-23 is now 3+ weeks stale** (busy-calendar
+  week long past). Refresh or reseed before ANY capture. Also [verify]
+  the 07-23 "WAITING ON LEWIS" item below (start Client Onboarding on
+  the 6 Business+ cohort companies) — unknown whether done.
+- **STA seeder wrinkle (FSE wealth cut):** Céline's seeded birthdate is
+  ~40 days PAST 65, but the patched call says "ahead of turning 65."
+  Reconcile before any fresh re-seed. Her client-email asset
+  (`Demo Centre/sail-through-audits-celine-email.md`) deliberately
+  avoids birthday timing.
+- **New product/tenant question from the Demo Centre side:** the
+  insurance hero tour (Catch the Next Renewal) was rebuilt around
+  Workflows; its aha needs a Workflow TRIGGERING off a POLICY-record
+  date field in the FSE demo environment. Templates proved
+  API-creatable on Business+ (docs/bizplus-tenant.md), but the FSE
+  policy-record trigger is unproven and the policy module is
+  API-invisible. Confirm before that capture; don't fake it.
 
 ## 2026-07-23 session, part 2 (After the Yes - Business+ sales door)
 - Story seeded from Demo Centre/maximizer-demo-centre-sales-tour-drafts
