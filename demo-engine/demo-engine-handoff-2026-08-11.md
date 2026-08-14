@@ -1,19 +1,24 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-08-14 · Session: Claude Code
 
-## 2026-08-14 session (webinar-mcgill-catch - BLOCKED on FSE token)
+## 2026-08-14 session (webinar-mcgill-catch - SEEDED, recording day)
 - Recording day for the Aug 19 Focal webinar story. Seeder
   engine/seed-webinar-mcgill.py reviewed against CLAUDE.md: validated
   shapes all correct; two fixes applied (incremental manifest save per
   rule 3; FieldOptions compat aligned to AbEntryKey 2.0).
-- RUN BLOCKED: FSE PAT rejected, "Authentication failed, invalid
-  Token" (-20003). .env intact and unmodified since Jul 15 - the token
-  was created Jul 15, so a 30-day expiry lands exactly today. NOTHING
-  was created in the tenant; the failed run's empty stub manifest was
-  removed. Seeder is ready to run unchanged once Lewis puts a fresh
-  FSE PAT in .env. Business+ token untested today (created ~Jul 22;
-  if 30-day, it dies ~Aug 21 - BEFORE the Aug 19 webinar is safe, but
-  renew both while in there).
+- First run blocked on the expired FSE PAT (created Jul 15, 30-day
+  expiry hit exactly Aug 14). Lewis refreshed the token; SEEDED same
+  day: 9 records (household + Dan 54/Priya 52/Maya 17 + 3 notes at
+  2y/5mo/14wk + open 2-year RESP task owned by Barb Smith + Priya's
+  9-week cottage call). ALL READ-BACK VERIFIED; zero today-stamped
+  notes on the household after sweep; Sokolovs untouched (spot-checked).
+  Manifest: webinar-mcgill-catch-manifest.json.
+- STILL ON LEWIS before the recording: Focal-side meeting on John's
+  account (McGill line mid-conversation, NOT in action items; action
+  items = cottage valuation + RESP contribution), sync it to the
+  Halloran household; confirm with product that IQ Boost reads tasks
+  and calls (the beat rests on it); renew the Business+ PAT (created
+  ~Jul 22, likely dies ~Aug 21, straddling the Aug 19 webinar).
 - NOTE: walk-in-ready and all FSE stories are 3-4 weeks stale (see the
   08-11 note); the webinar story seeds fresh so it is unaffected, but
   do not capture other FSE tours without refresh/reseed.
