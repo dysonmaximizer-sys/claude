@@ -1,6 +1,17 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-08-14 · Session: Claude Code
 
+## 2026-08-14 session, part 2 (Date Last Contacted freshen)
+- All 78 non-story entries' Date Last Contacted ($TYPEID(60059)) set to
+  a realistic spread (35% this week / 35% 1-3wk / 30% 3-6wk,
+  deterministic per key). PROTECTED (31 entries): every story-created
+  AbEntry across all manifests - notably See Your Whole Book's five
+  deliberately-quiet households (their staleness IS the story) - plus
+  Bill Graham. Prior values in
+  manifests/last-contacted-freshen-2026-08-14.json (reversible).
+  Verified by sampled read-backs; no audit notes generated (this UDF
+  update class doesn't auto-log; sweep confirmed 0).
+
 ## 2026-08-14 session (webinar-mcgill-catch - SEEDED, recording day)
 - Recording day for the Aug 19 Focal webinar story. Seeder
   engine/seed-webinar-mcgill.py reviewed against CLAUDE.md: validated
