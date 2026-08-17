@@ -52,3 +52,15 @@ June call.
   demo mailboxes (Outlook capture); the API cannot fabricate emails.
 - Focal side must capture/sync the meeting to the HALLORAN household (John
   or Jerry to confirm how the sync matches the Maximizer record).
+- **Tenant fallback for the synced summary:** `engine/add-focal-summary-note.py`
+  seeds the Focal-style structured summary note directly on the Halloran
+  household, dated Wed 2026-08-19 10:45 PT (meeting end). Content follows a
+  researched Focal summary structure (summary by topic, key details, action
+  items, follow-up) and honors the accuracy gates: McGill line buried in the
+  Family Updates paragraph and ABSENT from action items; action items are
+  cottage valuation + RESP contribution only; no grant-room language.
+  Appends its key to this story's manifest so `--cleanup` removes it.
+  NOTE (2026-08-17): Cowork's sandbox proxy blocks api.maximizer.com
+  (tunnel 403), so this script must run on Lewis's Mac. If the future-dated
+  DateTime misbehaves on the timeline, change `dt_pacific(2026, 8, 19, ...)`
+  to today's date and re-run after cleanup of the note.

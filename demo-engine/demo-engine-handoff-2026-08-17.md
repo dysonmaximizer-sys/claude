@@ -1,5 +1,34 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-08-14 · Session: Claude Code
+Updated: 2026-08-17 · Session: Cowork
+
+## 2026-08-17 session, part 2 (Focal summary note — RUN from Claude Code)
+- Ran engine/add-focal-summary-note.py against FSE: note created
+  (Tm90ZQkzMjg4), stored AND read back as 2026-08-19T17:45:00Z (10:45
+  PT on webinar day) - FUTURE-DATED NOTES STORE CORRECTLY (first
+  validation of a future DateTime; fallback not needed). Independent
+  ParentKey read: 4 notes on the household, Focal note newest, McGill
+  line in summary and absent from action items, no grant-room language,
+  zero today-stamped audit notes. Manifest updated (10 records).
+  Timeline DISPLAY of the future date still needs Lewis's eyeball.
+
+## 2026-08-17 session (Focal summary note — SCRIPT READY, NOT RUN)
+- New: `engine/add-focal-summary-note.py` adds the synced Focal-style
+  meeting summary note to the Halloran household, dated Wed 2026-08-19
+  10:45 PT (future-dated per Lewis; back-dated notes are validated,
+  future not yet — script prints the read-back DateTime, check it).
+  Content per spec accuracy gates (McGill buried in Family Updates, NOT
+  in action items; action items = cottage valuation + RESP contribution;
+  no grant-room language). Appends to webinar-mcgill-catch manifest;
+  refuses to duplicate itself.
+- **NOT RUN: Cowork's sandbox proxy blocks api.maximizer.com (tunnel
+  403).** The engine only reaches the tenant from Lewis's Mac (Claude
+  Code or terminal). Lewis has the run steps; if the future DateTime
+  displays wrong on the timeline, fallback is today's date (his call).
+- Spec updated (stories/webinar-mcgill-catch.md, Seeding section).
+- Gabe-facing docs written to /Users/lewisdyson/PMM/:
+  Focal-Maximizer-Webinar-Script.docx + Focal-Webinar-Gabe-Speaker-Notes.docx
+  — both keyed to this story's beats (follow-up catch Q, cottage Q,
+  contrast note, timeline/prep).
 
 ## 2026-08-14 session, part 3 (Halloran profile fields)
 - All four Hallorans (household + Dan/Priya/Maya): Segmentation = A
