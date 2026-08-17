@@ -1,5 +1,20 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-08-17 · Session: Cowork
+Updated: 2026-08-17 · Session: Claude Code
+
+## 2026-08-17 session, part 3 (enrich run — webinar data COMPLETE)
+- engine/enrich-webinar-story.py ran: **Update path succeeded** (no
+  recreate needed — InteractionLog Update is now a VALIDATED op, in
+  CLAUDE.md). June call carries the quotable capital-gains line,
+  read-back verified, dates and Barb Smith owner intact.
+- Focal note state re-verified: present, dated today 10:45 PT per the
+  approved fallback (future dates store but hide — now in CLAUDE.md).
+  Lewis moves its date to Aug 19 manually in the UI on webinar day.
+- Sweep: 1 audit note deleted ("Hotlist Task Created: Contact property
+  appraiser..." — someone added the Focal action item as a real UI task
+  today; the task itself remains, demo-realistic).
+- Halloran record is now DEMO-COMPLETE pending Lewis's manual IQ Boost
+  protocol (3 questions, printed by the enrich script) and the
+  Wednesday date-nudge.
 
 ## 2026-08-17 session, part 2 (Focal summary note — RUN from Claude Code)
 - Ran engine/add-focal-summary-note.py against FSE: note created
@@ -18,6 +33,19 @@ Updated: 2026-08-17 · Session: Cowork
   content, correct for the meeting it describes) - Lewis moves the note
   date manually in the UI on webinar day. Items 2-4 of the eyeball
   checklist all confirmed by Lewis.
+
+## 2026-08-17 session, part 2 (record enrichment — SCRIPT READY, NOT RUN)
+- New: `engine/enrich-webinar-story.py` rewrites the June cottage call
+  Description to carry the exact quotable line ("Priya raised possibly
+  selling the cottage; wants to understand capital gains before
+  deciding"). Tries Update first (unvalidated op), verifies by read-back,
+  falls back to delete+recreate with identical dates and swaps the
+  manifest key. Also prints the manual 3-question IQ Boost test protocol.
+- add-focal-summary-note.py wording aligned: "possible listing in spring".
+- Story spec gained an "Output-steering rule": enrich real records, never
+  hide instructions in data (Lewis's call after discussing it).
+- Run order on the Mac: enrich-webinar-story.py, then
+  add-focal-summary-note.py, then manual IQ Boost tests in the UI.
 
 ## 2026-08-17 session (Focal summary note — SCRIPT READY, NOT RUN)
 - New: `engine/add-focal-summary-note.py` adds the synced Focal-style

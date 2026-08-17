@@ -56,7 +56,7 @@ MEETING SUMMARY
 
 Portfolio review. Walked through year-to-date performance and current allocation. Dan and Priya are comfortable with the mix and no changes were requested. Risk tolerance reconfirmed as unchanged.
 
-Cottage. Dan and Priya are now seriously considering selling the family cottage, most likely listing in spring. Priya estimates its value around $780,000; they purchased it in 1999 for approximately $210,000. Their hesitations are family attachment and timing of the sale. They asked what capital gains would look like on the sale and whether the proceeds could bring Dan's retirement forward by a year or two. They would like to see a projection before making a listing decision.
+Cottage. Dan and Priya are now seriously considering selling the family cottage, with a possible listing in spring. Priya estimates its value around $780,000; they purchased it in 1999 for approximately $210,000. Their hesitations are family attachment and timing of the sale. They asked what capital gains would look like on the sale and whether the proceeds could bring Dan's retirement forward by a year or two. They would like to see a projection before making a listing decision.
 
 Family updates. Priya's mother's condo sale closed last month and the family is planning a celebration trip in October. Dan mentioned that Maya got into McGill and starts next September; the family is very proud. Priya has reduced her consulting hours for the fall.
 

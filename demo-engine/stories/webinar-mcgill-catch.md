@@ -35,6 +35,19 @@ June call.
    she starts next September." Plus agreed action items: cottage valuation
    contact, RESP contribution.
 
+## Output-steering rule (added 2026-08-17)
+
+Steer IQ Boost answers by enriching the REAL records it reads, never by
+hiding instructions in the data - everything on the record can appear on
+screen during the demo. `engine/enrich-webinar-story.py` puts the quotable
+line in the June call ("Priya raised possibly selling the cottage; wants to
+understand capital gains before deciding") and prints the three-question
+manual test protocol (Q1 follow-ups/McGill, Q2 cottage, Q3 RESP timing).
+The Focal summary note carries the other anchors: $780,000 estimate, 1999
+purchase, "possible listing in spring", RESP contribution "before end of
+September". If an answer tests weak, enrich the source note and retest;
+iterate records, not prompts.
+
 ## Accuracy gates
 
 - The payoff is allocation glide path + withdrawal planning. NEVER "unused
