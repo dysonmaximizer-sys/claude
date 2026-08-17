@@ -1,6 +1,12 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-08-14 · Session: Claude Code
 
+## 2026-08-14 session, part 3 (Halloran profile fields)
+- All four Hallorans (household + Dan/Priya/Maya): Segmentation = A
+  Client, Record Type = Client (new validated UDF, now in CLAUDE.md),
+  Next KYC Review = 2026-10-15. All read-back verified; no audit notes
+  generated.
+
 ## 2026-08-14 session, part 2 (Date Last Contacted freshen)
 - All 78 non-story entries' Date Last Contacted ($TYPEID(60059)) set to
   a realistic spread (35% this week / 35% 1-3wk / 30% 3-6wk,

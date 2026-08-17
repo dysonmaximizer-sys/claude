@@ -123,6 +123,11 @@ Works:
   string ("2"); reads return a list (["2"]).
 - **Next KYC Review** = date UDF `Udf/$TAG(WME_CLIENTINFO_REV_NEXTKYC)`,
   accepts "YYYY-MM-DD".
+- **Record Type** = enum UDF `Udf/$NAME(WM_Client Info\Record Type -
+  Mandatory)`: 1=Client, 2=Prospect, 3=Referral Source, 4=Other
+  Professional, 7=Corporate, 8=Leads (validated 2026-08-14; stores on
+  households AND contacts). Distinct from "Client Type" (entity-form
+  enum in the same folder).
 - **Type queries:** searching Type=Household returns ALL entries (the
   tenant's ~82 dedupe to Individual/Contact/Company); households are
   Company-typed internally (Sokolov Family). Count by deduped keys, never
