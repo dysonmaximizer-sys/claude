@@ -87,7 +87,7 @@ def main():
     if any(r.get("label", "").startswith("FOCAL AI MEETING SUMMARY") for r in manifest.get("records", [])):
         sys.exit("Focal summary note already in manifest - not creating a duplicate.")
 
-    when = dt_pacific(2026, 8, 19, "10:45")  # note stamped at meeting end
+    when = dt_pacific(2026, 8, 17, "10:45")  # note stamped at meeting end
     data = call("Create", {"Note": {"Data": {
         "Key": None, "ParentKey": HH, "DateTime": when, "Text": NOTE_TEXT,
     }}})

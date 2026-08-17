@@ -10,6 +10,14 @@ Updated: 2026-08-17 · Session: Cowork
   line in summary and absent from action items, no grant-room language,
   zero today-stamped audit notes. Manifest updated (10 records).
   Timeline DISPLAY of the future date still needs Lewis's eyeball.
+- EYEBALL RESULT: future-dated note stored fine but HID on the timeline
+  (new tenant fact: future DateTimes store but do not display). Approved
+  fallback executed: old note deleted, recreated as Tm90ZQkzMjg5 dated
+  TODAY 2026-08-17T17:45:00Z (10:45 PT), read-back verified, manifest
+  updated (10 records). Note TEXT still says Wednesday Aug 19 (locked
+  content, correct for the meeting it describes) - Lewis moves the note
+  date manually in the UI on webinar day. Items 2-4 of the eyeball
+  checklist all confirmed by Lewis.
 
 ## 2026-08-17 session (Focal summary note — SCRIPT READY, NOT RUN)
 - New: `engine/add-focal-summary-note.py` adds the synced Focal-style
