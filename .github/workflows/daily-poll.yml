@@ -36,7 +36,7 @@ jobs:
 
       - name: Run daily poll
         working-directory: competitive_intel
-env:
+        env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           CHANGEDETECTION_API_KEY: ${{ secrets.CHANGEDETECTION_API_KEY }}
