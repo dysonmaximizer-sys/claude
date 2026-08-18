@@ -1,24 +1,20 @@
-name: Daily Competitive Poll
+name: Pipeline Health Check
 
+# The failsafe. Scoring broke on 2026-08-04 and nobody noticed for two weeks,
+# because every symptom was passive: a red run nobody opened, a pile of Unscored
+# rows nobody counted. This job actively posts to Teams the moment the pipeline
+# stops working, and stays silent otherwise.
 on:
   schedule:
-    # Business days only, at 15:00 UTC. GitHub cron ignores DST, so this
-    # lands at 08:00 Pacific during PDT (~Mar–Nov) and 07:00 during PST —
-    # biased early (like the newsletter cron) so it's a morning alert
-    # year-round and absorbs GitHub's usual 10–60 min cron delay.
-    # 1-5 = Mon–Fri; 15:00 UTC is the same weekday in Pacific. No weekend
-    # alerts (Saturday/Sunday mornings are skipped).
-    # 08:00 runs BEFORE the day's cd.io crawl (~09:00–15:00 Pacific), so each
-    # morning's alert covers the PRIOR day's detections. The job uses a 76h
-    # lookback to bridge the weekend gap: Friday's crawl is alerted Monday
-    # 08:00. Re-fetched changes already in Notion are skipped by dedup.
-    - cron: "0 15 * * 1-5"
-  workflow_dispatch: # allow manual trigger from GitHub Actions UI
+    # 16:00 UTC daily — an hour after the weekday poll, and every day so a
+    # weekend breakage is caught rather than waiting until Monday.
+    - cron: "0 16 * * *"
+  workflow_dispatch:
 
 jobs:
-  poll:
+  healthcheck:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
 
     steps:
       - name: Checkout
@@ -34,7 +30,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r competitive_intel/requirements.txt
 
-      - name: Run daily poll
+      - name: Run health check
         working-directory: competitive_intel
         env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -43,21 +39,20 @@ jobs:
           CHANGEDETECTION_BASE_URL: ${{ secrets.CHANGEDETECTION_BASE_URL }}
           NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
           NOTION_CHANGES_DB_ID: ${{ secrets.NOTION_CHANGES_DB_ID }}
-          # Single Teams destination. The 11 per-competitor
-          # TEAMS_WEBHOOK_<COMPETITOR> secrets were removed on 2026-08-18:
-          # every one of them was null, so alerts already fell through to
-          # the general webhook while the config implied 11 live channels.
           TEAMS_GENERAL_WEBHOOK: ${{ secrets.TEAMS_GENERAL_WEBHOOK }}
-        run: python -m jobs.daily_poll
+          # Lets the check read the daily poll's run history, so it can spot a
+          # schedule that has stopped firing. Provided automatically by Actions.
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: python -m jobs.healthcheck
 
-      # Failsafe: a red X in the Actions tab is passive and was missed for two
-      # weeks in August 2026. This pushes the failure to where people look.
-      - name: Alert Teams if this job failed
+      # If the health check itself dies, the checker is no better than the thing
+      # it checks. This posts directly, depending on nothing but curl-equivalent.
+      - name: Alert Teams if the health check itself failed
         if: failure()
         env:
           WEBHOOK: ${{ secrets.TEAMS_GENERAL_WEBHOOK }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          JOB_LABEL: "daily poll"
         run: |
           python3 - <<'PY'
           import json, os, urllib.request
@@ -65,19 +60,18 @@ jobs:
           if not hook:
               print("No TEAMS_GENERAL_WEBHOOK set; cannot alert.")
               raise SystemExit(0)
-          label = os.environ.get("JOB_LABEL", "job")
           card = {
               "type": "AdaptiveCard",
               "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
               "version": "1.5",
               "body": [
                   {"type": "Container", "style": "attention", "bleed": True, "items": [
-                      {"type": "TextBlock", "text": f"Competitive Intel: {label} FAILED",
+                      {"type": "TextBlock", "text": "Competitive Intel: HEALTH CHECK CRASHED",
                        "weight": "Bolder", "size": "Large", "wrap": True},
-                      {"type": "TextBlock", "text": "Competitor changes may be going undetected until this is fixed.",
+                      {"type": "TextBlock", "text": "The watchdog itself failed, so the pipeline is now unmonitored.",
                        "spacing": "None", "isSubtle": True, "wrap": True}]},
                   {"type": "TextBlock", "wrap": True,
-                   "text": "Most likely causes: the Anthropic key cannot pay (run `python3 -m scripts.check_api_key`), changedetection.io is unreachable, or Notion rejected a write. The run log says which."},
+                   "text": "Open the run log to see why. Until this is fixed, a silent pipeline failure will go unnoticed."},
               ],
               "actions": [{"type": "Action.OpenUrl", "title": "Open run log",
                            "url": os.environ.get("RUN_URL", "")}],
@@ -85,5 +79,5 @@ jobs:
           urllib.request.urlopen(urllib.request.Request(
               hook, data=json.dumps(card).encode(),
               headers={"Content-Type": "application/json"}), timeout=20)
-          print("Failure alert sent to Teams.")
+          print("Crash alert sent to Teams.")
           PY

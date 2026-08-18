@@ -207,6 +207,20 @@ def get_unscored_changes() -> list[dict]:
     )
 
 
+def get_latest_detection() -> str:
+    """
+    Return the most recent Date Detected in the Changes DB as an ISO string, or ""
+    if the database is empty. Used by the health check to spot a pipeline that is
+    running green but no longer receiving anything.
+    """
+    data = _post(f"/databases/{_CHANGES_DB}/query", {
+        "page_size": 1,
+        "sorts": [{"property": "Date Detected", "direction": "descending"}],
+    })
+    results = data.get("results", [])
+    return extract_change_fields(results[0])["date_detected"] if results else ""
+
+
 def update_change_score(page_id: str, score: int, reasoning: str) -> None:
     _patch(f"/pages/{page_id}", {"properties": {
         "Significance Score": {"number": score},

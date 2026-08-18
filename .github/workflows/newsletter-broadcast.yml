@@ -88,3 +88,41 @@ jobs:
             ARGS="$ARGS --year ${{ github.event.inputs.target_year }} --month ${{ github.event.inputs.target_month }}"
           fi
           python -m jobs.monthly_newsletter $ARGS
+
+      # Failsafe: a red X in the Actions tab is passive and was missed for two
+      # weeks in August 2026. This pushes the failure to where people look.
+      - name: Alert Teams if this job failed
+        if: failure()
+        env:
+          WEBHOOK: ${{ secrets.TEAMS_GENERAL_WEBHOOK }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          JOB_LABEL: "monthly newsletter"
+        run: |
+          python3 - <<'PY'
+          import json, os, urllib.request
+          hook = os.environ.get("WEBHOOK", "")
+          if not hook:
+              print("No TEAMS_GENERAL_WEBHOOK set; cannot alert.")
+              raise SystemExit(0)
+          label = os.environ.get("JOB_LABEL", "job")
+          card = {
+              "type": "AdaptiveCard",
+              "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+              "version": "1.5",
+              "body": [
+                  {"type": "Container", "style": "attention", "bleed": True, "items": [
+                      {"type": "TextBlock", "text": f"Competitive Intel: {label} FAILED",
+                       "weight": "Bolder", "size": "Large", "wrap": True},
+                      {"type": "TextBlock", "text": "Competitor changes may be going undetected until this is fixed.",
+                       "spacing": "None", "isSubtle": True, "wrap": True}]},
+                  {"type": "TextBlock", "wrap": True,
+                   "text": "Most likely causes: the Anthropic key cannot pay (run `python3 -m scripts.check_api_key`), changedetection.io is unreachable, or Notion rejected a write. The run log says which."},
+              ],
+              "actions": [{"type": "Action.OpenUrl", "title": "Open run log",
+                           "url": os.environ.get("RUN_URL", "")}],
+          }
+          urllib.request.urlopen(urllib.request.Request(
+              hook, data=json.dumps(card).encode(),
+              headers={"Content-Type": "application/json"}), timeout=20)
+          print("Failure alert sent to Teams.")
+          PY
