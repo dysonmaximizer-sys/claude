@@ -166,6 +166,9 @@ def install_fakes(notion, changes, failing_after=None):
 
     teams.send_competitive_alert = send_competitive_alert
     teams.send_digest_alert = send_digest_alert
+    # The real module redacts webhook URLs out of exception text before logging.
+    # The fake needs it too, since the jobs import it by name.
+    teams.redact = str
 
     for name, mod in [
         ("integrations.anthropic_preflight", preflight),

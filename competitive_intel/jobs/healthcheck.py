@@ -28,6 +28,10 @@ of people within a week. Use --always-notify to force a card for testing.
 Exit code 0 when healthy, 1 when any check fails, so the workflow goes red too
 and you get GitHub's own notification as a second, independent signal.
 
+Failing to DELIVER the report counts as a failure in its own right. The watchdog
+speaks through Teams, so when Teams is the broken thing it has no voice — the
+non-zero exit hands the job to GitHub's notifications instead.
+
 Usage:
     python3 -m jobs.healthcheck
     python3 -m jobs.healthcheck --always-notify     # send a card even when healthy
@@ -146,7 +150,7 @@ def check_runs() -> dict:
 
 
 def run(always_notify: bool = False) -> dict:
-    from integrations.teams_client import send_status_alert
+    from integrations.teams_client import redact, send_status_alert
 
     logger.info("=== Pipeline health check ===")
     results = []
@@ -171,7 +175,7 @@ def run(always_notify: bool = False) -> dict:
             lines.append(f"{'✅' if r['ok'] else '❌'} **{r['name']}** — {r['detail']}")
             lines += [f"    {e}" for e in r.get("extra", [])]
         try:
-            send_status_alert(
+            delivered = send_status_alert(
                 title="Competitive Intel: pipeline is healthy" if healthy
                       else "Competitive Intel: PIPELINE PROBLEM",
                 subtitle=("All checks passed."
@@ -182,7 +186,26 @@ def run(always_notify: bool = False) -> dict:
                 style="good" if healthy else "attention",
             )
         except Exception as e:
-            logger.error("Could not send the health alert to Teams: %s", e)
+            delivered = False
+            logger.error("Could not send the health alert to Teams: %s", redact(e))
+
+        if not delivered:
+            # The watchdog reports through Teams, so if Teams is the broken thing
+            # it has no voice — which is exactly what happened on 2026-08-18, when
+            # a deleted Power Automate flow made every post return
+            # 400 WorkflowTriggerIsNotEnabled. Counting an undelivered report as a
+            # failure turns the red run, and GitHub's own notification, into the
+            # fallback channel.
+            logger.error(
+                "ALERTING CHANNEL IS DOWN — the health report could not be delivered "
+                "to Teams, so this run exits non-zero and GitHub's failure "
+                "notification is the only remaining signal. Check "
+                "TEAMS_GENERAL_WEBHOOK in .env and in the repository secrets."
+            )
+            problems = problems + [{
+                "name": "Teams delivery", "ok": False,
+                "detail": "the health report could not be delivered to Teams",
+            }]
 
     logger.info("=== %d problem(s) ===", len(problems))
     return {"problems": len(problems), "results": results}
