@@ -62,9 +62,17 @@ NOTION_CHANGES_DB_ID=...
   CHANGEDETECTION_BASE_URL=https://yourname.changedetection.io
   ```
 
-**Naming your watches:** Set each watch's **Title** to include the competitor slug
-(e.g. "hubspot - pricing", "equisoft - features") — the system uses the title
-(case-insensitive) plus the URL to match changes to the right competitor.
+**Matching watches to competitors:** `_match_competitor()` resolves a watch in
+three passes — the `url_patterns` (host + optional path) in `config.COMPETITORS`
+first, then `title_patterns`, then a legacy "slug appears in title or URL"
+fallback. Adding `url_patterns` for a new competitor is the reliable route;
+naming the watch to include the slug (e.g. "hubspot - pricing") still works for
+the original 11. A watch that matches nothing is skipped with a WARNING naming
+the URL, so grep the run log for "no competitor match" after adding watches.
+
+**After adding a competitor to `config.py`,** run
+`python3 -m scripts.sync_notion_competitor_options --apply` so the Notion
+**Competitor** select carries the new option.
 
 ---
 
@@ -75,7 +83,8 @@ For each channel you want alerts in:
 2. Name it "Competitive Intel" → **Create** → copy the webhook URL
 3. Add to `.env`:
    - General channel: `TEAMS_GENERAL_WEBHOOK=https://...`
-   - Per competitor (optional): `TEAMS_WEBHOOK_HUBSPOT=https://...` etc.
+   - That single webhook receives every competitor's alerts; the competitor
+     name is the headline of each card.
 
 Until webhooks are added, alerts are silently skipped — Teams isn't notified.
 
@@ -120,17 +129,6 @@ CHANGEDETECTION_BASE_URL
 NOTION_PARENT_PAGE_ID
 NOTION_CHANGES_DB_ID
 TEAMS_GENERAL_WEBHOOK          (add when ready)
-TEAMS_WEBHOOK_EQUISOFT         (optional)
-TEAMS_WEBHOOK_CLOVEN           (optional)
-TEAMS_WEBHOOK_HUBSPOT          (optional)
-TEAMS_WEBHOOK_LAYLAH           (optional)
-TEAMS_WEBHOOK_SALESFORCE       (optional)
-TEAMS_WEBHOOK_WEALTHBOX        (optional)
-TEAMS_WEBHOOK_MONDAY           (optional)
-TEAMS_WEBHOOK_ZOHO             (optional)
-TEAMS_WEBHOOK_ONEVEST          (optional)
-TEAMS_WEBHOOK_PIPEDRIVE        (optional)
-TEAMS_WEBHOOK_ADVORA           (optional)
 RESEND_API_KEY
 SMTP_FROM
 NEWSLETTER_RECIPIENTS

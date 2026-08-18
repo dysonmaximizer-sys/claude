@@ -11,6 +11,7 @@ import logging
 import os
 from datetime import datetime, timezone
 from pathlib import Path
+from typing import Optional
 
 import requests
 from dotenv import load_dotenv
@@ -113,13 +114,30 @@ def _query_db(db_id: str, filter_body: dict, sorts: list = None) -> list[dict]:
 
 # ── Changes Database ──────────────────────────────────────────────────────────
 
-def change_already_logged(competitor_name: str, url: str, detected_at: str) -> bool:
+def find_existing_change(competitor_name: str, url: str, detected_at: str) -> Optional[dict]:
     """
-    Return True if a change for this competitor/URL was already logged within
-    a 2-hour window of detected_at. Prevents duplicate entries on overlapping polls.
+    Return the most recently detected change row for this competitor/URL inside
+    a 2-hour window of detected_at, or None if there is no match.
+
+    Status-aware dedupe. The caller decides what to do with a match, because
+    "already in Notion" and "already handled" are not the same thing:
+
+      - Status Scored / Distributed → genuinely a duplicate, skip it.
+      - Status Unscored             → a row stranded by an earlier failure.
+        Re-score that row IN PLACE instead of skipping it or creating a
+        duplicate.
+
+    The old boolean change_already_logged() ignored Status, so any row written
+    before a scoring failure was treated as a duplicate on every subsequent
+    run and could never be scored — that is what stranded 183 rows between
+    2026-08-03 and 2026-08-18.
+
+    Returns the extracted fields dict (see extract_change_fields) of the match.
+    On query failure returns None, which keeps the old fail-open behaviour: a
+    possible duplicate row is a smaller problem than a dropped change.
     """
     if not detected_at:
-        return False
+        return None
     try:
         from datetime import timedelta
         dt = datetime.fromisoformat(detected_at.replace("Z", "+00:00"))
@@ -133,11 +151,16 @@ def change_already_logged(competitor_name: str, url: str, detected_at: str) -> b
                 {"property": "Date Detected", "date": {"on_or_after":  window_start}},
                 {"property": "Date Detected", "date": {"on_or_before": window_end}},
             ]},
+            sorts=[{"property": "Date Detected", "direction": "descending"}],
         )
-        return len(results) > 0
+        if not results:
+            return None
+        # Latest match decides: an Unscored row newer than a Scored one still
+        # needs scoring.
+        return extract_change_fields(results[0])
     except Exception as e:
         logger.debug("Dedup check failed (allowing log): %s", e)
-        return False
+        return None
 
 
 def log_change(
@@ -173,10 +196,14 @@ def log_change(
 
 
 def get_unscored_changes() -> list[dict]:
-    """Return all change pages with Status = Unscored."""
+    """
+    Return every change page with Status = Unscored, oldest detection first, so
+    a backlog drains in the order it accumulated. Paginated by _query_db.
+    """
     return _query_db(
         _CHANGES_DB,
         {"property": "Status", "select": {"equals": "Unscored"}},
+        sorts=[{"property": "Date Detected", "direction": "ascending"}],
     )
 
 
@@ -193,6 +220,24 @@ def update_change_summary(page_id: str, summary: str) -> None:
     _patch(f"/pages/{page_id}", {"properties": {
         "AI Summary": {"rich_text": [{"text": {"content": _truncate_for_notion(summary)}}]},
     }})
+
+
+def update_change_meta(page_id: str, tier: str = "", category: str = "") -> None:
+    """
+    Refresh the Tier and/or Category select values on an existing row.
+
+    Used when re-scoring a stranded row: Tier is re-read from the competitor
+    registry (it may have changed since the row was logged) and Category is
+    the refined one the scoring agent returns.
+    """
+    properties: dict = {}
+    if tier:
+        properties["Tier"] = {"select": {"name": tier}}
+    if category:
+        properties["Category"] = {"select": {"name": category}}
+    if not properties:
+        return
+    _patch(f"/pages/{page_id}", {"properties": properties})
 
 
 def mark_alert_sent(page_id: str) -> None:
