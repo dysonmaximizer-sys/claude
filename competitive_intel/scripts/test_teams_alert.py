@@ -9,10 +9,11 @@ Expected outcome:
   - Terminal prints "Teams alert sent for Cloven (score 9)"
   - An Adaptive Card with a red header appears in the Competitive Intel
     Teams chat within ~5 seconds, showing competitor, tier, category,
-    significance, summary, and a "View in Notion" button.
+    significance, summary, and an "Open Source" button.
 
 If you see "Teams not configured" in the log, TEAMS_GENERAL_WEBHOOK isn't
-set in .env. If the call succeeds but no card lands in Teams, check the
+set in .env (it is the only webhook now — per-competitor routing was removed
+on 2026-08-18). If the call succeeds but no card lands in Teams, check the
 flow's run history in Power Automate for the actual error.
 """
 
@@ -48,7 +49,6 @@ def main() -> int:
             "our mid-market positioning. Source: Cloven pricing page."
         ),
         url="https://cloven.io/pricing",
-        competitor_slug="cloven",
         notion_url=(
             "https://www.notion.so/Competitive-Intelligence-Hub-"
             "34474af315fe809883bce99ab29a31ff"

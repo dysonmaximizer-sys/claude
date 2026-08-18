@@ -20,7 +20,9 @@ Runs on **GitHub Actions** (workflow YAMLs at the repo root in `.github/workflow
 
 ```
 jobs/
-  daily_poll.py          # Daily: changedetection.io -> Notion -> score -> summarise -> alert
+  daily_poll.py          # Daily: preflight -> rescue sweep -> changedetection.io -> Notion -> score -> summarise -> alert
+  rescore.py             # Shared engine: scores rows stuck at Status = Unscored
+  backfill_rescore.py    # One-off: drains the whole Unscored backlog (uses rescore.py)
   monthly_newsletter.py  # Monthly: Notion -> newsletter -> Resend (--mode draft|broadcast)
 
 agents/
@@ -32,6 +34,7 @@ integrations/
   changedetection_client.py  # Polls changedetection.io API, builds the diff
   notion_client.py           # All Notion reads/writes (Changes DB)
   teams_client.py            # Builds Adaptive Cards, posts via Teams Workflows webhook
+  anthropic_preflight.py     # 1-token key check; jobs abort before any fetch or write if it fails
 
 resources/
   newsletter_system_prompt.txt  # Prompt loaded by newsletter_agent.py (edit here, not in code)
@@ -41,6 +44,9 @@ scripts/
   archive_battlecard_pages.py  # One-shot: archived 11 legacy battlecard pages in Notion
   archive_competitors_database.py  # One-shot: archives the defunct Competitors database
   test_teams_alert.py          # Smoke test: fires a sample alert card to Teams
+  check_api_key.py             # Standalone: is the Anthropic key funded? (auth vs billing)
+  sync_notion_competitor_options.py  # Adds missing Competitor select options to Notion
+  test_dedupe_recovery.py      # Offline regression test for the dedupe-poisoning fix
 ```
 
 Battlecards have been removed from scope. The 11 legacy battlecard pages and the `Battlecard Updated` Notion column have been archived. No code touches battlecard pages.
@@ -59,13 +65,17 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Wealthbox   | Tier 2      | Yes                  |
 | Monday      | Tier 2      | Yes                  |
 | Zoho        | Tier 2      | Yes                  |
+| Redtail     | Tier 2      | Yes (added 2026-08-18) |
+| AdvisorEngine | Tier 2    | Yes (added 2026-08-18) |
+| Microsoft Dynamics | Tier 2 | Yes (added 2026-08-18) |
+| Act!        | Tier 2      | Yes (added 2026-08-18) |
 | Onevest     | Ankle Biter | Yes                  |
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
 
-cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The GitHub Actions poll runs business days at 15:00 UTC (08:00 PDT / 07:00 PST) — a weekday morning alert that runs before that day's crawl, so it reports the prior day's detections. The lookback is **76h** so Monday's run reaches back across the weekend to catch Friday's crawl (~72h); Friday's changes are alerted Monday 08:00. Re-fetched changes already in Notion are skipped by `change_already_logged()`, so the wide window never double-alerts.
+cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The GitHub Actions poll runs business days at 15:00 UTC (08:00 PDT / 07:00 PST) — a weekday morning alert that runs before that day's crawl, so it reports the prior day's detections. The lookback is **76h** so Monday's run reaches back across the weekend to catch Friday's crawl (~72h); Friday's changes are alerted Monday 08:00. Re-fetched changes already **scored** in Notion are skipped by `find_existing_change()`; a re-fetched change whose row is still `Unscored` is re-scored in place instead of being skipped (see the 2026-08-18 entry).
 
-To add a new competitor to changedetection.io: log into the cd.io dashboard, click "Add a new change detection", paste the URL, and set the **Title** to include the competitor slug (e.g. "salesforce pricing") so `_match_competitor()` picks it up.
+To add a new competitor: (1) add the watch in the cd.io dashboard; (2) add an entry to `COMPETITORS` in `config.py` with `url_patterns` (host + optional path) — that is the precise match and does not depend on how the watch is titled; (3) run `python3 -m scripts.sync_notion_competitor_options --apply` so the Notion **Competitor** select has the option. Setting the watch **Title** to include the slug still works as a fallback for the original 11 competitors, but `url_patterns` is the reliable route. A watch matching nothing is skipped with a WARNING naming the URL — grep the run log for "no competitor match" to catch a missing registry entry.
 
 ---
 
@@ -78,7 +88,7 @@ To add a new competitor to changedetection.io: log into the cd.io dashboard, cli
 - Alert card includes one action button: "Open Source" (links to the cd.io-detected URL). The "View in Notion" button was removed because the link points to the broader Hub, not the specific change.
 - Newsletter announcement card uses `accent` styling and includes a "Read Full Newsletter" button linking to the newsletter's Notion page.
 - Webhook URL is stored in `.env` as `TEAMS_GENERAL_WEBHOOK` and in GitHub Actions secrets under the same name.
-- Per-competitor webhooks (`TEAMS_WEBHOOK_EQUISOFT`, etc.) are supported by the code but not configured. All competitors route to the general webhook for now.
+- Per-competitor webhook routing was removed on 2026-08-18. All 11 per-competitor secrets were null, so every alert already went to the general webhook; the code, workflow YAML and docs now match that reality. Every alert goes to `TEAMS_GENERAL_WEBHOOK` with the competitor name as the card headline.
 
 ---
 
@@ -98,7 +108,6 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 | `SMTP_FROM` | Set | `competitive-intel@maximizer.com` |
 | `NEWSLETTER_RECIPIENTS` | Set | `lewisdyson@maximizer.com` (expand when ready) |
 | `TEAMS_GENERAL_WEBHOOK` | Set | Points at the Competitive Intel chat via Power Automate flow |
-| `TEAMS_WEBHOOK_<COMPETITOR>` | Empty | Per-competitor overrides (optional, not currently used) |
 
 ---
 
@@ -116,9 +125,26 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-08-04
+## Status as of 2026-08-18
 
-### Latest update — 2026-08-04 (later): "RECOMMENDED ACTION" removed from Teams alerts
+### Latest update — 2026-08-18: credit-outage fallout fixed (preflight, dedupe, backfill, 4 new competitors)
+
+**What broke.** Scoring failed mid-run on 2026-08-04 (14 rows scored, then 5 unscored the same day) and on every run after it, with `400 invalid_request_error: credit balance too low`. Because the poll wrote each row to Notion *before* scoring it, and dedupe only asked "is this URL already in Notion?", every row written before a failure was treated as a duplicate forever and could never be scored. Result: **183 rows stranded at Status = Unscored between 2026-08-03 and 2026-08-18** (Wealthbox 41, Equisoft 34, Zoho 33, HubSpot 21, Salesforce 17, Cloven 15, Laylah 13, Pipedrive 9).
+
+**Billing diagnosis.** `scripts/check_api_key.py` splits the check in two: `GET /v1/models` (unbilled) and `POST /v1/messages` (billed, 1 token). On 2026-08-18 stage 1 returned **200** and stage 2 returned **400 credit balance too low** for org `992ef0c4-0504-45dd-92dc-21b5173499f2`. The key is valid and live — this is a billing scope problem, not a bad key. An Anthropic key belongs to one workspace inside one org, and credit/spend limits are per workspace, so credits topped up on a different org or a $0 workspace spend limit produce exactly this split. **Still unresolved as of 2026-08-18** — the backfill cannot run until it is.
+
+**Fixes.**
+- **Preflight** (`integrations/anthropic_preflight.py`): both scoring jobs make one 1-token call before anything is fetched or written, and exit non-zero on failure. `--dry-run` downgrades it to a warning (a dry run makes no billed calls).
+- **Status-aware dedupe** (`notion_client.find_existing_change()`, replaces `change_already_logged()`): Scored/Distributed → skip; Unscored → re-score that row in place, never create a duplicate.
+- **Rescue sweep** (`jobs/rescore.py`, called at the top of every daily poll, `RESCUE_SWEEP_LIMIT` = 20 rows): dedupe alone is not enough, because a row stranded on day 1 of an outage falls outside the 76h lookback by day 4 and is never re-fetched. The sweep reads the database instead of the poll feed, so nothing stays stuck regardless of age.
+- **Backfill** (`jobs/backfill_rescore.py`): unbounded pass over the Unscored backlog. Idempotent, rate-limited, aborts on an Anthropic API error rather than burning the backlog, and batches alert-worthy rows into Teams **digest** cards (a two-week backlog would otherwise fire dozens of individual cards). Alert threshold is unchanged: score > `ALERT_SCORE_THRESHOLD`.
+- **Teams routing flattened**: per-competitor webhooks removed entirely (all 11 secrets were null). Competitor name is now the card headline.
+- **4 competitors added**: Redtail, AdvisorEngine, Microsoft Dynamics, Act! — all Tier 2. Their cd.io watches already existed but `_match_competitor()` silently discarded them every run. Matching is now `url_patterns` → `title_patterns` → legacy slug substring, in that order. Slug matching is OFF for these four: "act" as a substring matches contact, interact, practifi.
+- **Empty-diff rows drain**: a row with no Raw Change is scored 1 and flipped to Scored rather than left Unscored, so a sweep can't retry it forever.
+
+**Verification done offline** (`python3 -m scripts.test_dedupe_recovery`, 13 checks, all passing): a run whose scoring breaks part-way leaves rows Unscored; the next healthy run scores all of them with **no duplicate rows**; and a row stranded 5 days ago — outside the lookback entirely — is still rescued and alerted.
+
+### Earlier — 2026-08-04 (later): "RECOMMENDED ACTION" removed from Teams alerts
 Follow-on to the newsletter change below, same rationale.
 - **Summariser prompt no longer produces it:** `agents/summariser_agent.py` SYSTEM_PROMPT now asks for WHAT and WHY IT MATTERS only. Summaries written to Notion (`AI Summary`) going forward have two sections, not three. Historical Notion summaries keep their RECOMMENDED ACTION lines (not migrated — they only feed the newsletter as input context, and the newsletter prompt no longer asks for response guidance).
 - **Defensive strip in the card builder:** `_build_alert_card()` in `integrations/teams_client.py` drops any `RECOMMENDED ACTION:` line from the summary before rendering, so a stray emission can never reach the chat. Verified with a functional card test (label + body stripped, WHAT/WHY intact); `py_compile` clean.
@@ -272,6 +298,23 @@ python3 -m jobs.monthly_newsletter --mode broadcast --year 2026 --month 5
 
 # Smoke-test the Teams alert webhook (daily flow only)
 python3 -m scripts.test_teams_alert
+
+# Is the Anthropic key funded? (prints request id + org id + verbatim error)
+python3 -m scripts.check_api_key
+
+# Daily poll without writing anything (preflight + fetch + report)
+python3 -m jobs.daily_poll --dry-run
+
+# Drain the Unscored backlog: inspect, then a small live test, then all of it
+python3 -m jobs.backfill_rescore --dry-run
+python3 -m jobs.backfill_rescore --yes --limit 5
+python3 -m jobs.backfill_rescore --yes
+
+# Offline regression test for the dedupe-poisoning fix (no API keys needed)
+python3 -m scripts.test_dedupe_recovery
+
+# Add missing Competitor select options to the Notion Changes DB
+python3 -m scripts.sync_notion_competitor_options --apply
 ```
 
 **Important:** Always use `python3 -m jobs.<name>` (module syntax) from the `competitive_intel/` directory, not `python3 jobs/daily_poll.py`. The latter breaks relative imports.
