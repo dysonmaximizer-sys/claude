@@ -25,6 +25,7 @@ Safety properties:
 """
 
 import logging
+import os
 import time
 from typing import Optional
 
@@ -124,7 +125,6 @@ def rescore_unscored(
             return
         while pending and (final or len(pending) >= DIGEST_CHUNK_SIZE):
             chunk = pending[:DIGEST_CHUNK_SIZE]
-            del pending[:DIGEST_CHUNK_SIZE]
             dates = sorted((i["date_detected"] or "")[:10] for i in chunk if i["date_detected"])
             span = f"{dates[0]} → {dates[-1]}" if dates else ""
             subtitle = (
@@ -136,9 +136,13 @@ def rescore_unscored(
             except Exception as e:
                 logger.error("  → Teams digest failed (%d row(s) left unalerted): %s", len(chunk), e)
                 stats["errors"] += 1
-                continue
+                # break, not continue: the chunk stays in `pending` so the
+                # end-of-run tally is honest, and continuing here would spin
+                # forever on an undrained buffer.
+                break
             if not sent:
-                continue
+                break  # Teams unconfigured — same reasoning
+            del pending[:DIGEST_CHUNK_SIZE]
             stats["alerted"] += len(chunk)
             for item in chunk:
                 try:
@@ -250,10 +254,29 @@ def rescore_unscored(
     _flush(final=True)
 
     if pending:
-        logger.warning(
-            "%d alert-worthy row(s) were scored but not alerted (Teams unconfigured "
-            "or digest send failed) — Teams Alert Sent left unticked.", len(pending),
-        )
+        # Three different situations used to share one warning that guessed at the
+        # cause. Deliberately running with alerting off is not a fault, and a
+        # warning that cries wolf on an intended choice teaches people to ignore it.
+        if not alert:
+            logger.info(
+                "%d row(s) scored above the alert threshold. Alerting was disabled "
+                "for this run, so no Teams card was sent and Teams Alert Sent stays "
+                "unticked on them. They are Scored, so nothing will re-visit them.",
+                len(pending),
+            )
+        elif not os.environ.get("TEAMS_GENERAL_WEBHOOK", ""):
+            logger.warning(
+                "%d alert-worthy row(s) were scored but not alerted: "
+                "TEAMS_GENERAL_WEBHOOK is not set. Teams Alert Sent left unticked.",
+                len(pending),
+            )
+        else:
+            logger.warning(
+                "%d alert-worthy row(s) were scored but the Teams digest did not "
+                "send. Teams Alert Sent left unticked. These rows are now Scored, "
+                "so a re-run will NOT retry them — alert them by hand if they matter.",
+                len(pending),
+            )
 
     stats["remaining"] = max(0, candidates - stats["scored"])
     logger.info(
