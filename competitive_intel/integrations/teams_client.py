@@ -270,6 +270,36 @@ def send_competitive_alert(
     return True
 
 
+def send_status_alert(title: str, subtitle: str, lines: list, style: str = "attention") -> bool:
+    """
+    Post a simple status card — one heading, one subtitle, then a bullet per line.
+    Used by the pipeline health check, which needs to report on itself rather than
+    on a competitor. Returns False if Teams is not configured.
+    """
+    webhook = _get_webhook()
+    if not webhook:
+        _warn_unconfigured(f"status alert: {title}")
+        return False
+
+    body = [{
+        "type": "Container", "style": style, "bleed": True,
+        "items": [
+            {"type": "TextBlock", "text": title, "weight": "Bolder", "size": "Large", "wrap": True},
+            {"type": "TextBlock", "text": subtitle, "spacing": "None", "isSubtle": True, "wrap": True},
+        ],
+    }]
+    body += [{"type": "TextBlock", "text": line, "wrap": True, "spacing": "Small"} for line in lines]
+
+    _post_to_webhook(webhook, {
+        "type": "AdaptiveCard",
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.5",
+        "body": body,
+    })
+    logger.info("Teams status alert sent: %s", title)
+    return True
+
+
 def send_digest_alert(items: list, title: str, subtitle: str = "") -> bool:
     """
     Post one card covering several alert-worthy changes, grouped by competitor.

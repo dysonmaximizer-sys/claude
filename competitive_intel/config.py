@@ -133,6 +133,13 @@ ALERT_SCORE_THRESHOLD = 5
 # `python3 -m jobs.backfill_rescore`.
 RESCUE_SWEEP_LIMIT = 20
 
+# Whether re-scoring a backlog row may raise a Teams alert. OFF by policy
+# (2026-08-18): backlog rows are days or weeks old by the time they are scored,
+# so alerting on them means notifying people about stale news and burying the
+# fresh signal. Backlog is scored silently and reaches the team through the
+# monthly newsletter; only changes detected in the current run alert.
+RESCUE_SWEEP_ALERTS = False
+
 # Alert-worthy rows per Teams digest card. Keeps a batched digest inside Teams'
 # payload size limit and bounds how much is lost if a run dies mid-flush.
 DIGEST_CHUNK_SIZE = 12

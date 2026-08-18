@@ -21,7 +21,9 @@ all replaced by in-memory fakes:
                                                      database rather than the
                                                      poll feed. This is the case
                                                      status-aware dedupe alone
-                                                     cannot reach.
+                                                     cannot reach. It is scored
+                                                     silently: backlog does not
+                                                     alert (RESCUE_SWEEP_ALERTS).
 
 Run from the competitive_intel/ directory:
     python3 -m scripts.test_dedupe_recovery
@@ -255,9 +257,14 @@ def main() -> int:
           notion3.rows[stale_id]["status"] == "Scored", notion3.rows[stale_id]["status"])
     check("stale row got a score", notion3.rows[stale_id]["score"] == 9,
           str(notion3.rows[stale_id]["score"]))
-    check("alert-worthy stale row went out in a digest",
-          any(stale_id in d for d in calls3["digests"]), f"digests={calls3['digests']}")
-    check("digest ticked Teams Alert Sent", notion3.rows[stale_id]["teams_alert_sent"] is True)
+    # Policy from 2026-08-18 (RESCUE_SWEEP_ALERTS = False): a rescued row is old
+    # news by the time it is scored, so it is scored SILENTLY. These two checks
+    # deliberately assert the absence of an alert — before that change they
+    # asserted the opposite.
+    check("no digest sent for the rescued backlog row (silent by policy)",
+          not any(stale_id in d for d in calls3["digests"]), f"digests={calls3['digests']}")
+    check("Teams Alert Sent left unticked on the backlog row",
+          notion3.rows[stale_id]["teams_alert_sent"] is False)
     check("healthy run reported 0 errors", result3["errors"] == 0, f"result={result3}")
 
     print()

@@ -21,6 +21,7 @@ Runs on **GitHub Actions** (workflow YAMLs at the repo root in `.github/workflow
 ```
 jobs/
   daily_poll.py          # Daily: preflight -> rescue sweep -> changedetection.io -> Notion -> score -> summarise -> alert
+  healthcheck.py         # Daily: shouts in Teams if the pipeline has stopped working
   rescore.py             # Shared engine: scores rows stuck at Status = Unscored
   backfill_rescore.py    # One-off: drains the whole Unscored backlog (uses rescore.py)
   monthly_newsletter.py  # Monthly: Notion -> newsletter -> Resend (--mode draft|broadcast)
@@ -127,7 +128,24 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ## Status as of 2026-08-18
 
-### Latest update — 2026-08-18: credit-outage fallout fixed (preflight, dedupe, backfill, 4 new competitors)
+### Latest update — 2026-08-18 (later): failsafe monitoring + backlog alerting policy
+
+**Backlog is now scored silently.** `RESCUE_SWEEP_ALERTS = False` in `config.py`, and `jobs/backfill_rescore.py` takes `--alerts` as opt-in rather than `--no-alerts` as opt-out. Rationale: a backlog row is days or weeks old by the time it is scored, so alerting on it notifies people about stale news and buries the fresh signal. Backlog reaches the team through the monthly newsletter. Only changes detected in the current run alert.
+
+**The pipeline now reports its own failure** (`jobs/healthcheck.py` + `.github/workflows/healthcheck.yml`, daily at 16:00 UTC). Four checks, silent when healthy, Teams card the moment any fails:
+
+| Check | Fires when |
+|---|---|
+| Anthropic key | the key cannot run billed inference — the exact August failure, caught *before* it breaks a run |
+| Scoring backlog | more than 5 rows have been Unscored for over a day, i.e. scoring is failing even if runs look green |
+| Detection freshness | nothing detected for 4 days — cd.io stopped crawling, or its key expired |
+| Workflow runs | the last daily poll failed, or none has run for 3 days (disabled schedule) |
+
+Both scheduled workflows also gained an `if: failure()` step that posts to Teams with a link to the run log, and the health check has one for itself, since a watchdog that dies silently is no better than the thing it watches.
+
+**Known gap:** GitHub disables scheduled workflows after 60 days of repository inactivity. If nobody commits for two months, both the poll and its watchdog stop, and no alert fires because nothing runs. Any commit resets that clock.
+
+### Earlier — 2026-08-18: credit-outage fallout fixed (preflight, dedupe, backfill, 4 new competitors)
 
 **What broke.** Scoring failed mid-run on 2026-08-04 (14 rows scored, then 5 unscored the same day) and on every run after it, with `400 invalid_request_error: credit balance too low`. Because the poll wrote each row to Notion *before* scoring it, and dedupe only asked "is this URL already in Notion?", every row written before a failure was treated as a duplicate forever and could never be scored. Result: **183 rows stranded at Status = Unscored between 2026-08-03 and 2026-08-18** (Wealthbox 41, Equisoft 34, Zoho 33, HubSpot 21, Salesforce 17, Cloven 15, Laylah 13, Pipedrive 9).
 
@@ -306,9 +324,14 @@ python3 -m scripts.check_api_key
 python3 -m jobs.daily_poll --dry-run
 
 # Drain the Unscored backlog: inspect, then a small live test, then all of it
+# (scores silently by default; add --alerts to send Teams digests)
 python3 -m jobs.backfill_rescore --dry-run
 python3 -m jobs.backfill_rescore --yes --limit 5
 python3 -m jobs.backfill_rescore --yes
+
+# Check whether the pipeline is healthy (silent unless something is wrong)
+python3 -m jobs.healthcheck
+python3 -m jobs.healthcheck --always-notify   # force a card, for testing
 
 # Offline regression test for the dedupe-poisoning fix (no API keys needed)
 python3 -m scripts.test_dedupe_recovery

@@ -17,10 +17,11 @@ What it does per row:
     and the refined Category, then flips Status to "Scored"
   • writes an AI Summary for rows above the alert threshold (use
     --summarise-all to summarise every row)
-  • collects rows above the threshold into batched Teams DIGEST cards on the
-    general webhook — a dozens-of-individual-cards burst for a two-week backlog
-    would be unreadable — and ticks Teams Alert Sent on each row a digest
-    actually carried
+  • sends NO Teams alerts by default. Backlog rows are days or weeks old by the
+    time they are scored, so alerting on them means notifying people about stale
+    news; they reach the team through the monthly newsletter instead. Pass
+    --alerts to override, which batches them into digest cards and ticks Teams
+    Alert Sent on each row a digest carried.
 
 Safety:
   • Idempotent — only Unscored rows are read, and each is flipped to Scored as
@@ -33,6 +34,7 @@ Safety:
 Usage (from the competitive_intel/ directory):
     python3 -m jobs.backfill_rescore --dry-run          # what would be processed
     python3 -m jobs.backfill_rescore --yes --limit 5    # small live test first
+    python3 -m jobs.backfill_rescore --yes --alerts     # opt in to Teams digests
     python3 -m jobs.backfill_rescore --yes              # the whole backlog
 """
 
@@ -115,8 +117,10 @@ def main() -> int:
                         help="Process only the N oldest Unscored rows (default: all)")
     parser.add_argument("--sleep", type=float, default=1.0,
                         help="Seconds to pause after each Anthropic call (default: 1.0)")
-    parser.add_argument("--no-alerts", action="store_true",
-                        help="Score silently — write to Notion but send no Teams digest")
+    parser.add_argument("--alerts", action="store_true",
+                        help="Send Teams digests for above-threshold rows. OFF by default: "
+                             "backlog rows are stale by the time they are scored, so they are "
+                             "scored silently and reach the team via the monthly newsletter")
     parser.add_argument("--summarise-all", action="store_true",
                         help="Also write an AI Summary for below-threshold rows "
                              "(one extra Anthropic call per row)")
@@ -137,7 +141,7 @@ def main() -> int:
     stats = run(
         limit=args.limit,
         sleep_seconds=args.sleep,
-        alert=not args.no_alerts,
+        alert=args.alerts,
         summarise_all=args.summarise_all,
         dry_run=args.dry_run,
     )

@@ -24,6 +24,8 @@ credit outage stranded 183 rows as permanently-"Unscored"):
      Status = Unscored from earlier failed runs. Dedupe alone can't reach these:
      once a row's detection date falls outside the 76h lookback it is never
      re-fetched, so the backlog has to be drained from the database side.
+     Swept rows are scored SILENTLY (RESCUE_SWEEP_ALERTS = False): they are
+     old news by then, and alerting on them buries the fresh signal.
   2. POLL — fetch, then dedupe status-aware: an existing Scored/Distributed row
      means skip, an existing Unscored row means re-score that row IN PLACE
      rather than skipping it or creating a duplicate.
@@ -68,7 +70,7 @@ def run(dry_run: bool = False) -> dict:
     from agents.dedup_agent import cluster_changes_by_insight
     from integrations.teams_client import send_competitive_alert
     from jobs.rescore import rescore_unscored
-    from config import ALERT_SCORE_THRESHOLD, RESCUE_SWEEP_LIMIT
+    from config import ALERT_SCORE_THRESHOLD, RESCUE_SWEEP_LIMIT, RESCUE_SWEEP_ALERTS
 
     logger.info("=== Daily poll started%s ===", " (DRY RUN)" if dry_run else "")
 
@@ -80,6 +82,7 @@ def run(dry_run: bool = False) -> dict:
     logger.info("--- Rescue sweep: re-scoring stranded Unscored rows ---")
     sweep = rescore_unscored(
         limit=RESCUE_SWEEP_LIMIT,
+        alert=RESCUE_SWEEP_ALERTS,  # backlog is scored silently — see config
         digest_title="Competitive Intelligence — Backlog Catch-up",
         dry_run=dry_run,
     )
