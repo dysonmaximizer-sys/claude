@@ -36,23 +36,16 @@ jobs:
 
       - name: Run daily poll
         working-directory: competitive_intel
-        env:
+                env:
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
           CHANGEDETECTION_API_KEY: ${{ secrets.CHANGEDETECTION_API_KEY }}
           CHANGEDETECTION_BASE_URL: ${{ secrets.CHANGEDETECTION_BASE_URL }}
           NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
           NOTION_CHANGES_DB_ID: ${{ secrets.NOTION_CHANGES_DB_ID }}
+          # Single Teams destination. The 11 per-competitor
+          # TEAMS_WEBHOOK_<COMPETITOR> secrets were removed on 2026-08-18:
+          # every one of them was null, so alerts already fell through to
+          # the general webhook while the config implied 11 live channels.
           TEAMS_GENERAL_WEBHOOK: ${{ secrets.TEAMS_GENERAL_WEBHOOK }}
-          TEAMS_WEBHOOK_EQUISOFT: ${{ secrets.TEAMS_WEBHOOK_EQUISOFT }}
-          TEAMS_WEBHOOK_CLOVEN: ${{ secrets.TEAMS_WEBHOOK_CLOVEN }}
-          TEAMS_WEBHOOK_HUBSPOT: ${{ secrets.TEAMS_WEBHOOK_HUBSPOT }}
-          TEAMS_WEBHOOK_LAYLAH: ${{ secrets.TEAMS_WEBHOOK_LAYLAH }}
-          TEAMS_WEBHOOK_SALESFORCE: ${{ secrets.TEAMS_WEBHOOK_SALESFORCE }}
-          TEAMS_WEBHOOK_WEALTHBOX: ${{ secrets.TEAMS_WEBHOOK_WEALTHBOX }}
-          TEAMS_WEBHOOK_MONDAY: ${{ secrets.TEAMS_WEBHOOK_MONDAY }}
-          TEAMS_WEBHOOK_ZOHO: ${{ secrets.TEAMS_WEBHOOK_ZOHO }}
-          TEAMS_WEBHOOK_ONEVEST: ${{ secrets.TEAMS_WEBHOOK_ONEVEST }}
-          TEAMS_WEBHOOK_PIPEDRIVE: ${{ secrets.TEAMS_WEBHOOK_PIPEDRIVE }}
-          TEAMS_WEBHOOK_ADVORA: ${{ secrets.TEAMS_WEBHOOK_ADVORA }}
         run: python -m jobs.daily_poll
