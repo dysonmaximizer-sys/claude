@@ -73,7 +73,7 @@ def rescore_unscored(
         update_change_score,
         update_change_summary,
     )
-    from integrations.teams_client import send_digest_alert
+    from integrations.teams_client import redact, send_digest_alert
     from agents.scoring_agent import score_change
     from agents.summariser_agent import summarise_change
 
@@ -134,7 +134,8 @@ def rescore_unscored(
             try:
                 sent = send_digest_alert(chunk, digest_title, subtitle)
             except Exception as e:
-                logger.error("  → Teams digest failed (%d row(s) left unalerted): %s", len(chunk), e)
+                logger.error("  → Teams digest failed (%d row(s) left unalerted): %s",
+                             len(chunk), redact(e))
                 stats["errors"] += 1
                 # break, not continue: the chunk stays in `pending` so the
                 # end-of-run tally is honest, and continuing here would spin

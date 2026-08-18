@@ -28,12 +28,31 @@ If TEAMS_GENERAL_WEBHOOK is not set, alerts are logged locally and not posted.
 
 import logging
 import os
+import re
 from typing import Optional
 
 import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 logger = logging.getLogger(__name__)
+
+
+# ── Redaction ─────────────────────────────────────────────────────────────────
+
+_WEBHOOK_RE = re.compile(r'''https://[^\s"']*sig=[A-Za-z0-9_%.\-]+''')
+
+
+def redact(text) -> str:
+    """
+    Strip webhook URLs out of text before logging it.
+
+    The `sig` query parameter IS the credential — anyone holding the full URL can
+    post into the channel. requests puts the full URL into its HTTPError message,
+    so any `logger.error("...: %s", e)` on a failed post publishes it. GitHub
+    Actions masks registered secrets in its own logs, but local runs, terminal
+    scrollback and anything pasted elsewhere are not covered.
+    """
+    return _WEBHOOK_RE.sub("<webhook-url-redacted>", str(text))
 
 
 # ── Webhook Resolution ────────────────────────────────────────────────────────

@@ -68,7 +68,7 @@ def run(dry_run: bool = False) -> dict:
     from agents.scoring_agent import score_change
     from agents.summariser_agent import summarise_change
     from agents.dedup_agent import cluster_changes_by_insight
-    from integrations.teams_client import send_competitive_alert
+    from integrations.teams_client import redact, send_competitive_alert
     from jobs.rescore import rescore_unscored
     from config import ALERT_SCORE_THRESHOLD, RESCUE_SWEEP_LIMIT, RESCUE_SWEEP_ALERTS
 
@@ -261,7 +261,7 @@ def run(dry_run: bool = False) -> dict:
                     mark_alert_sent(rep["page_id"])
                     alerted += 1
             except Exception as e:
-                logger.error("  → Teams alert failed for %s: %s", competitor, e)
+                logger.error("  → Teams alert failed for %s: %s", competitor, redact(e))
                 errors += 1
 
     total_scored = scored + sweep["scored"]
