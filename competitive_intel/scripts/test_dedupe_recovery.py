@@ -119,14 +119,14 @@ class FakeNotion:
 
 # ── Fake module wiring ─────────────────────────────────────────────────────────
 
-def install_fakes(notion, changes, failing_after=None):
+def install_fakes(notion, changes, failing_after=None, cluster_all_together=False):
     """
     Put fake modules in sys.modules so daily_poll/rescore pick them up.
 
     failing_after=N makes score_change raise on every call after the Nth,
     simulating the credit outage that broke scoring mid-run.
     """
-    calls = {"score": 0, "alerts": [], "digests": []}
+    calls = {"score": 0, "alerts": [], "digests": [], "summaries": []}
 
     preflight = types.ModuleType("integrations.anthropic_preflight")
     preflight.preflight_or_exit = lambda *a, **k: {"ok": True}
@@ -153,10 +153,20 @@ def install_fakes(notion, changes, failing_after=None):
     scoring.score_change = score_change
 
     summariser = types.ModuleType("agents.summariser_agent")
-    summariser.summarise_change = lambda **kw: f"summary of {kw['url']}"
+
+    def summarise_change(**kw):
+        calls["summaries"].append(kw["url"])
+        return f"summary of {kw['url']}"
+
+    summariser.summarise_change = summarise_change
 
     dedup = types.ModuleType("agents.dedup_agent")
-    dedup.cluster_changes_by_insight = lambda name, items: [[i] for i in range(len(items))]
+    if cluster_all_together:
+        # every change is one insight — the shape that proves summarising is
+        # per-cluster rather than per-row
+        dedup.cluster_changes_by_insight = lambda name, items: [list(range(len(items)))]
+    else:
+        dedup.cluster_changes_by_insight = lambda name, items: [[i] for i in range(len(items))]
 
     teams = types.ModuleType("integrations.teams_client")
 
@@ -293,6 +303,23 @@ def main() -> int:
     from jobs.daily_poll import run as poll_run5
     r5 = poll_run5()
     check("8 of 10 failing DOES fail the run", r5["errors"] > 0, f"result={r5}")
+
+    # ── Scenario 5: one insight across many pages costs ONE summary ───────────
+    print("\nScenario 5 — 4 alert-worthy pages, one shared insight")
+    notion6 = FakeNotion()
+    shared = make_changes(4, hot_indexes=(0, 1, 2, 3))  # all above threshold
+    calls6 = install_fakes(notion6, shared, cluster_all_together=True)
+    sys.modules.pop("jobs.daily_poll", None)
+    from jobs.daily_poll import run as poll_run6
+    r6 = poll_run6()
+    check("all 4 rows scored", r6["scored"] == 4, f"result={r6}")
+    check("exactly ONE summary bought for the shared insight",
+          len(calls6["summaries"]) == 1, f"summaries={calls6['summaries']}")
+    check("exactly one Teams alert sent", len(calls6["alerts"]) == 1,
+          f"alerts={calls6['alerts']}")
+    check("only the representative row got an AI Summary in Notion",
+          sum(1 for r in notion6.rows.values() if r["ai_summary"]) == 1,
+          f"{[bool(r['ai_summary']) for r in notion6.rows.values()]}")
 
     print()
     if failures:

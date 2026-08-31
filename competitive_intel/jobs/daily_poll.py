@@ -194,34 +194,23 @@ def run(dry_run: bool = False) -> dict:
             logger.info("  → Score below threshold (%d) — no further action", ALERT_SCORE_THRESHOLD)
             continue
 
-        # ── Step 4: Summarise ──────────────────────────────────────────────
-        try:
-            summary = summarise_change(
-                competitor_name=competitor,
-                tier=change["tier"],
-                category=refined_category,
-                score=score,
-                score_reasoning=reasoning,
-                raw_change=change["raw_change"],
-                url=change["url"],
-            )
-            update_change_summary(page_id, summary)
-            logger.info("  → Summary written")
-        except Exception as e:
-            logger.error("  → Summarisation failed for %s: %s", competitor, e)
-            summary = reasoning
-            errors += 1
-
-        # ── Step 5: Queue for alerting (deferred until after the loop) ─────
-        # Don't alert inline. Collect alert-worthy changes so we can group a
-        # competitor's pages by insight first and alert once per insight.
+        # ── Step 4: Queue for clustering (summarised later, once per insight) ─
+        # Don't summarise here and don't alert inline. Summarising per row meant
+        # paying for summaries that Step 6's clustering then discarded — one
+        # announcement across four of a competitor's pages bought four summaries
+        # and used one. Clustering runs on the scoring agent's one-line reasoning,
+        # which is cleaner input than a raw diff, and only the representative of
+        # each cluster gets summarised.
         notion_url = f"https://www.notion.so/{page_id.replace('-', '')}"
         pending_alerts.append({
             "competitor": competitor,
             "tier": change["tier"],
             "category": refined_category,
             "score": score,
-            "summary": summary,
+            # Placeholder: replaced by the real AI summary if this row is the
+            # representative of its cluster, and it is also the card's fallback
+            # text if summarising fails.
+            "summary": reasoning,
             "url": change["url"],
             "page_id": page_id,
             "notion_url": notion_url,
@@ -255,6 +244,27 @@ def run(dry_run: bool = False) -> dict:
                     "  → %s: %d pages share one insight — alerting 1, suppressing %d duplicate(s)",
                     competitor, len(cluster), len(cluster) - 1,
                 )
+
+            # Summarise the representative only. Suppressed rows keep their score
+            # and reasoning in Notion but get no AI Summary; the newsletter falls
+            # back to their Raw Change, and the insight they belong to is
+            # summarised on the representative row.
+            try:
+                rep["summary"] = summarise_change(
+                    competitor_name=rep["competitor"],
+                    tier=rep["tier"],
+                    category=rep["category"],
+                    score=rep["score"],
+                    score_reasoning=rep["summary"],
+                    raw_change=rep["raw_change"],
+                    url=rep["url"],
+                )
+                update_change_summary(rep["page_id"], rep["summary"])
+                logger.info("  → Summary written for %s", rep["url"])
+            except Exception as e:
+                logger.error("  → Summarisation failed for %s: %s", competitor, e)
+                errors += 1  # rep["summary"] stays as the scoring reasoning
+
             try:
                 sent = send_competitive_alert(
                     competitor=rep["competitor"],
