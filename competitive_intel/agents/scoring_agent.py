@@ -32,6 +32,14 @@ and score it from 1 to 10 using this rubric:
 
 {SCORE_GUIDE}
 
+Each change carries a Tier label telling you how much weight its source deserves:
+- Tier 1 — direct, head-to-head competitors for our core market. Weight these most heavily.
+- Tier 2 — genuine competitors, less directly aimed at our market. Relevant, rarely urgent alone.
+- Ankle Biter — monitor only. A change here has to be genuinely consequential to reach the upper bands.
+- Frenemies — AI meeting-notes and client-intelligence assistants that integrate with CRMs, ours included. Do not weight them as heavily as Tier 1, but do not dismiss them either: there is substantial overlap with our own product features and they target the same advisors we do, so feature expansion, CRM integrations, and positioning moves from them are worth staying on top of.
+
+Tier adjusts how much weight a change carries; it never overrides the rubric. A cosmetic change is still a 1 or 2 no matter whose site it is on, and a major pricing or product move is still high-impact even from an Ankle Biter.
+
 When scoring, consider:
 - Does this change affect our core differentiators (financial services focus, advisor workflows, compliance support)?
 - Does it signal a strategic shift toward our target market (wealth/insurance advisors)?
