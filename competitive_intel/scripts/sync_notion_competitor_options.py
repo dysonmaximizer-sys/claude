@@ -1,5 +1,5 @@
 """
-Sync the Notion "Competitor" select options with the COMPETITORS registry.
+Sync the Notion "Competitor" and "Tier" select options with the COMPETITORS registry.
 
 Run from the competitive_intel/ directory:
     python3 -m scripts.sync_notion_competitor_options            # report only
@@ -39,10 +39,29 @@ def main() -> int:
         print(f"Could not read the database schema: {r.status_code} {r.text[:400]}")
         return 1
 
-    prop = r.json()["properties"]["Competitor"]
-    existing = [o["name"] for o in prop["select"]["options"]]
+    props = r.json()["properties"]
+    existing = [o["name"] for o in props["Competitor"]["select"]["options"]]
     wanted = list(COMPETITORS.keys())
     missing = [name for name in wanted if name not in existing]
+
+    # Tier values are equally load-bearing: a tier in config.py that Notion does
+    # not know is a rejected write, i.e. a dropped change.
+    tiers_existing = [o["name"] for o in props["Tier"]["select"]["options"]]
+    tiers_wanted = sorted({m["tier"] for m in COMPETITORS.values()})
+    tiers_missing = [t for t in tiers_wanted if t not in tiers_existing]
+    print(f"Tier options in Notion ({len(tiers_existing)}): {', '.join(tiers_existing)}")
+    print(f"Tiers used in config.py ({len(tiers_wanted)}): {', '.join(tiers_wanted)}")
+    if tiers_missing:
+        print(f"  MISSING from Notion: {', '.join(tiers_missing)}"
+              + ("" if args.apply else " — re-run with --apply"))
+        if args.apply:
+            rt = requests.patch(f"{_BASE}/databases/{_CHANGES_DB}", headers=_HEADERS, timeout=30,
+                json={"properties": {"Tier": {"select": {"options":
+                      [{"name": n} for n in tiers_existing + tiers_missing]}}}})
+            print(f"  Tier PATCH: {rt.status_code}")
+    else:
+        print("  Tier options are in sync.")
+    print()
 
     print(f"Competitor select options in Notion ({len(existing)}): {', '.join(existing)}")
     print(f"Competitors in config.py    ({len(wanted)}): {', '.join(wanted)}")
