@@ -75,6 +75,8 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
 
+Valid tier values: `Tier 1`, `Tier 2`, `Ankle Biter`, and `Frenemies` (added 2026-08-31, present in the Notion Tier select but **not yet assigned to any competitor** — assignment is a one-line edit per competitor in `config.py`). The tier reaches the scoring prompt as a bare label and the prompt does not explain the vocabulary, so it is currently metadata for humans rather than something that steers scoring.
+
 cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The GitHub Actions poll runs business days at 15:00 UTC (08:00 PDT / 07:00 PST) — a weekday morning alert that runs before that day's crawl, so it reports the prior day's detections. The lookback is **76h** so Monday's run reaches back across the weekend to catch Friday's crawl (~72h); Friday's changes are alerted Monday 08:00. Re-fetched changes already **scored** in Notion are skipped by `find_existing_change()`; a re-fetched change whose row is still `Unscored` is re-scored in place instead of being skipped (see the 2026-08-18 entry).
 
 To add a new competitor: (1) add the watch in the cd.io dashboard; (2) add an entry to `COMPETITORS` in `config.py` with `url_patterns` (host + optional path) — that is the precise match and does not depend on how the watch is titled; (3) run `python3 -m scripts.sync_notion_competitor_options --apply` so the Notion **Competitor** select has the option. Setting the watch **Title** to include the slug still works as a fallback for the original 11 competitors, but `url_patterns` is the reliable route. A watch matching nothing is skipped with a WARNING naming the URL — grep the run log for "no competitor match" to catch a missing registry entry.
@@ -129,7 +131,31 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ## Status as of 2026-08-18
 
-### Latest update — 2026-08-31: alert noise killed, transient failures retried
+### Latest update — 2026-08-31 (later): credit-usage assessment, Sonnet 5, cluster-first summarising, Frenemies tier
+
+**Measured cost profile** (via `count_tokens` plus real `response.usage` from 66 live calls; 7 run-days, 179 scored rows):
+
+| | per call | calls/month |
+|---|---|---|
+| Scoring | 740 in / 61 out | 563 |
+| Summarising | 645 in / 110 out | 41 |
+| Clustering | ~1,100 in / ~120 out | 24 |
+
+**~469k input + 42k output tokens/month, about $1.85.** Score distribution: 77% scored 1-2, 16% scored 3-5, 7% scored 6+. So the August credit outage was **not** a consumption problem — at under $2/month a small prepaid balance simply ran out. Auto-reload and the preflight are the fixes, not token efficiency.
+
+**Model switched to `claude-sonnet-5`.** Measured on 33 real rows, both models, identical prompts: $1.85 → $1.62/month (12%). Not the 33% the sticker prices imply ($2/$10 vs $3/$15) — Sonnet 5's newer tokenizer turns the same text into ~1.39× more tokens, eating most of the rate cut. It also scores ~0.5 points harsher near the alert boundary: 7 of the 33 rows crossed the >5 line, 6 downward (Wealthbox integrations 6→4, wealthbox.com 6→4, pricing 6→5, webinars 6→5, Redtail support 6→5; Redtail corporate 4→6 the other way). **If alert volume drops noticeably, adjust `ALERT_SCORE_THRESHOLD` rather than reverting the model.** All four agents switch, the monthly newsletter included, so newsletter tone may shift.
+
+**Summarising is now per insight, not per row.** Clustering used to run *after* summarising and then discard the duplicates, so one announcement across four of a competitor's pages bought four summaries and used one. Clustering now runs on the scoring agent's one-line reasoning — cleaner input than a raw diff — and only the cluster representative is summarised. Suppressed rows keep score and reasoning but get no AI Summary; `newsletter_agent` already falls back to Raw Change for those, and the insight itself is summarised on the representative row.
+
+**Frenemies** is a fourth valid tier value, present in the Notion Tier select, **not yet assigned to any competitor**. `scripts/sync_notion_competitor_options.py` now syncs Tier as well as Competitor, so a tier in `config.py` that Notion doesn't know can't cause a rejected write and a dropped change.
+
+**Known and measured, NOT yet fixed:**
+- **Prompt caching has never worked.** System prompts measure 324 (scoring), 169 (summariser), 205 (dedup) tokens against a 1,024-token minimum on Sonnet 4.6 and Sonnet 5 (512 even on Opus 5). Proven empirically: 66 live calls returned `cache_read_input_tokens: 0` and `cache_creation_input_tokens: 0`. The `cache_control` markers and their "cache system prompt across batch" comments are inert.
+- **8 watches have never scored above 2/10** across 860 rows since 2026-07-01 and account for **22% of all scoring calls**: three YouTube channels (Equisoft, Wealthbox, Laylah), `ir.hubspot.com`, `x.com/Equisoft`, `zoho.com/blog/crm`, `developers.hubspot.com/changelog`, `advisorengine.com/newsroom`. Deleting the first six in cd.io is the only lever that cuts cost *and* raises signal density. The HubSpot changelog scoring ≤2 nine times looks more like a bad CSS selector than a worthless source.
+- **12% of scored rows are digit-only diffs** (stock ticks, follower counts) that a deterministic pre-filter could skip with no API call and no quality risk.
+- **Nothing logs `response.usage`**, so cache hits and real spend can only be estimated, never observed.
+
+### Earlier — 2026-08-31: alert noise killed, transient failures retried
 
 **What went wrong.** On 2026-08-28 the poll ran well — 37 matched changes, 27 logged, 26 scored — and then one row (Zoho pricing) hit a transient Anthropic **HTTP 500**. That single failure out of 27 exited the job 1, so the run went red and fired a "daily poll FAILED" card. Worse, every health check run after it reported "the last daily poll run ended in failure", exited 1 by design, and that non-zero exit tripped the `if: failure()` step, which posted **"HEALTH CHECK CRASHED"**. The check had not crashed; it was working perfectly. Two alarming cards a day, one of them false, for a fault that lasted one request. Nothing could clear it until a poll succeeded, and the poll is weekday-only, so it ran all weekend.
 
