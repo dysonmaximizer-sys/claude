@@ -155,7 +155,13 @@ COMPETITORS = {
         # Manulife Wealth and Sterling Mutuals. Several unrelated advisory firms
         # trade as "Continuum" (continuumadvisory.com, contwealth.com,
         # continuumwealthstrategies.com), so host matching is the only safe route.
-        "url_patterns": [("oncontinuum.com", None)],
+        "url_patterns": [
+            ("oncontinuum.com", None),
+            # Their LinkedIn company slug is "oncontinuum", confirmed against the
+            # live watch on 2026-08-31. Host+path keeps this precise — a bare
+            # "continuum" title pattern would match the unrelated firms above.
+            ("linkedin.com", "/company/oncontinuum"),
+        ],
         "slug_match": False,
     },
     "Zocks": {
