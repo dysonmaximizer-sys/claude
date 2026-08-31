@@ -68,7 +68,8 @@ PREFLIGHT_MODEL = "claude-haiku-4-5-20251001"
 #   "Tier 2"      relevant but less direct
 #   "Ankle Biter" monitor, lower urgency
 #   "Frenemies"   partner and competitor at once — integration or partnership news
-#                 from these matters as much as their competitive moves
+#                 from these matters as much as their competitive moves.
+#                 Currently: Focal AI, Continuum, Zocks, Fireflies.
 # NOTE: the tier is passed to the scoring prompt as a bare label ("Tier: Frenemies")
 # and the prompt does not explain the vocabulary, so today the value is metadata for
 # humans (Teams cards, Notion views, the newsletter) rather than something that
@@ -129,6 +130,49 @@ COMPETITORS = {
             ("learn.microsoft.com", "/dynamics365"),
         ],
         "title_patterns": [r"microsoft dynamics", r"\bdynamics 365\b"],
+        "slug_match": False,
+    },
+    # Frenemies — partner and competitor at once. AI meeting-notes and client
+    # intelligence assistants that integrate with CRMs (ours included) while
+    # absorbing workflows a CRM would otherwise own. Their integration and
+    # partnership announcements matter as much as their feature launches.
+    # Domains verified 2026-08-31 against each vendor's own site.
+    "Focal AI": {
+        "tier": "Frenemies",
+        "slug": "focal",
+        "url_patterns": [
+            ("meetwithfocal.com", None),
+            ("linkedin.com", "/company/meetwithfocal"),
+        ],
+        "title_patterns": [r"\bfocal ai\b", r"\bmeetwithfocal\b"],
+        # "focal" alone collides with our own demo-engine vocabulary ("focal note")
+        "slug_match": False,
+    },
+    "Continuum": {
+        "tier": "Frenemies",
+        "slug": "continuum",
+        # oncontinuum.com is the AI client-intelligence product used by iA,
+        # Manulife Wealth and Sterling Mutuals. Several unrelated advisory firms
+        # trade as "Continuum" (continuumadvisory.com, contwealth.com,
+        # continuumwealthstrategies.com), so host matching is the only safe route.
+        "url_patterns": [("oncontinuum.com", None)],
+        "slug_match": False,
+    },
+    "Zocks": {
+        "tier": "Frenemies",
+        "slug": "zocks",
+        "url_patterns": [
+            ("zocks.io", None),
+            ("linkedin.com", "/company/zocks"),
+        ],
+        "title_patterns": [r"\bzocks\b"],
+        "slug_match": False,
+    },
+    "Fireflies": {
+        "tier": "Frenemies",
+        "slug": "fireflies",
+        "url_patterns": [("fireflies.ai", None)],
+        "title_patterns": [r"\bfireflies\b"],
         "slug_match": False,
     },
     # Ankle biters — monitor but lower urgency
