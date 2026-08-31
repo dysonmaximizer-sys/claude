@@ -71,11 +71,15 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | AdvisorEngine | Tier 2    | Yes (added 2026-08-18) |
 | Microsoft Dynamics | Tier 2 | Yes (added 2026-08-18) |
 | Act!        | Tier 2      | Yes (added 2026-08-18) |
+| Focal AI    | Frenemies   | **No — watch not created yet** |
+| Continuum   | Frenemies   | **No — watch not created yet** |
+| Zocks       | Frenemies   | **No — watch not created yet** |
+| Fireflies   | Frenemies   | **No — watch not created yet** |
 | Onevest     | Ankle Biter | Yes                  |
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
 
-Valid tier values: `Tier 1`, `Tier 2`, `Ankle Biter`, and `Frenemies` (added 2026-08-31, present in the Notion Tier select but **not yet assigned to any competitor** — assignment is a one-line edit per competitor in `config.py`). The tier reaches the scoring prompt as a bare label and the prompt does not explain the vocabulary, so it is currently metadata for humans rather than something that steers scoring.
+Valid tier values: `Tier 1`, `Tier 2`, `Ankle Biter`, and `Frenemies` (added 2026-08-31; assigned to Focal AI, Continuum, Zocks and Fireflies — AI meeting-notes and client-intelligence assistants that integrate with CRMs while absorbing workflows a CRM would otherwise own). The tier reaches the scoring prompt as a bare label and the prompt does not explain the vocabulary, so it is currently metadata for humans rather than something that steers scoring.
 
 cd.io scan schedule: business days at 9am PST, but the crawl spreads detections across ~09:00–15:00 Pacific (watches are scanned sequentially). The GitHub Actions poll runs business days at 15:00 UTC (08:00 PDT / 07:00 PST) — a weekday morning alert that runs before that day's crawl, so it reports the prior day's detections. The lookback is **76h** so Monday's run reaches back across the weekend to catch Friday's crawl (~72h); Friday's changes are alerted Monday 08:00. Re-fetched changes already **scored** in Notion are skipped by `find_existing_change()`; a re-fetched change whose row is still `Unscored` is re-scored in place instead of being skipped (see the 2026-08-18 entry).
 
@@ -147,7 +151,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 **Summarising is now per insight, not per row.** Clustering used to run *after* summarising and then discard the duplicates, so one announcement across four of a competitor's pages bought four summaries and used one. Clustering now runs on the scoring agent's one-line reasoning — cleaner input than a raw diff — and only the cluster representative is summarised. Suppressed rows keep score and reasoning but get no AI Summary; `newsletter_agent` already falls back to Raw Change for those, and the insight itself is summarised on the representative row.
 
-**Frenemies** is a fourth valid tier value, present in the Notion Tier select, **not yet assigned to any competitor**. `scripts/sync_notion_competitor_options.py` now syncs Tier as well as Competitor, so a tier in `config.py` that Notion doesn't know can't cause a rejected write and a dropped change.
+**Frenemies** is a fourth valid tier value, present in the Notion Tier select, and now carries Focal AI (`meetwithfocal.com`), Continuum (`oncontinuum.com`), Zocks (`zocks.io`) and Fireflies (`fireflies.ai`) — domains verified against each vendor's own site on 2026-08-31. **Their changedetection.io watches do not exist yet**, so the registry entries are inert until someone creates them. `scripts/sync_notion_competitor_options.py` now syncs Tier as well as Competitor, so a tier in `config.py` that Notion doesn't know can't cause a rejected write and a dropped change.
 
 **Known and measured, NOT yet fixed:**
 - **Prompt caching has never worked.** System prompts measure 324 (scoring), 169 (summariser), 205 (dedup) tokens against a 1,024-token minimum on Sonnet 4.6 and Sonnet 5 (512 even on Opus 5). Proven empirically: 66 live calls returned `cache_read_input_tokens: 0` and `cache_creation_input_tokens: 0`. The `cache_control` markers and their "cache system prompt across batch" comments are inert.
