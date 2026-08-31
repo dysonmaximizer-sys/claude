@@ -47,7 +47,15 @@ NEWSLETTER_RECIPIENTS = [
 ]
 
 # ── AI Model ──────────────────────────────────────────────────────────────────
-CLAUDE_MODEL = "claude-sonnet-4-6"
+# Measured 2026-08-31 on 33 real rows, both models, same prompts:
+#   sonnet-4-6  24,000 input / 2,424 output  ->  $1.85/month
+#   sonnet-5    33,240 input / 2,831 output  ->  $1.62/month  (12% cheaper)
+# The per-token rate is lower ($2/$10 vs $3/$15) but Sonnet 5's newer tokenizer
+# turns the same text into ~1.39x more tokens, so most of the rate cut is eaten.
+# Sonnet 5 also scores ~0.5 points harsher near the alert boundary: 7 of those 33
+# rows crossed the >5 line, 6 of them downward. If alert volume drops noticeably,
+# the fix is ALERT_SCORE_THRESHOLD, not the model.
+CLAUDE_MODEL = "claude-sonnet-5"
 # Cheapest model available, used only for the 1-token startup preflight that
 # proves the key can run billed inference (see integrations/anthropic_preflight).
 # Credit and spend-limit errors are account-scoped, not model-scoped, so the
@@ -55,6 +63,17 @@ CLAUDE_MODEL = "claude-sonnet-4-6"
 PREFLIGHT_MODEL = "claude-haiku-4-5-20251001"
 
 # ── Competitor Registry ───────────────────────────────────────────────────────
+# Valid `tier` values, which must match the Notion "Tier" select options exactly:
+#   "Tier 1"      direct, highest-priority threats
+#   "Tier 2"      relevant but less direct
+#   "Ankle Biter" monitor, lower urgency
+#   "Frenemies"   partner and competitor at once — integration or partnership news
+#                 from these matters as much as their competitive moves
+# NOTE: the tier is passed to the scoring prompt as a bare label ("Tier: Frenemies")
+# and the prompt does not explain the vocabulary, so today the value is metadata for
+# humans (Teams cards, Notion views, the newsletter) rather than something that
+# changes how a change is scored. Making it steer scoring means adding a tier
+# glossary to agents/scoring_agent.SYSTEM_PROMPT.
 # Matching contract (see integrations/changedetection_client._match_competitor):
 #   url_patterns   — list of (host_suffix, path_substring_or_None). Matched
 #                    against the watch URL's host and path. Precise, so this is
