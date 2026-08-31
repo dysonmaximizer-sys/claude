@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-08-04
+**Last updated:** 2026-08-31
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -133,7 +133,50 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-08-18
+## Status as of 2026-08-31
+
+### Where this stands right now
+
+**PR ledger** (repo `dysonmaximizer-sys/claude`, all work under `competitive_intel/`):
+
+| PR | What | State |
+|---|---|---|
+| #1 | Preflight, status-aware dedupe, rescue sweep, backfill, 4 competitors | merged |
+| #2 | Rescore: say which alerting outcome happened | merged |
+| #3 | Failsafe monitoring; backlog scored silently | merged |
+| #4 | Undelivered health report is itself a failure; webhook redaction | merged |
+| #5 | Retry transient errors; health check exit-code split | merged |
+| #7 | Re-land of #6 (it merged into the stacked base, not `main`) | merged |
+| **#8** | **Four Frenemies + tier glossary in the scoring prompt** | **OPEN — needs merge** |
+
+**Decisions made this session** (with what was rejected, so they are not relitigated):
+
+- **Backlog is scored silently.** `RESCUE_SWEEP_ALERTS = False`; backfill takes `--alerts` as opt-in. Rejected: alerting on backlog — two-week-old news buries fresh signal. It reaches the team via the monthly newsletter.
+- **`Frenemies` is a fourth `Tier` value.** Rejected: a separate `Relationship` property that would have allowed "Tier 1 frenemy" — Lewis chose the simpler overload knowing those four lose a threat ranking.
+- **Model switched to `claude-sonnet-5`, with the tradeoff on the record.** Measured: 12% cheaper, but 6 of 33 sampled rows dropped below the alert threshold. Lewis chose it after seeing that. If alert volume thins out, the lever is `ALERT_SCORE_THRESHOLD` 5 → 4 — **not** reverting the model.
+- **Redtail, AdvisorEngine, Microsoft Dynamics, Act! are all Tier 2.** Rejected: Redtail as Tier 1.
+- **One Teams webhook for everything.** Per-competitor routing deleted entirely; all 11 secrets were null.
+- **Rejected: Batch API.** 50% off scoring, but up to 24h alert delay and submit/poll complexity for ~$0.60/month.
+- **Declined: measuring the tier glossary's effect on scoring** (A/B on 33 rows, ~10c). Asked and declined 2026-08-31, so two scoring changes — Sonnet 5 and the glossary — landed unmeasured within a day of each other. If scores look off, that is where to look first.
+
+**Open items and blockers:**
+
+- **PR #8 is unmerged.** Everything else is on `main`.
+- **None of the four Frenemies has a changedetection.io watch** (checked live: 73 watches, zero matches), so those registry entries produce nothing until Lewis creates them. Suggest narrow pages — pricing, product, blog/changelog, integrations — not YouTube or follower counts.
+- **8 dead watches still live in cd.io**, 22% of all scoring calls, never above 2/10. Only Lewis can delete them. Hold `developers.hubspot.com/changelog` — 9 changes scoring ≤2 from a changelog looks like a bad CSS selector, not a worthless source.
+- **1 Zoho row sits Unscored** from a transient Anthropic 500 on 2026-08-28. Self-heals on the next successful poll's rescue sweep; no action needed.
+- **GitHub disables scheduled workflows after 60 days of repo inactivity** — the poll and its watchdog would both stop silently. Any commit resets the clock.
+
+**Next steps, in order:**
+
+1. Merge PR #8.
+2. Create cd.io watches for Focal AI (`meetwithfocal.com`), Continuum (`oncontinuum.com`), Zocks (`zocks.io`), Fireflies (`fireflies.ai`).
+3. Delete the six clearly-dead watches; investigate the HubSpot changelog selector before deleting it.
+4. Watch alert volume for a week after Sonnet 5. If it thins, drop `ALERT_SCORE_THRESHOLD` to 4.
+5. Optional, and the largest remaining cost lever: push the scoring prompt past 1,024 tokens (it is at 806) with a "what cosmetic noise looks like" section. That makes the prefix cacheable at 0.1x across each run's ~25 back-to-back calls — roughly $1/month, more than every other lever combined, and it should sharpen scoring on the 77% of rows that are noise.
+
+Related Cowork handoffs, for the frenemy context: `/Users/lewisdyson/PMM/Cowork/focal-partnership-handoff-2026-08-21.md` and `/Users/lewisdyson/PMM/Cowork/continuum-integration-handoff-2026-08-11.md`.
+
 
 ### Latest update — 2026-08-31 (later): credit-usage assessment, Sonnet 5, cluster-first summarising, Frenemies tier
 
@@ -403,4 +446,14 @@ python3 -m scripts.sync_notion_competitor_options --apply
 - The Notion Changes DB schema matches the code. The legacy `Battlecard Updated` column was removed via `scripts/drop_battlecard_column.py`. The 11 legacy battlecard pages and the defunct `Competitors` database were archived via `scripts/archive_battlecard_pages.py` and `scripts/archive_competitors_database.py`.
 - `scripts/` holds one-shot maintenance scripts. They are not part of the scheduled pipeline.
 - **Secret stores are separate copies that must stay in sync.** `RESEND_API_KEY` (and every other secret) exists both in local `competitive_intel/.env` (used only by local/manual runs) and in GitHub Actions secrets (used by the scheduled CI). Rotating a key means updating **both**; updating only one leaves the other stale.
+- **GitHub retargets a stacked PR only when its base branch is DELETED.** Merging #5 (the lower PR) without deleting its branch left #6 pointing at that branch, so #6 merged into the branch and never reached `main`. Fixed by cherry-picking onto `main` as #7. When stacking: delete the base branch on merge, or retarget the upper PR first.
+- **The PAT gained `workflow` scope on 2026-08-18.** Before that, pushes and Contents-API writes touching `.github/workflows/` failed — and the API returns **404**, not 403, which reads as "missing file" rather than "missing scope". Editing workflow YAML in the GitHub web editor is error-prone (pasted blocks inherit the editor's auto-indent; it took three attempts). Push the file instead.
+- **The Teams webhook `sig` parameter IS the credential**, and `requests` puts the full URL into its `HTTPError` text — so any `logger.error("...: %s", e)` published it. Use `teams_client.redact()` on anything derived from a failed post.
+- **Notion select options must exist before a write.** Do not rely on auto-creation; `scripts/sync_notion_competitor_options.py --apply` syncs both Competitor and Tier from `config.py`.
+- **Sonnet 5's tokenizer produces ~1.39x more tokens than Sonnet 4.6 for the same text** (measured: 24,000 → 33,240 on 33 identical prompts). Never estimate a model-swap saving from sticker prices alone.
+- **Minimum cacheable prefix: 1,024 tokens on Sonnet 4.6 and Sonnet 5** (512 on Opus 5). The scoring prompt is 806 tokens, so its `cache_control` marker is inert — proven by 66 live calls returning `cache_read_input_tokens: 0`.
+- **Power Automate reveals a flow's webhook URL only after the flow is saved**, and a flow cannot be saved with only a trigger. Deleting a flow makes every post return `400 WorkflowTriggerIsNotEnabled` with `state: 'Deleted'` — that error means the URL points at a deleted flow, not a malformed card.
+- **cd.io timed out from Lewis's Mac on 2026-08-18 and was reachable again on 2026-08-31.** A connect timeout there is transient/network, not a bad API key — GitHub runners reached it throughout.
+- **`Date Detected` always lags about a day** (the poll runs before that day's crawl), so a run's own output never carries today's date. A `Created time` property was added to the Changes DB on 2026-08-31 — sort on that to see what the latest run brought in.
+- **Local python is 3.9** (no 3.11/3.12 on the Mac, no Homebrew); repo code stays 3.9-compatible while CI runs 3.12.
 - **Lewis's Mac (Apple Silicon / arm64) has neither Homebrew nor the `gh` CLI installed** (checked 2026-07-22). Setting a GitHub Actions secret from Terminal therefore requires installing Homebrew → `brew install gh` → `gh auth login` first. The zero-install path is the GitHub web UI: repo → Settings → Secrets and variables → Actions. GitHub never displays a secret value; the "Updated" timestamp is the only confirmation it took.
