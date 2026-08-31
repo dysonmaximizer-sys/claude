@@ -36,6 +36,7 @@ integrations/
   notion_client.py           # All Notion reads/writes (Changes DB)
   teams_client.py            # Builds Adaptive Cards, posts via Teams Workflows webhook
   anthropic_preflight.py     # 1-token key check; jobs abort before any fetch or write if it fails
+  anthropic_retry.py         # backoff on 429/5xx/connection errors; never retries a 400
 
 resources/
   newsletter_system_prompt.txt  # Prompt loaded by newsletter_agent.py (edit here, not in code)
@@ -87,7 +88,7 @@ To add a new competitor: (1) add the watch in the cd.io dashboard; (2) add an en
 - Payload: Adaptive Card 1.5 JSON in the POST body. The flow forwards it directly to Teams.
 - The alert card uses container styling: `attention` (red) for score 8+, `warning` (yellow) for 6-7, default for below.
 - Alert card includes one action button: "Open Source" (links to the cd.io-detected URL). The "View in Notion" button was removed because the link points to the broader Hub, not the specific change.
-- Newsletter announcement card uses `accent` styling and includes a "Read Full Newsletter" button linking to the newsletter's Notion page.
+- The monthly newsletter path posts **nothing** to Teams. The announcement card was removed from `jobs/monthly_newsletter.py`; distribution is email via Resend only. (This line previously described the card as live — corrected 2026-08-31.)
 - Webhook URL is stored in `.env` as `TEAMS_GENERAL_WEBHOOK` and in GitHub Actions secrets under the same name.
 - Per-competitor webhook routing was removed on 2026-08-18. All 11 per-competitor secrets were null, so every alert already went to the general webhook; the code, workflow YAML and docs now match that reality. Every alert goes to `TEAMS_GENERAL_WEBHOOK` with the competitor name as the card headline.
 
@@ -128,7 +129,21 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ## Status as of 2026-08-18
 
-### Latest update — 2026-08-18 (later): failsafe monitoring + backlog alerting policy
+### Latest update — 2026-08-31: alert noise killed, transient failures retried
+
+**What went wrong.** On 2026-08-28 the poll ran well — 37 matched changes, 27 logged, 26 scored — and then one row (Zoho pricing) hit a transient Anthropic **HTTP 500**. That single failure out of 27 exited the job 1, so the run went red and fired a "daily poll FAILED" card. Worse, every health check run after it reported "the last daily poll run ended in failure", exited 1 by design, and that non-zero exit tripped the `if: failure()` step, which posted **"HEALTH CHECK CRASHED"**. The check had not crashed; it was working perfectly. Two alarming cards a day, one of them false, for a fault that lasted one request. Nothing could clear it until a poll succeeded, and the poll is weekday-only, so it ran all weekend.
+
+**Three fixes.**
+
+1. **Health check exit codes are now load-bearing.** `0` healthy, `2` problems found *and* reported to Teams, `1` crashed or could not deliver. The workflow maps `2` to success with a warning annotation, so the crash card only fires when the watchdog genuinely has no voice. Before, "reported problems" and "died" were both exit 1 and indistinguishable to `if: failure()`.
+2. **Transient Anthropic errors are retried** (`integrations/anthropic_retry.py`): 4 attempts, exponential backoff, on 429/5xx/connection/timeout. A 400 `invalid_request_error` — the credit-balance failure — is **never** retried, since it is a standing condition and retrying hides the diagnosis. Applied to all four agents. And the daily poll no longer fails over a small number of scoring blips: a failed row stays Unscored and the next run's rescue sweep re-scores it, so it is self-healing. A run is called systemic only if failures exceed `SCORING_FAILURE_TOLERANCE` (3) **or** more than half the attempts failed. A real outage still surfaces within a day via the health check's backlog test.
+3. **`learn.microsoft.com/dynamics365` added** to the Microsoft Dynamics patterns. A Dynamics release-notes watch on that host was being discarded every run ("no competitor match" in the 2026-08-28 log) because the existing patterns only covered `microsoft.com/dynamics-365` and the LinkedIn showcase.
+
+**Verified:** retry predicate against 6 exception types including a real 400 and a real 500; retry recovering on the third attempt with 2s/4s backoff and raising immediately on a 400; all three health check exit codes; the workflow's shell mapping for exit 0/1/2/3; and the regression suite extended to 17 checks with a new scenario covering one blip (tolerated, row left for the sweep) versus 8 of 10 failing (fails the run).
+
+**Aug 20-28 for the record:** six successful polls, backlog held at 0, and all four new competitors scoring in production.
+
+### Earlier — 2026-08-18 (later): failsafe monitoring + backlog alerting policy
 
 **Backlog is now scored silently.** `RESCUE_SWEEP_ALERTS = False` in `config.py`, and `jobs/backfill_rescore.py` takes `--alerts` as opt-in rather than `--no-alerts` as opt-out. Rationale: a backlog row is days or weeks old by the time it is scored, so alerting on it notifies people about stale news and buries the fresh signal. Backlog reaches the team through the monthly newsletter. Only changes detected in the current run alert.
 
@@ -330,6 +345,7 @@ python3 -m jobs.backfill_rescore --yes --limit 5
 python3 -m jobs.backfill_rescore --yes
 
 # Check whether the pipeline is healthy (silent unless something is wrong)
+# exit 0 = healthy, 2 = problems reported to Teams, 1 = crashed or undelivered
 python3 -m jobs.healthcheck
 python3 -m jobs.healthcheck --always-notify   # force a card, for testing
 

@@ -11,10 +11,18 @@ import logging
 
 import anthropic
 
+from integrations.anthropic_retry import retry_transient
 from config import ANTHROPIC_API_KEY, CLAUDE_MODEL
 
 logger = logging.getLogger(__name__)
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+
+@retry_transient
+def _create(**kwargs):
+    """messages.create with backoff on 429/5xx/connection errors."""
+    return client.messages.create(**kwargs)
+
 
 SYSTEM_PROMPT = """You are a competitive intelligence analyst writing briefings for \
 the Sales, Marketing, Product, and CS teams at Maximizer — a B2B SaaS CRM for \
@@ -59,7 +67,7 @@ Raw change text:
 Write the competitive intelligence briefing."""
 
     try:
-        message = client.messages.create(
+        message = _create(
             model=CLAUDE_MODEL,
             max_tokens=300,
             system=[

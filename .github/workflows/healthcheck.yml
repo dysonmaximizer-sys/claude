@@ -44,10 +44,26 @@ jobs:
           # schedule that has stopped firing. Provided automatically by Actions.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY: ${{ github.repository }}
-        run: python -m jobs.healthcheck
+        run: |
+          # Exit codes carry meaning (see jobs/healthcheck.py):
+          #   0 healthy · 2 problems found AND reported to Teams · 1 crashed or
+          #   could not deliver the report.
+          # Exit 2 must NOT fail the job: somebody has already been told, and a red
+          # run here would trigger the crash alert below, which is what made the
+          # check post "HEALTH CHECK CRASHED" every day while working perfectly.
+          set +e
+          python -m jobs.healthcheck
+          code=$?
+          set -e
+          if [ "$code" = "2" ]; then
+            echo "::warning::Pipeline problems found and reported to Teams. Not failing the job — the report was delivered."
+            exit 0
+          fi
+          exit $code
 
-      # If the health check itself dies, the checker is no better than the thing
-      # it checks. This posts directly, depending on nothing but curl-equivalent.
+      # Only reached now when the check genuinely crashed, or could not deliver
+      # its report (exit 1). Normal problem detection exits 2 and is handled
+      # above, so this card no longer fires while the check is working correctly.
       - name: Alert Teams if the health check itself failed
         if: failure()
         env:
@@ -68,10 +84,10 @@ jobs:
                   {"type": "Container", "style": "attention", "bleed": True, "items": [
                       {"type": "TextBlock", "text": "Competitive Intel: HEALTH CHECK CRASHED",
                        "weight": "Bolder", "size": "Large", "wrap": True},
-                      {"type": "TextBlock", "text": "The watchdog itself failed, so the pipeline is now unmonitored.",
+                      {"type": "TextBlock", "text": "The watchdog crashed, or could not deliver its report. The pipeline is now unmonitored.",
                        "spacing": "None", "isSubtle": True, "wrap": True}]},
                   {"type": "TextBlock", "wrap": True,
-                   "text": "Open the run log to see why. Until this is fixed, a silent pipeline failure will go unnoticed."},
+                   "text": "This card does NOT mean a check failed — a failed check reports itself and exits 2. It means the check could not run or could not be heard. Open the run log. Until it is fixed, a silent pipeline failure will go unnoticed."},
               ],
               "actions": [{"type": "Action.OpenUrl", "title": "Open run log",
                            "url": os.environ.get("RUN_URL", "")}],

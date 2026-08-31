@@ -22,10 +22,18 @@ import logging
 
 import anthropic
 
+from integrations.anthropic_retry import retry_transient
 from config import ANTHROPIC_API_KEY, CLAUDE_MODEL
 
 logger = logging.getLogger(__name__)
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+
+@retry_transient
+def _create(**kwargs):
+    """messages.create with backoff on 429/5xx/connection errors."""
+    return client.messages.create(**kwargs)
+
 
 SYSTEM_PROMPT = """You group website changes detected on a single competitor's \
 site by the underlying announcement or event they describe.
@@ -82,7 +90,7 @@ def cluster_changes_by_insight(competitor_name: str, changes: list[dict]) -> lis
     )
 
     try:
-        message = client.messages.create(
+        message = _create(
             model=CLAUDE_MODEL,
             max_tokens=256,
             system=[

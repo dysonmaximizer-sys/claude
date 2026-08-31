@@ -70,7 +70,8 @@ def run(dry_run: bool = False) -> dict:
     from agents.dedup_agent import cluster_changes_by_insight
     from integrations.teams_client import redact, send_competitive_alert
     from jobs.rescore import rescore_unscored
-    from config import ALERT_SCORE_THRESHOLD, RESCUE_SWEEP_LIMIT, RESCUE_SWEEP_ALERTS
+    from config import (ALERT_SCORE_THRESHOLD, RESCUE_SWEEP_LIMIT,
+                        RESCUE_SWEEP_ALERTS, SCORING_FAILURE_TOLERANCE)
 
     logger.info("=== Daily poll started%s ===", " (DRY RUN)" if dry_run else "")
 
@@ -112,6 +113,7 @@ def run(dry_run: bool = False) -> dict:
     scored = 0
     alerted = 0
     errors = 0
+    scoring_failures = 0
     pending_alerts: list[dict] = []  # alert-worthy changes, alerted after the loop
 
     for change in changes:
@@ -178,8 +180,14 @@ def run(dry_run: bool = False) -> dict:
             scored += 1
             logger.info("  → Score: %d/10 — %s", score, reasoning)
         except Exception as e:
-            logger.error("  → Scoring failed for %s: %s", competitor, e)
-            errors += 1
+            # Not counted as a run error yet. The row stays Unscored, and the next
+            # run's rescue sweep re-scores it, so an isolated failure is
+            # self-healing. Whether this is systemic is judged after the loop.
+            logger.warning(
+                "  → Scoring failed for %s (row left Unscored, next sweep will retry): %s",
+                competitor, e,
+            )
+            scoring_failures += 1
             continue
 
         if score <= ALERT_SCORE_THRESHOLD:
@@ -264,17 +272,45 @@ def run(dry_run: bool = False) -> dict:
                 logger.error("  → Teams alert failed for %s: %s", competitor, redact(e))
                 errors += 1
 
+    # ── Step 7: was the scoring damage transient or systemic? ──────────────
+    # A blip leaves rows Unscored and the next sweep fixes them, so failing the
+    # run over one would cry wolf — that is exactly what happened on 2026-08-28,
+    # when one HTTP 500 out of 27 rows produced a red run and then a daily
+    # "PIPELINE PROBLEM" card. A real outage still surfaces within a day via the
+    # health check's backlog test.
+    attempted = scored + scoring_failures
+    if scoring_failures:
+        systemic = (scoring_failures > SCORING_FAILURE_TOLERANCE
+                    or scoring_failures * 2 > attempted)
+        if systemic:
+            logger.error(
+                "%d of %d scoring attempts failed — systemic (tolerance %d, or over "
+                "half of attempts), failing the run.",
+                scoring_failures, attempted, SCORING_FAILURE_TOLERANCE,
+            )
+            errors += scoring_failures
+        else:
+            logger.warning(
+                "%d of %d scoring attempts failed transiently. Those rows stay "
+                "Unscored and the next run's rescue sweep re-scores them, so the run "
+                "is not being failed. Watch the health check's backlog test if it "
+                "keeps happening.",
+                scoring_failures, attempted,
+            )
+
     total_scored = scored + sweep["scored"]
     total_alerted = alerted + sweep["alerted"]
     total_errors = errors + sweep["errors"]
     logger.info(
         "=== Daily poll complete: %d logged, %d resumed, %d swept, %d scored, "
-        "%d alerted, %d errors ===",
-        logged, resumed, sweep["processed"], total_scored, total_alerted, total_errors,
+        "%d alerted, %d scoring blips, %d errors ===",
+        logged, resumed, sweep["processed"], total_scored, total_alerted,
+        scoring_failures, total_errors,
     )
     return {
         "new_changes": logged,
         "resumed": resumed,
+        "scoring_failures": scoring_failures,
         "swept": sweep["processed"],
         "scored": total_scored,
         "alerted": total_alerted,

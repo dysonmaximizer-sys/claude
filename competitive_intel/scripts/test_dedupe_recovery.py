@@ -16,6 +16,10 @@ all replaced by in-memory fakes:
   2. The next healthy run                          → every stranded row ends
                                                      Scored, with no duplicate
                                                      rows created.
+  4. One scoring blip vs many                      → an isolated failure leaves
+                                                     the row for the next sweep
+                                                     and does NOT fail the run;
+                                                     a systemic failure does.
   3. A row stranded OUTSIDE the 76h lookback       → still rescued, because the
                                                      rescue sweep reads the
                                                      database rather than the
@@ -269,6 +273,26 @@ def main() -> int:
     check("Teams Alert Sent left unticked on the backlog row",
           notion3.rows[stale_id]["teams_alert_sent"] is False)
     check("healthy run reported 0 errors", result3["errors"] == 0, f"result={result3}")
+
+    # ── Scenario 4: a transient blip is tolerated, systemic failure is not ────
+    print("\nScenario 4 — one scoring blip vs a systemic scoring failure")
+    notion4 = FakeNotion()
+    install_fakes(notion4, make_changes(10), failing_after=9)  # 1 of 10 fails
+    sys.modules.pop("jobs.daily_poll", None)
+    from jobs.daily_poll import run as poll_run4
+    r4 = poll_run4()
+    check("1 blip in 10 does not fail the run", r4["errors"] == 0, f"result={r4}")
+    check("the blip is still counted and reported", r4["scoring_failures"] == 1,
+          f"scoring_failures={r4.get('scoring_failures')}")
+    check("the failed row is left Unscored for the next sweep",
+          notion4.counts().get("Unscored") == 1, f"counts={notion4.counts()}")
+
+    notion5 = FakeNotion()
+    install_fakes(notion5, make_changes(10), failing_after=2)  # 8 of 10 fail
+    sys.modules.pop("jobs.daily_poll", None)
+    from jobs.daily_poll import run as poll_run5
+    r5 = poll_run5()
+    check("8 of 10 failing DOES fail the run", r5["errors"] > 0, f"result={r5}")
 
     print()
     if failures:

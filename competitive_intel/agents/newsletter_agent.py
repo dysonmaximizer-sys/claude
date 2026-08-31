@@ -24,6 +24,7 @@ from pathlib import Path
 import requests
 import anthropic
 
+from integrations.anthropic_retry import retry_transient
 from config import (
     ANTHROPIC_API_KEY,
     CLAUDE_MODEL,
@@ -33,6 +34,13 @@ from config import (
 
 logger = logging.getLogger(__name__)
 client = anthropic.Anthropic(api_key=ANTHROPIC_API_KEY)
+
+
+@retry_transient
+def _create(**kwargs):
+    """messages.create with backoff on 429/5xx/connection errors."""
+    return client.messages.create(**kwargs)
+
 
 # ── System prompt: loaded from resources file ─────────────────────────────────
 
@@ -78,7 +86,7 @@ This month's competitive changes ({len(changes)} total):
 Write the full newsletter now."""
 
     try:
-        message = client.messages.create(
+        message = _create(
             model=CLAUDE_MODEL,
             max_tokens=1500,
             system=[

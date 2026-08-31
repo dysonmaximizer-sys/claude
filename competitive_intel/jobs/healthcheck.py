@@ -25,12 +25,16 @@ This job runs daily and posts a Teams card the moment any of these is true:
 Silent when everything is healthy — a daily "all fine" card would be trained out
 of people within a week. Use --always-notify to force a card for testing.
 
-Exit code 0 when healthy, 1 when any check fails, so the workflow goes red too
-and you get GitHub's own notification as a second, independent signal.
+Exit codes:
+  0  healthy
+  2  problems found and the Teams report was delivered. The workflow maps this to
+     success with a warning annotation: somebody has been told, so a red run adds
+     nothing but noise.
+  1  the report could not be delivered, or this job crashed. Nobody has been told,
+     so the run goes red and GitHub's own notification is the fallback channel.
 
-Failing to DELIVER the report counts as a failure in its own right. The watchdog
-speaks through Teams, so when Teams is the broken thing it has no voice — the
-non-zero exit hands the job to GitHub's notifications instead.
+That split exists because the watchdog speaks through Teams. When Teams is the
+broken thing it has no voice, and only then does the run need to go red.
 
 Usage:
     python3 -m jobs.healthcheck
@@ -166,6 +170,7 @@ def run(always_notify: bool = False) -> dict:
             logger.info("        %s", line)
 
     problems = [r for r in results if not r["ok"]]
+    delivered = None  # None = nothing needed sending
     if problems or always_notify:
         healthy = not problems
         lines = []
@@ -208,7 +213,7 @@ def run(always_notify: bool = False) -> dict:
             }]
 
     logger.info("=== %d problem(s) ===", len(problems))
-    return {"problems": len(problems), "results": results}
+    return {"problems": len(problems), "results": results, "delivered": delivered}
 
 
 def main() -> int:
@@ -216,7 +221,22 @@ def main() -> int:
     parser.add_argument("--always-notify", action="store_true",
                         help="Send a Teams card even when everything is healthy")
     args = parser.parse_args()
-    return 1 if run(always_notify=args.always_notify)["problems"] else 0
+    result = run(always_notify=args.always_notify)
+
+    # Exit codes are load-bearing — the workflow maps them (see healthcheck.yml):
+    #   0  healthy
+    #   2  problems found AND the report reached Teams. Somebody has been told,
+    #      so the job does not need to go red; it emits a warning annotation.
+    #   1  the report could NOT be delivered, or this job crashed. Nobody has been
+    #      told, so the run must go red and GitHub's notification is the fallback.
+    # Before this split, "found problems and reported them" and "died" were both
+    # exit 1, so the if:failure() step posted "HEALTH CHECK CRASHED" every time
+    # the check was simply doing its job. That card was crying wolf daily.
+    if not result["problems"]:
+        return 0
+    if result["delivered"] is False:
+        return 1
+    return 2
 
 
 if __name__ == "__main__":
