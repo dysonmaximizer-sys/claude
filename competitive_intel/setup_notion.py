@@ -57,7 +57,6 @@ COMPETITORS = {
     "Laylah":     "Tier 2",
     "Salesforce": "Tier 2",
     "Wealthbox":  "Tier 2",
-    "Monday":     "Tier 2",
     "Zoho":       "Tier 2",
     "Onevest":    "Ankle Biter",
     "Pipedrive":  "Ankle Biter",

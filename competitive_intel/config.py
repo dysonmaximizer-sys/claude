@@ -97,7 +97,6 @@ COMPETITORS = {
     "Laylah":     {"tier": "Tier 2", "slug": "laylah"},
     "Salesforce": {"tier": "Tier 2", "slug": "salesforce"},
     "Wealthbox":  {"tier": "Tier 2", "slug": "wealthbox"},
-    "Monday":     {"tier": "Tier 2", "slug": "monday"},
     "Zoho":       {"tier": "Tier 2", "slug": "zoho"},
     "Redtail": {
         "tier": "Tier 2",
