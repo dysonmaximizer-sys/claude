@@ -65,7 +65,6 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Laylah      | Tier 2      | Yes                  |
 | Salesforce  | Tier 2      | Yes                  |
 | Wealthbox   | Tier 2      | Yes                  |
-| Monday      | Tier 2      | Yes                  |
 | Zoho        | Tier 2      | Yes                  |
 | Redtail     | Tier 2      | Yes (added 2026-08-18) |
 | AdvisorEngine | Tier 2    | Yes (added 2026-08-18) |
@@ -78,6 +77,8 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 | Onevest     | Ankle Biter | Yes                  |
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
+
+Monday was removed from the registry on 2026-08-31: it had been listed as Tier 2 since April with **no changedetection.io watch**, so it produced zero rows in the entire history of the database. The Notion `Competitor` select still carries the option (removing a select option would strip the value from any page that used it; keeping it costs nothing).
 
 Valid tier values: `Tier 1`, `Tier 2`, `Ankle Biter`, and `Frenemies` (added 2026-08-31; assigned to Focal AI, Continuum, Zocks and Fireflies — AI meeting-notes and client-intelligence assistants that integrate with CRMs while absorbing workflows a CRM would otherwise own). The scoring prompt now explains the tier vocabulary (added 2026-08-31), so the label does steer scoring: Tier 1 carries the most weight, Frenemies less than Tier 1 but not dismissed — there is substantial product-feature and ICP overlap — and Ankle Biters need a genuinely consequential change to reach the upper bands. The glossary also states that tier adjusts weight but never overrides the rubric, so cosmetic changes stay 1-2 regardless of source.
 
