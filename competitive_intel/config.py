@@ -105,6 +105,9 @@ COMPETITORS = {
         "url_patterns": [
             ("microsoft.com", "/dynamics-365"),
             ("linkedin.com", "/showcase/microsoft-dynamics"),
+            # learn.microsoft.com is a separate host and was being discarded every
+            # run (spotted in the 2026-08-28 log). Release notes are high signal.
+            ("learn.microsoft.com", "/dynamics365"),
         ],
         "title_patterns": [r"microsoft dynamics", r"\bdynamics 365\b"],
         "slug_match": False,
@@ -139,6 +142,15 @@ RESCUE_SWEEP_LIMIT = 20
 # fresh signal. Backlog is scored silently and reaches the team through the
 # monthly newsletter; only changes detected in the current run alert.
 RESCUE_SWEEP_ALERTS = False
+
+# How many scoring failures the daily poll tolerates before it treats them as
+# systemic and fails the run. A failed row is left Unscored, and the next run's
+# rescue sweep re-scores it, so a transient blip is self-healing — on 2026-08-28
+# one HTTP 500 out of 27 rows turned into a red run plus a daily "PIPELINE
+# PROBLEM" card for a fault that lasted one request. A run is called systemic if
+# it exceeds this count OR more than half its scoring attempts failed, and a
+# genuine outage is still caught within a day by the health check's backlog test.
+SCORING_FAILURE_TOLERANCE = 3
 
 # Alert-worthy rows per Teams digest card. Keeps a batched digest inside Teams'
 # payload size limit and bounds how much is lost if a run dies mid-flush.
