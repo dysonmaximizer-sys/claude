@@ -179,7 +179,21 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 Related Cowork handoffs, for the frenemy context: `/Users/lewisdyson/PMM/Cowork/focal-partnership-handoff-2026-08-21.md` and `/Users/lewisdyson/PMM/Cowork/continuum-integration-handoff-2026-08-11.md`.
 
 
-### Latest update — 2026-08-31 (later): credit-usage assessment, Sonnet 5, cluster-first summarising, Frenemies tier
+### Latest update — 2026-09-01: Sonnet 5's adaptive thinking broke response parsing
+
+The August newsletter failed at 19:09 UTC with `'ThinkingBlock' object has no attribute 'text'`. The API call returned **200 OK**; the crash was ours.
+
+All four agents read `message.content[0].text`, which assumes the first content block is text. **Sonnet 5 runs adaptive thinking by default and Sonnet 4.6 did not**, so the model now decides per request whether to think — and when it does, `content[0]` is a ThinkingBlock. Verified live: a short scoring call returns `['text']`, a long synthesis call returns `['thinking', 'text']`. That is why scoring kept working while the newsletter died: one latent bug, hidden by workload shape, for a full day.
+
+Fixes:
+- `integrations/anthropic_retry.response_text()` concatenates every text block and ignores the rest. It also raises explicitly on `stop_reason == "max_tokens"` and on a response with no text, because both otherwise surface as confusing downstream failures (bad JSON, or an empty summary silently written to Notion).
+- Scoring, summariser and dedup now pass `thinking={"type": "disabled"}`. Their budgets are 256-300 tokens and adaptive thinking spends the *same* budget, so a thinking burst would truncate the JSON. Sonnet 4.6 never thought on these calls, and the comparison that justified the model swap was measured with thinking effectively off, so this keeps behaviour aligned with what was validated.
+- The newsletter keeps adaptive thinking (long-form synthesis is where it earns its keep) with `max_tokens` raised 1500 → 4000 so reasoning cannot crowd out the newsletter itself.
+- `scripts/test_response_parsing.py` covers all six response shapes offline.
+
+**Unresolved risk:** `requirements.txt` pins `anthropic>=0.40.0`, so CI installed **anthropic 1.3.0** while this Mac runs **0.96.0** — a silent major-version divergence between CI and local. Not the cause of this failure, but "works in CI, breaks locally" (or the reverse) is waiting to happen. Pinning needs a local upgrade first.
+
+### Earlier — 2026-08-31 (later): credit-usage assessment, Sonnet 5, cluster-first summarising, Frenemies tier
 
 **Measured cost profile** (via `count_tokens` plus real `response.usage` from 66 live calls; 7 run-days, 179 scored rows):
 
@@ -451,6 +465,7 @@ python3 -m scripts.sync_notion_competitor_options --apply
 - **The PAT gained `workflow` scope on 2026-08-18.** Before that, pushes and Contents-API writes touching `.github/workflows/` failed — and the API returns **404**, not 403, which reads as "missing file" rather than "missing scope". Editing workflow YAML in the GitHub web editor is error-prone (pasted blocks inherit the editor's auto-indent; it took three attempts). Push the file instead.
 - **The Teams webhook `sig` parameter IS the credential**, and `requests` puts the full URL into its `HTTPError` text — so any `logger.error("...: %s", e)` published it. Use `teams_client.redact()` on anything derived from a failed post.
 - **Notion select options must exist before a write.** Do not rely on auto-creation; `scripts/sync_notion_competitor_options.py --apply` syncs both Competitor and Tier from `config.py`.
+- **Sonnet 5 runs adaptive thinking by default; Sonnet 4.6 did not.** Never read `message.content[0].text` — use `anthropic_retry.response_text()`. Thinking tokens are drawn from the same `max_tokens` budget, so a small budget plus thinking equals a truncated response.
 - **Sonnet 5's tokenizer produces ~1.39x more tokens than Sonnet 4.6 for the same text** (measured: 24,000 → 33,240 on 33 identical prompts). Never estimate a model-swap saving from sticker prices alone.
 - **Minimum cacheable prefix: 1,024 tokens on Sonnet 4.6 and Sonnet 5** (512 on Opus 5). The scoring prompt is 806 tokens, so its `cache_control` marker is inert — proven by 66 live calls returning `cache_read_input_tokens: 0`.
 - **Power Automate reveals a flow's webhook URL only after the flow is saved**, and a flow cannot be saved with only a trigger. Deleting a flow makes every post return `400 WorkflowTriggerIsNotEnabled` with `state: 'Deleted'` — that error means the URL points at a deleted flow, not a malformed card.

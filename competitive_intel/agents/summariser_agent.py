@@ -11,7 +11,7 @@ import logging
 
 import anthropic
 
-from integrations.anthropic_retry import retry_transient
+from integrations.anthropic_retry import response_text, retry_transient
 from config import ANTHROPIC_API_KEY, CLAUDE_MODEL
 
 logger = logging.getLogger(__name__)
@@ -70,6 +70,7 @@ Write the competitive intelligence briefing."""
         message = _create(
             model=CLAUDE_MODEL,
             max_tokens=300,
+            thinking={"type": "disabled"},
             system=[
                 {
                     "type": "text",
@@ -79,7 +80,7 @@ Write the competitive intelligence briefing."""
             ],
             messages=[{"role": "user", "content": user_content}],
         )
-        return message.content[0].text.strip()
+        return response_text(message).strip()
 
     except anthropic.APIError as e:
         logger.error("Anthropic API error during summarisation for %s: %s", competitor_name, e)
