@@ -37,7 +37,7 @@ def _previous_month(year: int, month: int) -> tuple[int, int]:
     return year, month - 1
 
 
-def run(mode: str, year: int, month: int) -> dict:
+def run(mode: str, year: int, month: int, force: bool = False) -> dict:
     """
     Generate and distribute the monthly newsletter.
 
@@ -53,12 +53,38 @@ def run(mode: str, year: int, month: int) -> dict:
         save_newsletter,
         send_draft_email,
         send_broadcast,
+        broadcast_name,
+        find_broadcast,
+        LIVE_BROADCAST_STATES,
         _render_html,
     )
     from config import DRAFT_REVIEWER, RESEND_AUDIENCE_ID
 
     month_name = datetime(year, month, 1).strftime("%B %Y")
     logger.info("=== Monthly newsletter job started for %s (mode=%s) ===", month_name, mode)
+
+    # Idempotency, checked BEFORE generating anything. Nothing else records that a
+    # month has been sent, and broadcasts now go out unattended, so without this a
+    # re-run mails the whole audience a second time. Checking first also avoids
+    # spending ~50s and a full generation on a newsletter that will be refused.
+    if mode == "broadcast":
+        name = broadcast_name(year, month)
+        existing = find_broadcast(name)
+        if existing and existing.get("status") in LIVE_BROADCAST_STATES:
+            if not force:
+                logger.error(
+                    "REFUSING to broadcast: '%s' already exists in Resend with status "
+                    "'%s' (sent %s). Re-sending would deliver it to the audience twice. "
+                    "Pass --force if a genuine re-send is intended. Nothing was generated.",
+                    name, existing.get("status"), existing.get("sent_at") or "?",
+                )
+                return {"newsletter_generated": False, "mode": mode, "sent": False,
+                        "skipped_duplicate": True}
+            logger.warning(
+                "'%s' already exists in Resend (status '%s') — sending anyway because "
+                "--force was passed. The audience will receive it twice.",
+                name, existing.get("status"),
+            )
 
     # ── Fetch changes ──────────────────────────────────────────────────────────
     raw_pages = get_monthly_changes(year=year, month=month, min_score=1)
@@ -91,7 +117,7 @@ def run(mode: str, year: int, month: int) -> dict:
                 html,
                 subject,
                 audience_id=RESEND_AUDIENCE_ID,
-                internal_name=f"CI Newsletter {year}-{month:02d}",
+                internal_name=broadcast_name(year, month),
             )
         logger.info("Broadcast result: %s", ok)
     else:
@@ -109,6 +135,12 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
     """Parse CLI args. --year/--month default to the previous calendar month."""
     parser = argparse.ArgumentParser(
         description="Generate and distribute the monthly CI newsletter."
+    )
+    parser.add_argument(
+        "--force",
+        action="store_true",
+        help="Broadcast even if Resend already has a broadcast for this month. "
+             "Only for a deliberate re-send — the audience receives it twice.",
     )
     parser.add_argument(
         "--mode",
@@ -142,7 +174,7 @@ def parse_args(argv: Optional[list] = None) -> argparse.Namespace:
 
 if __name__ == "__main__":
     args = parse_args()
-    result = run(mode=args.mode, year=args.year, month=args.month)
+    result = run(mode=args.mode, year=args.year, month=args.month, force=args.force)
     # Deliberate change from prior behaviour: exit 1 when the send fails so
     # GitHub Actions surfaces the failure (previously exited 0 on email error).
     sys.exit(0 if result["newsletter_generated"] and result.get("sent") else 1)

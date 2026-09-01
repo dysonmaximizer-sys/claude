@@ -165,6 +165,57 @@ def send_draft_email(html_body: str, subject: str, recipient: str) -> bool:
         return False
 
 
+def broadcast_name(year: int, month: int) -> str:
+    """
+    The Resend broadcast name for a month — the single source of truth.
+
+    Three call sites depend on this string matching exactly: the send, the
+    idempotency guard that refuses a second send, and the health check that
+    verifies a month went out. If they ever disagreed, the guard would stop
+    guarding and the health check would report a false failure every month.
+    """
+    return f"CI Newsletter {year}-{month:02d}"
+
+
+def find_broadcast(name: str):
+    """
+    Return the Resend broadcast with this exact name, or None.
+
+    Resend is the authoritative record of what was actually sent — better than
+    a marker in Notion or the repo, which can disagree with reality. Considered
+    and rejected: flipping the month's rows to Status = Distributed, which would
+    mean up to 400 Notion writes per broadcast to restate something Resend
+    already knows.
+
+    Returns None on any API failure. Callers must decide what that means: the
+    send guard treats "unknown" as safe-to-send (better a possible duplicate
+    than a newsletter that never goes out), the health check reports it.
+    """
+    if not RESEND_API_KEY:
+        return None
+    try:
+        r = requests.get(
+            "https://api.resend.com/broadcasts",
+            headers={"Authorization": f"Bearer {RESEND_API_KEY}"},
+            timeout=20,
+        )
+        r.raise_for_status()
+        payload = r.json()
+        items = payload.get("data", payload if isinstance(payload, list) else [])
+    except Exception as e:
+        logger.error("Could not list Resend broadcasts: %s", e)
+        return None
+    for b in items:
+        if b.get("name") == name:
+            return b
+    return None
+
+
+# A broadcast in any of these states has already gone out or is on its way, so
+# sending again would duplicate it. "draft" and "canceled" have not.
+LIVE_BROADCAST_STATES = ("sent", "queued", "sending", "scheduled")
+
+
 def send_broadcast(
     html_body: str,
     subject: str,

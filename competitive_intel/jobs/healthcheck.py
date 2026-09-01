@@ -19,6 +19,10 @@ This job runs daily and posts a Teams card the moment any of these is true:
                 reaching it. A pipeline can pass every other check while receiving
                 nothing at all.
   4. RUNS     — the daily poll workflow last failed, or has not run for RUN_GAP_DAYS.
+  5. NEWSLETTER — last month's broadcast never reached Resend. Broadcasts run
+                unattended, and a failure otherwise shows up only as a Teams card
+                that can be missed, so a whole month can pass unnoticed. Quiet
+                until the 4th, since the cron fires on the 1st-3rd.
                 Catches a disabled schedule or a workflow that never starts. Needs
                 GITHUB_TOKEN; skipped when running locally without one.
 
@@ -153,12 +157,54 @@ def check_runs() -> dict:
             "detail": f"last run {last['conclusion'] or last['status']}, {age} day(s) ago"}
 
 
+def check_newsletter(today=None) -> dict:
+    """
+    Did last month's newsletter actually go out?
+
+    Nothing else watches this. The broadcast runs unattended on the 1st, and a
+    failure only surfaces as an `if: failure()` Teams card — miss that card and a
+    whole month passes silently with nobody noticing the newsletter never sent.
+    That is the same shape as the August scoring outage: a real failure with no
+    active signal.
+
+    Resend is the source of truth. The cron fires on the 1st-3rd, so this stays
+    quiet until the 4th rather than reporting a failure for something not yet due.
+    """
+    from agents.newsletter_agent import broadcast_name, find_broadcast, LIVE_BROADCAST_STATES
+
+    if not os.environ.get("RESEND_API_KEY"):
+        return {"name": "Newsletter", "ok": True,
+                "detail": "skipped (no RESEND_API_KEY)", "skipped": True}
+
+    today = today or _now()
+    if today.day <= 3:
+        return {"name": "Newsletter", "ok": True,
+                "detail": f"last month's edition is not overdue yet (day {today.day}, "
+                          f"the cron fires on the 1st-3rd)"}
+
+    first = today.replace(day=1)
+    prev = first - timedelta(days=1)
+    name = broadcast_name(prev.year, prev.month)
+    b = find_broadcast(name)
+    if b is None:
+        return {"name": "Newsletter", "ok": False,
+                "detail": f"no Resend broadcast named '{name}' — last month's "
+                          f"newsletter never went out (or Resend could not be reached)",
+                "extra": ["Send it with: python3 -m jobs.monthly_newsletter --mode broadcast"]}
+    if b.get("status") not in LIVE_BROADCAST_STATES:
+        return {"name": "Newsletter", "ok": False,
+                "detail": f"'{name}' exists in Resend but its status is "
+                          f"'{b.get('status')}', not sent"}
+    return {"name": "Newsletter", "ok": True,
+            "detail": f"'{name}' {b.get('status')} on {(b.get('sent_at') or '?')[:10]}"}
+
+
 def run(always_notify: bool = False) -> dict:
     from integrations.teams_client import redact, send_status_alert
 
     logger.info("=== Pipeline health check ===")
     results = []
-    for fn in (check_key, check_backlog, check_freshness, check_runs):
+    for fn in (check_key, check_backlog, check_freshness, check_runs, check_newsletter):
         try:
             results.append(fn())
         except Exception as e:
