@@ -179,7 +179,18 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 Related Cowork handoffs, for the frenemy context: `/Users/lewisdyson/PMM/Cowork/focal-partnership-handoff-2026-08-21.md` and `/Users/lewisdyson/PMM/Cowork/continuum-integration-handoff-2026-08-11.md`.
 
 
-### Latest update — 2026-09-01: Sonnet 5's adaptive thinking broke response parsing
+### Latest update — 2026-09-01 (later): unattended broadcasts, guarded
+
+Lewis authorised sending the monthly newsletter broadcast **without human review** from now on (recorded in Claude's memory). Two things had to change for that to be safe, because the `confirm=SEND` prompt was never a content review — it was the only thing preventing a duplicate send.
+
+- **Duplicate guard.** `--mode broadcast` now asks Resend whether a broadcast named `CI Newsletter YYYY-MM` already exists, and refuses if it does, unless `--force` is passed. Resend is the source of truth — it is the system that actually sent. Rejected: flipping the month's rows to `Status = Distributed`, which would mean up to 400 Notion writes per broadcast to restate something Resend already knows. The check runs **before** generation, so a refusal costs 0.4s rather than 50 seconds and a wasted generation.
+- **Fifth health check.** `check_newsletter()` verifies last month's broadcast reached Resend. Nothing watched this before: a failed broadcast surfaced only as an `if: failure()` Teams card, so a missed card meant a silent month. Quiet until the 4th. Needs `RESEND_API_KEY`, now passed in `healthcheck.yml`.
+
+`agents.newsletter_agent.broadcast_name()` is the single source of that name string — the send, the guard and the health check all use it, and if they ever disagreed the guard would stop guarding and the health check would cry wolf monthly.
+
+Verified live: with `CI Newsletter 2026-08` already sent, a real `run(mode="broadcast")` refused in 0.4s having called neither the generator nor the sender. `scripts/test_broadcast_guard.py` covers the rest offline, including the January → December year-boundary rollback.
+
+### Earlier — 2026-09-01: Sonnet 5's adaptive thinking broke response parsing
 
 The August newsletter failed at 19:09 UTC with `'ThinkingBlock' object has no attribute 'text'`. The API call returned **200 OK**; the crash was ours.
 
@@ -244,6 +255,7 @@ Fixes:
 | Anthropic key | the key cannot run billed inference — the exact August failure, caught *before* it breaks a run |
 | Scoring backlog | more than 5 rows have been Unscored for over a day, i.e. scoring is failing even if runs look green |
 | Detection freshness | nothing detected for 4 days — cd.io stopped crawling, or its key expired |
+| Newsletter | last month's broadcast never reached Resend (quiet until the 4th, since the cron fires on the 1st-3rd) |
 | Workflow runs | the last daily poll failed, or none has run for 3 days (disabled schedule) |
 
 Both scheduled workflows also gained an `if: failure()` step that posts to Teams with a link to the run log, and the health check has one for itself, since a watchdog that dies silently is no better than the thing it watches.

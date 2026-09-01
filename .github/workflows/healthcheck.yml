@@ -40,6 +40,8 @@ jobs:
           NOTION_PARENT_PAGE_ID: ${{ secrets.NOTION_PARENT_PAGE_ID }}
           NOTION_CHANGES_DB_ID: ${{ secrets.NOTION_CHANGES_DB_ID }}
           TEAMS_GENERAL_WEBHOOK: ${{ secrets.TEAMS_GENERAL_WEBHOOK }}
+          # Lets the check confirm last month's newsletter actually reached Resend.
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           # Lets the check read the daily poll's run history, so it can spot a
           # schedule that has stopped firing. Provided automatically by Actions.
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
