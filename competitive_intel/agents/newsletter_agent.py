@@ -88,7 +88,12 @@ Write the full newsletter now."""
     try:
         message = _create(
             model=CLAUDE_MODEL,
-            max_tokens=4000,
+            # 16000 is the recommended non-streaming default. August 2026 (411
+            # scored changes) blew through 4000: adaptive thinking took roughly
+            # half the budget and the newsletter itself was truncated at 7184
+            # characters. Output is billed on what is actually produced, so a
+            # generous ceiling costs nothing on quiet months.
+            max_tokens=16000,
             system=[
                 {
                     "type": "text",
