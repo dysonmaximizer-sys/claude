@@ -24,7 +24,7 @@ from pathlib import Path
 import requests
 import anthropic
 
-from integrations.anthropic_retry import retry_transient
+from integrations.anthropic_retry import response_text, retry_transient
 from config import (
     ANTHROPIC_API_KEY,
     CLAUDE_MODEL,
@@ -88,7 +88,7 @@ Write the full newsletter now."""
     try:
         message = _create(
             model=CLAUDE_MODEL,
-            max_tokens=1500,
+            max_tokens=4000,
             system=[
                 {
                     "type": "text",
@@ -98,7 +98,7 @@ Write the full newsletter now."""
             ],
             messages=[{"role": "user", "content": user_content}],
         )
-        return message.content[0].text.strip()
+        return response_text(message).strip()
 
     except anthropic.APIError as e:
         logger.error("Anthropic API error during newsletter generation: %s", e)

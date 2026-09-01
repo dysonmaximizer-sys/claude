@@ -11,7 +11,7 @@ import logging
 
 import anthropic
 
-from integrations.anthropic_retry import retry_transient
+from integrations.anthropic_retry import response_text, retry_transient
 from config import ANTHROPIC_API_KEY, CLAUDE_MODEL, SCORE_GUIDE
 
 logger = logging.getLogger(__name__)
@@ -78,6 +78,7 @@ Score this change for competitive significance."""
         message = _create(
             model=CLAUDE_MODEL,
             max_tokens=256,
+            thinking={"type": "disabled"},
             system=[
                 {
                     "type": "text",
@@ -88,7 +89,7 @@ Score this change for competitive significance."""
             messages=[{"role": "user", "content": user_content}],
         )
 
-        result = json.loads(message.content[0].text.strip())
+        result = json.loads(response_text(message).strip())
         score = int(result.get("score", 1))
         reasoning = result.get("reasoning", "")
         refined_category = result.get("category", category)
