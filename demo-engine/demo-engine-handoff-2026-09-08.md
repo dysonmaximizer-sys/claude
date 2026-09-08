@@ -1,5 +1,68 @@
 # Maximizer Demo Engine — Handoff
-Updated: 2026-08-17 · Session: Claude Code
+Updated: 2026-09-08 · Session: Claude Code
+
+## 2026-09-08 session (IQ Boost Q3 came back weak — phrasing, or data shape)
+- **Q3 test result (Lewis ran it in the UI, pasted the answer).** Asked
+  "What did we agree on RESP contributions?" IQ Boost cited the March 2026
+  portfolio-review note and the 2024 RESP-allocation task, then said no
+  agreement or contribution details were in the provided information. It
+  **never surfaced the Focal summary note** — the only record carrying
+  "before end of September". No data was changed this session.
+- **Two candidate causes, NOT yet separated:** (a) vocabulary mismatch —
+  the question asks what was "agreed" while the record phrases it as an
+  imperative action item ("Process this year's RESP contribution before
+  end of September"); no agreement language exists anywhere on the
+  record. Or (b) IQ Boost is not reading the Focal note at all (long
+  note, unknown context selection).
+- **DIAGNOSTIC, do this before any fix: run Q2** ("Where do the Hallorans
+  stand on selling the cottage?"). If Q2 cites the summary's $780,000 /
+  1999 purchase / possible spring listing, the note IS being read and
+  phrasing is the whole problem. If Q2 also misses those, it is a
+  data-shape problem and the fix is a short, keyword-dense companion note
+  (engine-written, manifest-tracked, on-screen-safe per the story spec's
+  Output-steering rule) — not a longer summary.
+- **Recommended Q3 replacement: "What are the action items from today's
+  meeting?"** Rationale: list-shaped, targets the ACTION ITEMS section
+  directly, returns BOTH items (cottage valuation + RESP contribution),
+  and demos structured capture rather than a single fact lookup. Backup
+  if drilling to the date on air: "When does this year's RESP
+  contribution need to be processed?" — every content word appears
+  verbatim in the action item, maximizing the retrieval hit.
+- **Rejected phrasings:** anything built on "agree/agreed", "commit", or
+  "what did we say about…" — abstraction words absent from the records,
+  and "agreed" is now proven to miss. General principle for demo AI
+  questions: mirror the record's own vocabulary, and ask for date-shaped
+  or list-shaped answers.
+- **Tenant state verified today (read-only):** Halloran household intact,
+  4 notes (2024 RESP allocation / thin March / spring review / Focal
+  summary). **The Focal note is still dated 2026-08-17T17:45Z — the
+  manual nudge to Aug 19 was never done.** The Aug 19 webinar has now
+  passed by ~3 weeks; whether it ran, and whether this Q3 test was pre-
+  or post-event, is [verify] with Lewis.
+
+## 2026-08-28 session (Accounts-tile request — answered from existing knowledge, nothing built)
+- Lewis pasted a 10-row table (GIC/Managed Seg Fund/Managed Mortgage/Managed
+  Insurance/Annuity/Group Benefits, with amounts + key dates) asking to
+  create/update these as Maximizer Accounts entries. No new code or tenant
+  writes this session — answered entirely from CLAUDE.md's closed Accounts-
+  module finding (2026-07-21) and the existing
+  `docs/fa-intelligence-manual-accounts.md` + `manifests/fa-intelligence-
+  baseline.json`, which already cover this exact table (API-written GIC
+  Expiry Date / Group Benefits renewal UDFs match his dates; the other four
+  account types have no AbEntry UDF, manual-UI-only, per the closure).
+- **NEW FINDING: Carlos Quentin is not in cast.json at all** (checked by
+  name search across all records) — his Managed Mortgage row can't be
+  manually entered against a real record until he exists as a contact.
+  Bill Roberts matched cast.json on a raw text search but the hit didn't
+  resolve to a clean record (Name/Entry Type/IDentification all blank on
+  the match) — his presence is UNCONFIRMED; a live AbEntry search (not a
+  cast.json grep) is needed before assuming he's seedable. Flagged to
+  Lewis; not yet resolved.
+- Reiterated to Lewis (already in CLAUDE.md, restated for this request):
+  never use Bill Graham; keep all Accounts dates inside the current
+  calendar year (fiscal-year tile filter); GIC/Group-Benefits dates should
+  match the UDF values already on those records so the account and the
+  field never contradict on screen.
 
 ## 2026-08-17 session, part 3 (enrich run — webinar data COMPLETE)
 - engine/enrich-webinar-story.py ran: **Update path succeeded** (no
@@ -360,6 +423,17 @@ and ~95% complete.
   self-serve (gated on demand) → P5 recording-analysis loop.
 
 ## Open items & blockers
+- **IQ Boost Q1 and Q2 results never reported.** Q2 is the diagnostic
+  that decides whether the Q3 fix is phrasing or data (see 2026-09-08).
+  Run Q2 first; do not enrich anything until it comes back.
+- **Focal note still dated 2026-08-17, not Aug 19** (verified 2026-09-08).
+  Either the nudge was skipped or the webinar ran with it dated the 17th.
+- **Handoff rename uncommitted before this session:** the Aug 28 Cowork
+  session renamed 08-17 → 08-28 but the mount hides `.git`, so it sat
+  unstaged. Folded into this session's commit.
+- Whole FSE story set is now 3+ weeks stale (seeded Aug 14-17). Refresh
+  (`engine/refresh-story.py`) or reseed before ANY capture; busy-calendar
+  needs a reseed, not a refresh (weekday drift).
 - ~~GitHub push blocked~~ RESOLVED 2026-07-15: Lewis minted a new PAT,
   keychain updated, both commits verified on origin/main.
 - Lewis UI-verified 2026-07-15: story looks right. Two issues he found
@@ -396,6 +470,20 @@ Commit/push still pending Lewis's go-ahead.
 - All Octopus API knowledge is in `demo-engine/CLAUDE.md` — tenant field
   requirements, working payload shapes, blocked operations. Do not re-test
   what's recorded there.
+- **IQ Boost has NO API** — every test is manual in the UI, and it reads
+  the record you are on (single-entry scope; book-wide is IQ Boost 2.0,
+  not demoable). Steer answers by enriching the real records it reads,
+  never by putting instruction-style text in data (everything on a record
+  can appear on screen). Retrieval is vocabulary-sensitive: it matched a
+  thin note and an old task but missed a long structured note whose
+  wording did not share the question's verbs (2026-09-08).
+- **MCP servers now exist for all three tenants** (`mcp__Maximizer-fse__*`,
+  `-business`, `-madmax`): reads plus note/task create-update-delete.
+  `note_read` via MCP errored on a valid ParentKey this session, so the
+  PAT + script path remains the engine's route until MCP is proven; the
+  MCP tool descriptions do carry useful Note/AbEntry filter semantics
+  ($LIKE needs % wildcards, brackets are character classes, Notes ignore
+  OrderBy and cannot page).
 - Birthdate UDF: `Udf/$TYPEID(124)`. Task shape: Activity + DateTime.
   Emails/appointments/tasks CANNOT be created as InteractionLog types.
 - Maximizer auto-logs field changes as notes stamped "now" — refresh runs
