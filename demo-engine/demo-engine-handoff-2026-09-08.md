@@ -542,8 +542,28 @@ permission. Keep InteractionLog/Task under 100 rows in this tenant.
     python3 engine/fix-futureproof-coverage-decay.py --apply   # re-ages decay + backfills
     python3 engine/seed-cameron-story.py --apply               # idempotent, fields only after first run
 
+### 2026-09-11 addendum: top-ten prompt
+"Share of book in my top ten households, and when did I last speak to each"
+returned households with no contact history. TWO causes, only one was data:
+- no DATE = the caller did not name `Udf/$TYPEID(60059)` / `(838)` in
+  householdFields. Every household has the value. Field discovery, not a gap.
+- no RECORD = real. Ten of the top twelve had zero InteractionLog rows.
+  Fixed by `engine/seed-top-households-history.py` (2 calls each, most recent
+  dated ON the household's Date Last Contacted). Cameron and Hartfield already
+  had their own.
+
+**InteractionLog is now a budget: 72 of the connector's 100-row cap.** The
+101st call makes ALL calls invisible on stage. Count before adding. The
+seeder refuses to exceed it.
+
+Diego's accounts ARE loaded: 146 accounts, 74 households with assets,
+$100.5M total AUM, $3.2M cash. Top household Charbonneau at $6.36M.
+
 ### Open
 - Children contacts for Peter and Mary: not created, names undecided (Lewis).
+- `Graham` is still named "Graham" (Part 2 planned "Graham Household"), has
+  ZERO contacts, and ranks #11 by AUM at $2.61M so it surfaces in ranked
+  answers. It is the known-broken FSE orphan key. Rename or remove it.
 - Diego's accounts JSON import not yet reflected; connector reads investments
   via `@DataHubAccount` UDO (installed).
 - Jin Q1 (write access) ANSWERED yes. New Jin question: filtered reads.

@@ -168,6 +168,28 @@ household estate/review fields. Task creation did NOT move Date Last
 Contacted (validated 2026-09-11), but the seeder checks and prints the decay
 re-run command if it ever does.
 
+## 4e. Top-household call history, and the 100-row budget
+
+`engine/seed-top-households-history.py` gives the top-AUM households two calls
+each: one dated EXACTLY on the household's Date Last Contacted (so the two
+never disagree on screen) and one roughly five to seven months earlier.
+Manifest `manifests/futureproof/top-households-history.json`; idempotent.
+
+InteractionLog is a BUDGET, not a free-form log. The connector caps at 100
+rows and cannot page, so the 101st call makes every call invisible, including
+the Cameron story. Current: **72 of 100**. The seeder refuses to run if the
+projected total would exceed the cap. Before adding any interaction, count
+first. Seeding the whole 75-household book is not possible.
+
+Two distinct faults produce "no contact history" in an answer, and they need
+different fixes:
+- **No last-contacted DATE** = field discovery. `investments_household_aum`
+  and `abentry_read` only return UDFs you name. Pass
+  `householdFields` / `fields` including `Udf/$TYPEID(60059)` (the date) and
+  `Udf/$TYPEID(838)` (days since). The data was never missing.
+- **No contact RECORD** = a real gap. Only households with InteractionLog rows
+  have one. Ten of the top twelve had none until 2026-09-11.
+
 ## 5. Open
 
 - The raw Octopus API returns **0 Individuals** for the FSE tenant under `.env`
