@@ -129,6 +129,45 @@ Validated 2026-09-11: writes land, 838 recomputes immediately (104/97/91), the
 next highest household is 80 days, and `User` on InteractionLog accepts the
 MASTER key directly.
 
+## 4c. What the MCP connector can actually read (validated 2026-09-11)
+
+This decides where demo data has to live. The connector fails with a bare
+"An error occurred invoking ..." on ANY read that passes `searchQueryJson` or
+`orderByJson`, on every object tested. Only bare reads with `top` (and
+`fields`) work, and those cap at 100 rows with no paging cursor.
+
+| Object | Bare read | Filter / sort | Rows | Usable on stage |
+|---|---|---|---|---|
+| AbEntry (households) | works | fails | 75 | yes |
+| InteractionLog | works, Description returned | fails | 55 | **yes** |
+| Task (active only by default) | works | fails | 58 | **yes** |
+| Note | works | fails | 100+ capped | **no** |
+| Appointment | works | fails | 100+ capped, oldest first | **no** |
+
+Consequences:
+- A story must be carried in **InteractionLog Descriptions and open Tasks**.
+  Notes and Appointments may never surface, regardless of what the UI shows.
+- Claude on stage has to read ALL interactions and filter client-side. The
+  tool description tells it to filter on AbEntryKey; that call errors and it
+  gives up. This is why a call visible in the Timeline was "not detected".
+- The household read only returns UDFs that are named in `fields`, so Claude
+  must discover Estate Planning / Review Schedule field names before it can
+  see them. Rehearse the prompt.
+- Keep InteractionLog and Task well under 100 rows in this tenant or they
+  join Notes and Appointments in the unreadable column.
+
+Raise with Jin: is the filtered-read failure a connector build defect or a
+tenant permission? It is the single most likely thing to fail live.
+
+## 4d. Cameron story (hero household)
+
+Spec: `stories/futureproof/cameron-story.md`. Seeder:
+`engine/seed-cameron-story.py` (idempotent, manifest
+`manifests/futureproof/cameron-story.json`). Six calls, two open tasks, six
+household estate/review fields. Task creation did NOT move Date Last
+Contacted (validated 2026-09-11), but the seeder checks and prints the decay
+re-run command if it ever does.
+
 ## 5. Open
 
 - The raw Octopus API returns **0 Individuals** for the FSE tenant under `.env`

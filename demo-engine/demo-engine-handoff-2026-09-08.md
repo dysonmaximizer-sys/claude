@@ -503,3 +503,58 @@ Commit/push still pending Lewis's go-ahead.
 - Lewis wants step-by-step, zero-knowledge instructions for anything
   terminal- or UI-related, and wants failures pasted back verbatim.
 - Report script results in plain language; keep code invisible unless asked.
+
+---
+
+## Session 2026-09-09 to 2026-09-11: Futureproof stage demo build
+
+**Read `docs/futureproof-tenant.md` before touching this tenant.** It
+supersedes anything in this section if they disagree.
+
+### What exists now
+- Third tenant: **Futureproof**, env `futureproof.env`, PAT writes confirmed.
+  MCP connector `Maximizer-futureproof`. It is a **clone of FSE and shares
+  record keys byte-for-byte**; `engine/tenant_guard.py` fingerprints on
+  household NAMES (not keys) and fails closed. Call `assert_tenant("futureproof",
+  call)` before the first write in every seeder. Never fingerprint on a
+  record a seeder renames (Michael and Jennifer Cameron became Sorenson).
+- Households here are **Individual-typed with the name in LastName**, not the
+  FSE Company shape. The connector's `households` query only sees Individuals.
+- Book: 75 households, 158 contacts, 12 A-tier, every household has Date Last
+  Contacted. Decay targets Peter and Mary Cameron 104d / Hartfield 97d /
+  Vincent 91d; next household 80d. Segmentation six pre-existing A clients
+  were demoted to B so the A list is exactly the planned twelve.
+- Cameron hero household: six calls with rich Descriptions, two open overdue
+  tasks, estate/KYC fields set. Spec `stories/futureproof/cameron-story.md`.
+
+### The finding that shapes everything (2026-09-11)
+The MCP connector **fails on any read with `searchQueryJson` or
+`orderByJson`**, every object. Bare reads with `top` work, capped at 100, no
+paging. Calls (55) and Tasks (58) are readable in full. **Notes and
+Appointments are not** (100+ rows each). Story data must live in
+InteractionLog Descriptions and Tasks. This is why a visible call was "not
+detected": Claude followed the tool description, filtered on AbEntryKey,
+got an error, gave up. Raise with Jin whether it is a connector defect or a
+permission. Keep InteractionLog/Task under 100 rows in this tenant.
+
+### Re-run after every rehearsal
+    set -a; source futureproof.env; set +a
+    python3 engine/fix-futureproof-coverage-decay.py --apply   # re-ages decay + backfills
+    python3 engine/seed-cameron-story.py --apply               # idempotent, fields only after first run
+
+### Open
+- Children contacts for Peter and Mary: not created, names undecided (Lewis).
+- Diego's accounts JSON import not yet reflected; connector reads investments
+  via `@DataHubAccount` UDO (installed).
+- Jin Q1 (write access) ANSWERED yes. New Jin question: filtered reads.
+- `demo-engine/Claude outputs/` still untracked (9 files incl. demo spec, QA).
+- `futureproof-accounts-for-diego.json` (836KB) is in pushed history.
+- Uncommitted this session: `stories/futureproof/cameron-story.md`,
+  `engine/seed-cameron-story.py`, `docs/futureproof-tenant.md` (sections
+  4b/4c/4d), this handoff section. Manifests are gitignored.
+
+### Gotchas learned
+- Unknown field in a Scope returns 0 rows, not an error. Never read 0 as "absent".
+- UDF-only updates generate NO audit notes here; task creation did not move
+  Date Last Contacted (seeder checks anyway).
+- Rename Vincent double-space is fixed; normalise whitespace when matching.
