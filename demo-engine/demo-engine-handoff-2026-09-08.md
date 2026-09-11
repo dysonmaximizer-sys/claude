@@ -561,9 +561,14 @@ $100.5M total AUM, $3.2M cash. Top household Charbonneau at $6.36M.
 
 ### Open
 - Children contacts for Peter and Mary: not created, names undecided (Lewis).
-- `Graham` is still named "Graham" (Part 2 planned "Graham Household"), has
-  ZERO contacts, and ranks #11 by AUM at $2.61M so it surfaces in ranked
-  answers. It is the known-broken FSE orphan key. Rename or remove it.
+- `Graham Household` (renamed 2026-09-11 from "Graham"; FirstName "Bill"
+  cleared so FullName reads "Graham Household"). Ranks #11 by AUM at $2.61M.
+  NOTE: CLAUDE.md calls this record a broken orphan whose UDF writes return
+  Code 0 but read back null. In the Futureproof CLONE the base-field rename
+  stored and read back fine, so the FSE warning does not transfer wholesale
+  here. UDF writes on it are still unverified. Two remaining oddities: it has
+  ZERO contacts, and CompanyName is still "Advocis Publishing Inc" while a
+  separate Company record of that name also exists. Left alone deliberately.
 - Diego's accounts JSON import not yet reflected; connector reads investments
   via `@DataHubAccount` UDO (installed).
 - Jin Q1 (write access) ANSWERED yes. New Jin question: filtered reads.

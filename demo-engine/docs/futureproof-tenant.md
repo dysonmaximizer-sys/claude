@@ -101,8 +101,13 @@ Insurance review IDs match FSE exactly: Next 550, Last 842, Days Since 1003.
 - **Rule 10 applies:** `LDYSON` exists here displaying "Barb Smith" with
   First/Last "Lewis Dyson". Use `MASTER` (`VXNlcglNQVNURVI=`) as owner. `JYIM`
   displays as "David Carter". Non-service users: MASTER, DDENNIS, DJACKSON, JYIM.
-- **Bill Graham / Advocis Publishing Inc** exists here with the same key as the
-  broken FSE orphan. Assume it rejects UDF writes while returning success.
+- **Graham Household** (the Bill Graham / Advocis record, same key as the FSE
+  broken orphan) was renamed from "Graham" on 2026-09-11 and the rename STORED
+  and read back correctly. So the FSE "returns Code 0 but stores nothing"
+  warning does NOT apply to base fields in this clone. UDF writes on it remain
+  unverified; read back before trusting one. It still has zero contacts and
+  still carries CompanyName "Advocis Publishing Inc" alongside a separate
+  Company record of the same name.
 
 - **A UDF-only update does NOT generate an audit note here** (validated
   2026-09-09: six Segmentation updates produced zero notes stamped that day).
