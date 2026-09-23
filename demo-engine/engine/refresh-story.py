@@ -13,9 +13,13 @@ boundaries: a 2:45pm meeting stays 2:45pm whether the refresh crosses
 March/November or not.
 
 What rolls: InteractionLog StartDate/EndDate, Note DateTime, Appointment
-StartDate/EndDate, Task DateTime, and the Date Last Contacted UDF on AbEntry
-records where it is set. What NEVER rolls: birthdates (age-anchored) and any
-other AbEntry field.
+StartDate/EndDate, Task DateTime, Opportunity CloseDate, and on AbEntry
+records (where set) the Date Last Contacted and Next KYC Review UDFs. What
+NEVER rolls: birthdates (age-anchored) and any other AbEntry field.
+
+Calendar-year watch: the FA Intelligence tiles filter on the calendar year,
+so the script warns when a Next KYC Review or open-opportunity close date
+rolls from this year into next (the tile will drop it).
 
 After writing, the script sweeps same-day audit notes Maximizer auto-logs
 ("Hotlist Task Modified..." etc.) and verifies every change with a read-back.
@@ -49,14 +53,18 @@ COMPAT = {"AbEntryKey": "2.0"}
 PACIFIC = ZoneInfo("America/Vancouver")
 UTC = ZoneInfo("UTC")
 LASTCONTACT = "Udf/$TYPEID(60059)"
+NEXTKYC = "Udf/$TAG(WME_CLIENTINFO_REV_NEXTKYC)"
+# AbEntry UDFs that roll (date-only values). Birthdates deliberately absent.
+ABENTRY_DATE_UDFS = {LASTCONTACT: "Date Last Contacted", NEXTKYC: "Next KYC Review"}
 
 # Which datetime fields roll, per record kind. AbEntry is handled separately
-# (only the Date Last Contacted UDF rolls; birthdates never do).
+# (only ABENTRY_DATE_UDFS roll; birthdates never do).
 DATE_FIELDS = {
     "InteractionLog": ["StartDate", "EndDate"],
     "Note": ["DateTime"],
     "Appointment": ["StartDate", "EndDate"],
     "Task": ["DateTime"],
+    "Opportunity": ["CloseDate"],
 }
 
 AUDIT_MARKERS = ["changed from", "field changed", "modified", "changed to",
@@ -70,7 +78,13 @@ def call(endpoint: str, payload: dict) -> dict:
         json=payload, timeout=30,
     )
     r.raise_for_status()
-    return r.json()
+    data = r.json()
+    # an expired PAT comes back as HTTP 200 with Code -2; without this check
+    # every read looks like "record not found" and a dry run reports nothing
+    if data.get("Code") == -2:
+        sys.exit(f"API auth failed ({json.dumps(data.get('Msg'))[:160]}). "
+                 "The PAT has likely expired (30-day life): renew it in .env and rerun.")
+    return data
 
 
 def shift_utc_string(iso_z: str, days: int) -> str:
@@ -81,6 +95,18 @@ def shift_utc_string(iso_z: str, days: int) -> str:
     moved = (local + timedelta(days=days)).replace(tzinfo=None)
     moved = moved.replace(tzinfo=PACIFIC)
     return moved.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%S")
+
+
+def shift_value(val: str, days: int) -> str:
+    """Shift a stored date or datetime. Date-only values shift as plain dates."""
+    if len(val.replace("Z", "")) <= 10:
+        d = datetime.strptime(val[:10], "%Y-%m-%d").date()
+        return (d + timedelta(days=days)).strftime("%Y-%m-%d")
+    return shift_utc_string(val, days)
+
+
+def crosses_year(old: str, new: str) -> bool:
+    return old[:4] != new[:4]
 
 
 def read_record(kind: str, key: str, fields: list) -> Optional[dict]:
@@ -126,6 +152,7 @@ def main() -> None:
         sys.exit("MAXIMIZER_PAT not set - run: set -a; source .env; set +a")
 
     failures = []
+    warnings = []
     changed = 0
 
     # ---- 1. roll datetime fields on story records
@@ -143,9 +170,12 @@ def main() -> None:
                 cur = row.get(fname)
                 if not cur:
                     continue
-                new = shift_utc_string(cur, days)
+                new = shift_value(cur, days)
                 update[fname] = new
                 plan_bits.append(f"{fname} {cur} -> {new}")
+                if kind == "Opportunity" and crosses_year(cur, new):
+                    warnings.append(f"Opportunity '{rec['label'][:40]}' close date moved "
+                                    f"into {new[:4]}; 'this year' views will drop it")
             if len(update) == 1:
                 continue
             print(f"  [{kind}] {rec['label'][:45]}: {'; '.join(plan_bits)}")
@@ -163,26 +193,43 @@ def main() -> None:
             changed += 1
 
         elif kind == "AbEntry":
-            # only Date Last Contacted rolls; birthdates and all else stay put
-            row = read_record(kind, rec["key"], [LASTCONTACT])
-            val = (row or {}).get(LASTCONTACT)
-            if not val:
+            # only ABENTRY_DATE_UDFS roll; birthdates and all else stay put
+            row = read_record(kind, rec["key"], list(ABENTRY_DATE_UDFS))
+            update = {"Key": rec["key"]}
+            for udf, name in ABENTRY_DATE_UDFS.items():
+                val = (row or {}).get(udf)
+                if not val:
+                    continue
+                new_date = shift_value(val[:10], days)
+                update[udf] = new_date
+                print(f"  [AbEntry] {rec['label'][:45]}: {name} {val[:10]} -> {new_date}")
+                if udf == NEXTKYC and crosses_year(val, new_date):
+                    warnings.append(f"'{rec['label'][:40]}' Next KYC Review moved into "
+                                    f"{new_date[:4]}; FA Intelligence tiles will drop it")
+            if len(update) == 1 or args.dry_run:
                 continue
-            cur_date = datetime.strptime(val[:10], "%Y-%m-%d").date()
-            new_date = (cur_date + timedelta(days=days)).strftime("%Y-%m-%d")
-            print(f"  [AbEntry] {rec['label'][:45]}: Date Last Contacted {val[:10]} -> {new_date}")
-            if args.dry_run:
-                continue
-            res = call("Update", {
-                "AbEntry": {"Data": {"Key": rec["key"], LASTCONTACT: new_date}},
-                "Compatibility": COMPAT,
-            })
+            res = call("Update", {"AbEntry": {"Data": update}, "Compatibility": COMPAT})
             if res.get("Code", 0) != 0:
-                failures.append(f"AbEntry '{rec['label'][:40]}' last-contacted: {json.dumps(res)[:200]}")
-            else:
-                changed += 1
+                failures.append(f"AbEntry '{rec['label'][:40]}' date UDFs: {json.dumps(res)[:200]}")
+                continue
+            back = read_record(kind, rec["key"], list(ABENTRY_DATE_UDFS))
+            for udf, want in [(k, v) for k, v in update.items() if k != "Key"]:
+                got = (back or {}).get(udf) or ""
+                if not got.startswith(want):
+                    failures.append(f"AbEntry '{rec['label'][:40]}' readback: "
+                                    f"{ABENTRY_DATE_UDFS[udf]}={got}, wanted {want}")
+            changed += 1
+
+    if warnings:
+        print("\nCALENDAR-YEAR WARNINGS:")
+        for w in warnings:
+            print(f"  - {w}")
 
     if args.dry_run:
+        if failures:
+            print("\nPROBLEMS FOUND DURING PLANNING:")
+            for x in failures:
+                print(f"  - {x}")
         print(f"\nDRY RUN complete - {changed or 'see'} planned changes above, nothing written.")
         return
 

@@ -122,7 +122,9 @@ Works:
   values 1=A Client, 2=B, 3=C, 4=D, 5=Gold. Write the key as a plain
   string ("2"); reads return a list (["2"]).
 - **Next KYC Review** = date UDF `Udf/$TAG(WME_CLIENTINFO_REV_NEXTKYC)`,
-  accepts "YYYY-MM-DD".
+  accepts "YYYY-MM-DD". refresh-story.py rolls it (and Opportunity
+  CloseDate) wherever set. No Last KYC Review UDF tag is validated yet, so
+  it does not roll.
 - **Record Type** = enum UDF `Udf/$NAME(WM_Client Info\Record Type -
   Mandatory)`: 1=Client, 2=Prospect, 3=Referral Source, 4=Other
   Professional, 7=Corporate, 8=Leads (validated 2026-08-14; stores on

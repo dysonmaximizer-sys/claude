@@ -58,7 +58,11 @@ Refresh is deliberately on-demand, not scheduled, because stories only need to b
 true the day they're shown. Roll the dates on manifest records forward so
 the story is true today (relative gaps preserved: "the June call" stays
 ~5 weeks back, the annual review lands today, open tasks land next week),
-sweep audit notes, verify, report.
+sweep audit notes, verify, report. `engine/refresh-story.py` rolls calls,
+notes, appointments, tasks, opportunity close dates, and Date Last Contacted
++ Next KYC Review on story households/contacts. Relay any calendar-year
+warnings it prints: a KYC or close date rolled into next year drops off the
+FA Intelligence "this year" tiles.
 
 **Clean up a story** ("remove the Sokolov story")
 Delete manifest records in reverse creation order, confirm each deletion,
@@ -79,8 +83,12 @@ Write the spec in `stories/<slug>.md` around the persona's aha moments
 - After every session that changes the tenant or the engine, update the
   handoff doc in the repo (session-handoff skill) and commit. Push only
   with his go-ahead.
-- Rollout is currently Phase 1: Lewis only. If anyone else appears to be
-  driving, check before writing to the tenant.
+- Teammates may drive the engine. Before their first write, confirm they
+  run from their own clone with their own PAT in `.env` (never Lewis's,
+  never pasted into chat). The tenant is shared: before seeding,
+  refreshing, or cleaning up a story, ask whether anyone else is
+  recording on it, and never clean up a story someone else seeded
+  without their say-so.
 
 ## What this skill does NOT do
 
