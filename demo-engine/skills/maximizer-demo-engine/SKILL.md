@@ -1,19 +1,20 @@
 ---
 name: maximizer-demo-engine
-description: Seed, refresh, and clean up demo stories in Maximizer's demo tenant via the Octopus API, so sales demos, Demo Centre recordings, and Storylane captures always have believable, current data. Use this skill whenever Lewis asks to "seed a story", "set up the tenant for a demo/recording", "refresh the demo data for my call", "create a household/client with history", "clean up a story", mentions the Demo Engine, a named story (e.g. "Walk In Ready", the Sokolov household), or describes any demo scenario needing records CREATED in the tenant (opportunities, notes, calls, appointments, tasks, households, or back-dated history). Trigger even if he only names a feature and a recording date. NOT for the bulk cast-refresh CSV (77-contact Address Book roll-forward); that stays with maximizer-demo-data-generator.
+description: Seed, refresh, and clean up demo stories in Maximizer's demo tenant via the Octopus API, so sales demos, Demo Centre recordings, and Storylane captures always have believable, current data. Use this skill whenever the user asks to "seed a story", "set up the tenant for a demo/recording", "refresh the demo data for my call", "create a household/client with history", "clean up a story", mentions the Demo Engine, a named story (e.g. "Walk In Ready", the Sokolov household), or describes any demo scenario needing records CREATED in the tenant (opportunities, notes, calls, appointments, tasks, households, or back-dated history). Trigger even if they only name a feature and a recording date. NOT for the bulk cast-refresh CSV (77-contact Address Book roll-forward); that stays with maximizer-demo-data-generator.
 ---
 
 # Maximizer Demo Engine
 
 Conversational front end for the Demo Engine: deterministic Python seeders
 that create and maintain story data in Maximizer's demo tenant through the
-Octopus API. Lewis (PMM, non-developer) describes the story he needs; you
-run the engine and report back in plain language.
+Octopus API. The user (typically a PMM or seller, not a developer) describes
+the story they need; you run the engine and report back in plain language.
 
 ## Where everything lives
 
-The engine is a git repo folder: `/Users/lewisdyson/Claude Code/demo-engine/`
-(note: NOT `~/Desktop/Claude Code`, which is a different folder).
+The engine is the `demo-engine/` folder of the git repo, wherever the user
+cloned it. Ask for the path if it is not obvious. (Lewis's copy is at
+`/Users/lewisdyson/Claude Code/demo-engine/`, NOT `~/Desktop/Claude Code`.)
 
 **Read `demo-engine/CLAUDE.md` before touching the tenant. Always.** It is
 the single source of truth for hard rules, validated API payload shapes,
@@ -39,19 +40,19 @@ shared tenant, so they are worth holding in mind before it is open:
 4. Times are intended-Pacific, converted to UTC before sending (see `d()`
    in the seeder). Dates are relative to the demo day, never hardcoded.
 5. After any run that writes, sweep the auto-logged audit notes and verify
-   changes with API read-backs before telling Lewis it worked.
+   changes with API read-backs before telling the user it worked.
 
 ## The four requests this skill serves
 
 **Seed a story** ("set up X for Tuesday's recording")
-1. Read the spec in `stories/`, or draft one from Lewis's description
+1. Read the spec in `stories/`, or draft one from the user's description
    first (aha moments and what must be true in the data, not screen detail)
-   and confirm it with him before writing anything to the tenant.
+   and confirm it with them before writing anything to the tenant.
 2. Check no manifest exists for the story.
 3. Run or adapt a seeder. New object types: check CLAUDE.md's validated
    shapes first, and add whatever you learn back into CLAUDE.md.
-4. Verify with read-backs, sweep audit notes, then give Lewis a short
-   eyeball checklist for the Maximizer UI before he records.
+4. Verify with read-backs, sweep audit notes, then give the user a short
+   eyeball checklist for the Maximizer UI before they record.
 
 **Refresh on demand** ("refresh the demo data", "get it ready for my 10am")
 Refresh is deliberately on-demand, not scheduled, because stories only need to be
@@ -68,24 +69,24 @@ FA Intelligence "this year" tiles.
 Delete manifest records in reverse creation order, confirm each deletion,
 then delete the manifest. Permanent additions belong in `cast/`, not
 deleted. The Sokolov household is currently KEPT. It is the Phase 1
-dogfood data; do not clean it up without Lewis explicitly asking.
+dogfood data, owned by Lewis; do not clean it up without him explicitly asking.
 
 **Add to the story library** ("new story: advisor spots an insurance gap")
 Write the spec in `stories/<slug>.md` around the persona's aha moments
 (load maximizer-personas if the persona is unclear), then treat as a seed.
 
-## How to work with Lewis
+## How to work with the user
 
-- Plain language, results first, code invisible unless he asks.
-- Anything he must do in a terminal or the Maximizer UI: numbered,
-  zero-knowledge steps, one action per step. Ask him to paste failures
+- Plain language, results first, code invisible unless they ask.
+- Anything they must do in a terminal or the Maximizer UI: numbered,
+  zero-knowledge steps, one action per step. Ask them to paste failures
   back verbatim.
 - After every session that changes the tenant or the engine, update the
   handoff doc in the repo (session-handoff skill) and commit. Push only
-  with his go-ahead.
+  with the user's go-ahead.
 - Teammates may drive the engine. Before their first write, confirm they
-  run from their own clone with their own PAT in `.env` (never Lewis's,
-  never pasted into chat). The tenant is shared: before seeding,
+  run from their own clone with their own PAT in `.env` (never someone
+  else's, never pasted into chat). The tenant is shared: before seeding,
   refreshing, or cleaning up a story, ask whether anyone else is
   recording on it, and never clean up a story someone else seeded
   without their say-so.
