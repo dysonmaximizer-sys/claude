@@ -1,8 +1,10 @@
 # Maximizer Demo Engine
 
 This folder generates and maintains demo data for Maximizer's demo tenant via
-the Octopus API. Lewis is a PMM, not a developer: explain in plain language,
-report results, don't make him read code.
+the Octopus API. The user is typically a PMM or seller, not a developer:
+explain in plain language, report results, don't make them read code. The
+engine is Lewis Dyson's; teammates run it from their own clone with their
+own PAT.
 
 ## Hard rules
 
@@ -35,10 +37,12 @@ report results, don't make him read code.
    WATCH ITEM (first week of Nov 2026): if Maximizer's tenant timezone
    follows US Pacific (which still falls back), all displayed times will
    drift 1h early after Nov 1. Check one appointment time in the UI then.
-8. **Python 3.9 on Lewis's Mac:** `Optional[str]`, never `str | None`.
+8. **Python 3.9 compatible** (Lewis's Mac runs 3.9, so scripts must too):
+   `Optional[str]`, never `str | None`.
 9. No absolutist claims in value props: no every, all, never, zero. Claims must be plausible to a skeptical buyer. Punchy school.
-10. **Lewis's name must not appear in demo data** (rule added on his
-   feedback, 2026-07-22). Owner-type fields left to default fall back to
+10. **No real staff names in demo data** (rule added on Lewis's
+   feedback, 2026-07-22). The same leak applies to any teammate's PAT
+   user; the LDYSON case below is the one validated. Owner-type fields left to default fall back to
    the PAT user LDYSON, whose First/Last name is Lewis Dyson — and some
    surfaces render First+Last, not the display name. So every seeder
    sets these EXPLICITLY on create: Opportunity `Leader`, Task
@@ -55,7 +59,7 @@ report results, don't make him read code.
 ## Auth & environments
 
 TWO demo tenants, one env file each at the REPO ROOT (both gitignored,
-both hold MAXIMIZER_PAT + optional MAXIMIZER_BASE_URL). Never ask Lewis
+both hold MAXIMIZER_PAT + optional MAXIMIZER_BASE_URL). Never ask the user
 to paste a token into chat; never commit one.
 
 - **FSE tenant** (default): `.env` — `set -a; source .env; set +a`.
@@ -233,8 +237,8 @@ Blocked:
 
 ## Workflow for "set up story X"
 
-1. Read the story spec in `stories/` (or write one from Lewis's tour script).
+1. Read the story spec in `stories/` (or write one from the user's tour script).
 2. Check no manifest exists for it.
 3. Run/adapt the seeder; report in plain language.
-4. Tell Lewis exactly what to eyeball in the Maximizer UI before recording.
+4. Tell the user exactly what to eyeball in the Maximizer UI before recording.
 5. After recording: offer cleanup, or note permanent additions in `cast/`.
