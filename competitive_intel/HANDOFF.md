@@ -171,9 +171,15 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 - **Monday dropped from the registry** (2026-08-31). Tier 2 since April with no watch and 0 rows ever. The Notion `Competitor` select keeps the option, because deleting a select option strips the value from any page that used it.
 - **Declined: measuring the tier glossary's effect on scoring** (A/B on 33 rows, ~10c). Asked and declined 2026-08-31, so two scoring changes (Sonnet 5 and the glossary) landed unmeasured within a day of each other. If scores look off, that is where to look first.
 
+**Who receives the broadcast** (verified against Resend 2026-09-24): the `CI Newsletter` audience `082d3537-5ee3-4a6b-81c5-a732a738eae8` holds exactly three subscribed addresses, `sales@maximizer.com`, `customersuccess@maximizer.com`, `pm@maximizer.com`. These are internal aliases, not individuals. Every unattended broadcast goes to them.
+
 **Open items and blockers:**
 
 - **Nothing is blocked.** The pipeline runs unattended and green.
+- **Confirm the newsletter audience is the intended distribution.** It is three internal aliases (above) and has not been reviewed since the May 2026 test. Broadcasts are now unattended, so nobody checks the recipient list at send time.
+- **The Competitive Intel Teams chat may still hold test participants only.** Flagged 2026-06-01 and never confirmed; the real sales team was to be added. Not checkable from the API, needs a look in Teams.
+- **`NEWSLETTER_RECIPIENTS` is dead code** in `config.py`. No GitHub secret exists for it and nothing imports it. Safe to delete.
+- **Undecided since 2026-06-01:** whether `TEAMS_GENERAL_WEBHOOK` stays a repo-level secret (the daily flow needs it) or moves to environment-scoped secrets for that workflow only.
 - **2 noise watches remain** in cd.io, both deliberately kept: `developers.hubspot.com/changelog` (9 rows, never above 2/10, more likely a bad CSS selector than a worthless source, so check the selector before deleting) and `advisorengine.com/newsroom` (4 rows, too few to judge). Six others were dropped 2026-08-31, removing ~20% of scoring calls.
 - **Prompt caching still inert.** The scoring system prompt is 806 tokens against a 1,024-token minimum on Sonnet 5, proven by 66 live calls returning `cache_read_input_tokens: 0`. Crossing 1,024 with genuinely useful content (a "what cosmetic noise looks like" section) would make the prefix cacheable at 0.1x across each run's ~25 back-to-back calls. Worth roughly $1/month, more than every other cost lever combined, and it should sharpen scoring on the ~67% of rows that are cosmetic.
 - **`requirements.txt` allows `anthropic>=0.40.0`.** CI installed 1.3.0 while this Mac runs 0.96.0. Pinning needs a local upgrade first.
@@ -302,129 +308,9 @@ Two changes, effective from the September 2026 cycle onward.
 - **"How we should respond" removed from the newsletter.** Deleted from `resources/newsletter_system_prompt.txt` (both the content instruction and the required formatting label). Stories now carry only "What happened:" and "Why it matters:". Defensively, `_render_news_stories()` in `agents/newsletter_agent.py` keeps the label in its parse regex but drops the part at render time, so a stray emission can't be misparsed as a story headline. Verified with a functional test (label + body dropped, adjacent stories intact); `py_compile` clean.
 - **`scheduler.py` (unused VPS path) not updated** — its monthly trigger was already stale (day=1, 09:00 UTC) and now also lacks the business-day logic. Fix only if the VPS path is ever used.
 
-### Earlier — 2026-07-22: Resend API key rotated
-Lewis **rotated** the Resend API key (not "added" like the 2026-06-01 change — the old key is now dead). Confirmed dead: a read-only `GET https://api.resend.com/domains` with the key still in local `.env` returned `400 "API key is invalid"`.
-- **GitHub Actions secret `RESEND_API_KEY` updated by Lewis** (the monthly broadcast reads this, NOT `.env`). This is the only key store the scheduled newsletter uses. `SMTP_FROM`, `RESEND_AUDIENCE_ID` unchanged.
-- **Local `competitive_intel/.env` still held the OLD (dead) key during this session.** It must be updated to the new key for any local/manual run (draft or broadcast). Lewis was given a Terminal procedure (silent `read -rs` → rewrite the `RESEND_API_KEY=` line in `.env`); **completion unconfirmed at session end — verify before trusting a local run.**
-- **The daily poll does NOT use Resend** (Teams + Notion + Anthropic only), so it was unaffected by the rotation.
-- **How to test the key WITHOUT sending email:** `GET https://api.resend.com/domains` with `Authorization: Bearer <key>` → `200` = valid, `400/401` = bad. Full end-to-end test: `python3 -m jobs.monthly_newsletter --mode draft --year 2026 --month 5` emails the newsletter to `DRAFT_REVIEWER` (Lewis) only, never the audience.
-- **The GitHub secret itself can only be truly exercised by a real broadcast** (scheduled 1st of month). Do NOT fire a manual `workflow_dispatch` with `confirm=SEND` just to test — it sends a live newsletter to `sales@` / `customersuccess@` / `pm@`. Trust the validated key + secret, or accept a real send.
+### Earlier history (2026-06-01 to 2026-07-22)
 
-### Earlier — 2026-06-13: poll restricted to business days
-Saturday morning alerts were still firing (Friday's crawl was being alerted Saturday 08:00). Lewis asked for business days only.
-- **Daily poll cron `0 15 * * *` → `0 15 * * 1-5`** (Mon–Fri) in `.github/workflows/daily-poll.yml`. 15:00 UTC is the same weekday in Pacific, so no off-by-one. No Saturday/Sunday alerts.
-- **Lookback widened 25h → 76h** in `jobs/daily_poll.py`. Required, not optional: with weekday-only runs the poll that follows the weekend (Monday 08:00) must reach back ~72h to catch Friday's crawl, or Friday's changes would be dropped entirely. 76h = 72h weekend gap + buffer. The Notion dedup (`change_already_logged`) skips already-logged re-fetches, so the wider window does not cause duplicate alerts.
-- **Net effect:** Friday's detections now alert **Monday 08:00** instead of Saturday. Mon–Thu detections alert the next weekday morning as before.
-- **`scheduler.py` (VPS-only alternative) daily trigger aligned** to `mon-fri` 15:00 UTC to match production. Its monthly-newsletter trigger is still stale (09:00 UTC vs the live 16:00 UTC broadcast) — pre-existing drift, left as-is; fix if the VPS path is ever used.
-
-### Earlier — 2026-06-12: daily poll moved to 08:00 Pacific (morning alert)
-Supersedes the 23:00 UTC schedule decision below. Afternoon Pacific alerts weren't working for Lewis; he asked for 8am.
-- **Daily poll cron `0 23 * * *` → `0 15 * * *`** in `.github/workflows/daily-poll.yml`. 15:00 UTC = 08:00 PDT (now) / 07:00 PST (winter). GitHub cron can't follow DST, so this is biased early (like the newsletter cron) to stay a morning alert year-round and absorb the 10–60 min cron delay. "8am PST" read as 8am Pacific local; if exact-8am-in-winter is preferred instead, use `0 16 * * *` (9am PDT / 8am PST).
-- **Behaviour shift:** 08:00 runs BEFORE the day's cd.io crawl (~09:00–15:00 Pacific), so each morning's alert now covers the PRIOR day's detections via the 25h lookback. No changes dropped; Friday's crawl is alerted Saturday 08:00. The insight de-dup from 2026-06-08 is unchanged.
-
-### Earlier — 2026-06-08: daily alert timing + duplicate-alert fix
-Triggered by Saturday's alert batch: it fired at ~1:37am local (the 06:00 UTC poll, overnight in North America) and sent **4 separate cards for one event** — Wealthbox's "Custom Objects" launch, which surfaced on the homepage, pricing, blog, and webinars pages (4 separate cd.io watches, 4 distinct URLs). The per-URL dedup (`change_already_logged`) correctly treated them as 4 changes; it just has no concept of "one announcement across many pages."
-
-- **Daily poll rescheduled `0 6 * * *` → `0 23 * * *`** in `.github/workflows/daily-poll.yml`. 23:00 UTC = 16:00 PDT / 15:00 PST. Chosen to run AFTER the cd.io crawl (detections spread ~09:00–15:00 Pacific) so each poll still captures that day's changes, while firing inside business hours. Not set to a 9am-equivalent slot on purpose — that would run mid-crawl and pick up half the day's changes a day late.
-- **Insight de-dup added.** New `agents/dedup_agent.py` (`cluster_changes_by_insight`) makes one Claude call per competitor-with-multiple-alert-worthy-changes and clusters them by underlying announcement. `jobs/daily_poll.py` now defers all Teams alerts until after the log/score/summarise loop (new Step 5), groups alert-worthy changes by competitor, clusters by insight, and sends **one alert per cluster** (representative = highest score, then longest summary, then earliest).
-  - **Alert appearance is unchanged** (Lewis's hard requirement): no digest card, no "Wealthbox digest" title. Each cluster fires a normal single-change card. The only change is that duplicate page-cards are suppressed.
-  - **Suppressed pages stay in Notion** (logged, scored, summarised; `Teams Alert Sent` stays False) and still feed the monthly newsletter. Nothing is dropped.
-  - **Safe fallback:** on any clustering failure (API error, malformed/non-partition response) the agent returns one cluster per change — i.e. today's one-alert-per-page behaviour. De-dup can never make things worse or merge incorrectly on error.
-  - **Trade-off:** two *genuinely unrelated* high-score changes for the same competitor in one poll land in separate clusters → still two alerts. Only same-event pages collapse.
-- **Validated against the real incident** (read-only dry run over Notion): the 4 Wealthbox pages clustered into 1 insight → 1 alert (representative `/blog/`, score 7). `py_compile` clean on both changed files.
-- **Both changes are live on `main`** (this commit). The daily workflow runs from `main`, so the new schedule + dedup take effect on the next 23:00 UTC run.
-
-### Earlier — 2026-06-01 (end of day): shipped, sent, and verified
-- **Refactor committed and pushed to `main`** (commit `ae556f3`). The monthly cron and manual broadcast now run the new code.
-- **Newsletter Draft workflow ran successfully in GitHub Actions** — first proof the CI secrets resolve server-side (the new Resend API key + `RESEND_AUDIENCE_ID`). Draft email delivered to the reviewer.
-- **Real broadcast for May 2026 sent to the CI Newsletter audience.** `segment_id` was accepted, no 422 — the open issue below is RESOLVED.
-- **Formatting bug found and fixed** in `_render_news_stories()`: the Competitive News section was rendering every body paragraph bold and shattering each story into fragments (the renderer split on blank lines, which also separate intra-story label blocks). Replaced with a label-driven parser. Headlines and the three labels are bold; bodies are plain.
-- **Architecture changed to fully automatic (per Lewis's request).** The two-step draft→review→manual-broadcast flow is gone. `newsletter-draft.yml` was deleted. `newsletter-broadcast.yml` now runs on a monthly schedule and **auto-broadcasts to the CI Newsletter audience with no human review**. The manual `workflow_dispatch` trigger remains for ad-hoc re-sends and still requires `confirm=SEND`; scheduled runs skip that gate. There is no reviewer step anymore.
-  - Trade-off Lewis accepted: a bad newsletter (formatting regression, hallucinated claim) now ships straight to `sales@`, `customersuccess@`, `pm@` with no eye-check.
-- **Schedule set to `cron: 0 16 1 * *` (16:00 UTC).** GitHub cron ignores DST, so this lands at 09:00 Pacific during PDT (~Mar–Nov) and 08:00 Pacific during PST — biased early so it's never later than 9am. Lewis delegated this decision.
-- **Resend API key: Lewis ADDED a new key (not rotated).** The old key stays valid, so `competitive_intel/.env` and `~/.zshrc` (release-automation system) need no update. No further sharing required.
-- **Audience confirmed correct:** `sales@maximizer.com`, `customersuccess@maximizer.com`, `pm@maximizer.com` are the intended recipients.
-- **Deleted local `competitive_intel/.env.bak`** (plaintext secrets backup). `.gitignore` already blocks `.env.bak` / `*.env.bak` so it can't be recreated and committed.
-- **First fully-automatic run: 2026-07-01 at 16:00 UTC**, sending the June 2026 newsletter. The scheduled-trigger path (cron fires, SEND gate skipped) has not executed yet — first live exercise is that run.
-
-### What just happened (earlier on 2026-06-01)
-- **2026-06-01 09:00 UTC monthly newsletter email never arrived at lewisdyson@maximizer.com.** Root cause not yet confirmed.
-- **A Teams "Monthly Strategic Synthesis" card DID post, but it was truncated and not useful.** Lewis wants it removed from the monthly path. Daily Teams alerts stay intact.
-- **Critical bug discovered:** `jobs/monthly_newsletter.py` exits 0 on email send failure. A green GitHub Actions run is NOT proof of delivery. Email errors are caught, logged, and swallowed. This needs fixing alongside the refactor (exit 1 on send failure).
-
-### Likely causes for missing 2026-06-01 email (priority order)
-1. `SMTP_FROM` secret may default to `onboarding@resend.dev` (Resend sandbox — only delivers to account owner).
-2. `NEWSLETTER_RECIPIENTS` secret may default to `marketing@maximizer.com` (Lewis not on it).
-3. GitHub Actions cron delayed/skipped silently (best-effort, 10-60 min delays common).
-4. M365 quarantine if sender domain isn't DKIM/SPF-verified in Resend.
-5. Resend `RESEND_API_KEY` missing/rotated (job warns then exits 0).
-
-### Decisions made and implemented this session
-1. **Removed the monthly Teams summary card.** Daily Teams alerts stay intact.
-2. **~~Two-step draft → broadcast flow.~~** SUPERSEDED 2026-06-01: replaced with a fully automatic monthly broadcast (no review step) at Lewis's request. See "Latest update" above. The draft workflow was deleted.
-3. **Broadcast target = Resend Audience "CI Newsletter"** (Lewis confirmed it exists). Uses Resend Broadcasts API (`POST /broadcasts` with `send: true`), NOT `/emails`.
-4. **One script with `--mode {draft,broadcast}` flag** + two GitHub Actions workflow YAMLs (cron-scheduled draft, manual broadcast with `confirm = "SEND"` text-input guardrail).
-5. **Regenerate from Notion at broadcast time** rather than persist a draft between runs — prior-month Notion data is immutable so re-runs produce near-identical content; no new state to manage.
-6. **`monthly_newsletter.py` now exits 1 on send failure** (deliberate change from prior behaviour) so GitHub Actions surfaces the failure instead of silently succeeding.
-
-### What Lewis needed to verify before the test run (DONE — kept for reference)
-These were verified during the 2026-06-01 test run; the draft CI run and broadcast both succeeded.
-GitHub repo → Settings → Secrets and variables → Actions:
-- `SMTP_FROM` = a `@maximizer.com` address on a Resend-verified domain (NOT `onboarding@resend.dev`)
-- `RESEND_AUDIENCE_ID` = UUID of "CI Newsletter" audience (`082d3537-5ee3-4a6b-81c5-a732a738eae8`) — added.
-- `DRAFT_REVIEWER` is optional (defaults to `lewisdyson@maximizer.com` in code if unset).
-- Note: there is no `NEWSLETTER_RECIPIENTS` secret and the workflows don't need one.
-
-Resend dashboard:
-- Confirm account is on a Marketing plan that includes the Broadcasts API. Free tier availability is ambiguous. If transactional-only, broadcast path fails at runtime — upgrade or fall back to looping `/emails` over audience contacts.
-- Confirm sender domain on `SMTP_FROM` is verified (DKIM/SPF green).
-- Filter Emails → `to: lewisdyson@maximizer.com` 09:00-10:00 UTC 2026-06-01 to see if the cron fired at all and what Resend did with it.
-
-### Implemented changes (all 7 file ops landed; `py_compile` passed)
-
-| # | Path | Status |
-|---|---|---|
-| 1 | `competitive_intel/config.py` | Added `RESEND_AUDIENCE_ID` + `DRAFT_REVIEWER`. Kept `NEWSLETTER_RECIPIENTS` with migration-window comment (nothing in the codebase imports it now — safe to delete after first successful broadcast). |
-| 2 | `competitive_intel/agents/newsletter_agent.py` | `email_newsletter()` replaced with `send_draft_email(html, subject, recipient)` (POST `/emails`) and `send_broadcast(html, subject, audience_id, internal_name)` (POST `/broadcasts` with `send: true`, auto-injects `{{{RESEND_UNSUBSCRIBE_URL}}}` footer if missing). Both use `logger.error` on every failure path. |
-| 3 | `competitive_intel/jobs/monthly_newsletter.py` | Argparse `--mode {draft,broadcast}` + optional `--year` / `--month`. Defaults to previous month. Dispatches to the right send function. **Exits 1 on send failure** (deliberate). Teams card block + import removed. |
-| 4 | `competitive_intel/integrations/teams_client.py` | `_build_newsletter_card()` and `send_newsletter_announcement()` deleted. Daily-flow functions kept. |
-| 5 | `competitive_intel/scripts/test_newsletter_announcement.py` | Deleted (plus matching `__pycache__/.pyc`). |
-| 6 | `.github/workflows/monthly-synthesis.yml` → `newsletter-draft.yml` | Renamed. Cron `0 9 1 * *` preserved. Runs `--mode draft`. `NEWSLETTER_RECIPIENTS` and `TEAMS_GENERAL_WEBHOOK` removed from this workflow's env. `DRAFT_REVIEWER` added. |
-| 7 | `.github/workflows/newsletter-broadcast.yml` | Now runs on `cron: 0 16 1 * *` (auto-broadcast, no review) AND manual `workflow_dispatch` (requires `confirm = "SEND"`; scheduled runs skip the gate). Has `RESEND_AUDIENCE_ID` in env. `newsletter-draft.yml` was deleted. |
-
-### ✅ RESOLVED: `segment_id` vs `audience_id`
-
-The May 2026 broadcast went out with `segment_id` and Resend accepted it (HTTP 2xx, no 422). The field name in `send_broadcast()` is correct as-is. No change needed. (If a future Resend API change ever rejects `segment_id`, the fallback is `audience_id` — one-line swap in `send_broadcast()`.)
-
-### Test sequence (do this in order)
-
-1. **Verify Resend dashboard first** — confirm `to: lewisdyson@maximizer.com` for 2026-06-01 09:00 UTC. Tells you whether today's cron fired and what happened. Collapses the 5 candidate causes for the missing email down to 1.
-2. **Verify / add GitHub secrets:**
-   - `SMTP_FROM` = verified `@maximizer.com` address (NOT `onboarding@resend.dev`)
-   - `RESEND_AUDIENCE_ID` = "CI Newsletter" audience UUID (NEW — required for broadcast)
-   - `DRAFT_REVIEWER` = `lewisdyson@maximizer.com` (NEW — optional, defaults in code)
-   - There is **no `NEWSLETTER_RECIPIENTS` GitHub secret** — the draft/broadcast workflows don't use it. Nothing to delete on GitHub. (`NEWSLETTER_RECIPIENTS` survives only as a fallback constant in `config.py`, unused by any code path.)
-3. **Run draft locally for May:** `cd competitive_intel && python3 -m jobs.monthly_newsletter --mode draft --year 2026 --month 5`. Confirm the email arrives at Lewis's inbox.
-4. **Trigger broadcast via GitHub Actions UI:** Actions tab → Newsletter Broadcast (Manual) → Run workflow → year=2026, month=5, confirm=SEND. Confirm audience receives it. If 422 on `segment_id`, fix per above and re-run.
-5. **Wait for 2026-07-01 09:00 UTC cron** firing of `newsletter-draft.yml`. Confirm draft email arrives. Then manually trigger broadcast when ready.
-
-### Resend Broadcasts API notes (for the refactor agent)
-- Endpoint: `POST https://api.resend.com/broadcasts` with `Authorization: Bearer $RESEND_API_KEY`.
-- Body: `{segment_id, from, subject, html, reply_to, name, send: true}`. The `send: true` flag collapses create-then-send into one call.
-- Field name is `segment_id` (canonical). `audience_id` accepted as legacy alias.
-- Look up audience by name: `GET /audiences`, iterate `data[]`, match `name == "CI Newsletter"`, extract `id`.
-- HTML body MUST contain `{{{RESEND_UNSUBSCRIBE_URL}}}` merge tag (Gmail/Yahoo/M365 bulk-sender compliance). Resend does NOT auto-append. Triple braces required.
-- Likely requires paid Marketing plan ($40/mo+). Free tier ambiguous.
-- Sources: https://resend.com/docs/api-reference/broadcasts/create-broadcast, https://resend.com/changelog/create-and-send-broadcasts-via-api
-
-### Still pending (post-refactor)
-- The "CI Newsletter" Resend Audience currently holds **3 live internal addresses**: `sales@maximizer.com`, `customersuccess@maximizer.com`, `pm@maximizer.com`. (It is no longer test-only — the May 2026 broadcast went to these three.) Confirm these are the intended recipients and expand/trim as needed.
-- Add the real sales team to the Competitive Intel Teams chat (currently test participants only).
-- **`NEWSLETTER_RECIPIENTS` cleanup:** there is no GitHub secret to remove. Optionally delete the now-unused `NEWSLETTER_RECIPIENTS` constant from `config.py` — nothing imports it anymore.
-- Decide whether `TEAMS_GENERAL_WEBHOOK` stays in repo-level secrets (daily flow still needs it) or moves to environment-scoped secrets for the daily workflow only.
-
-### Path note
-Repo root is `/Users/lewisdyson/Claude Code/` (no Desktop). The implementation agent flagged that earlier handoff/brief copies referenced `/Users/lewisdyson/Desktop/Claude Code/`. The "Desktop" prefix shows up in some bash sandbox views but the real git checkout is at `/Users/lewisdyson/Claude Code/`. Use that path going forward.
+Archived to [`HANDOFF_HISTORY.md`](HANDOFF_HISTORY.md) on 2026-09-24 to keep this doc readable. It covers the original build and launch: the first broadcast, the `segment_id` investigation, the poll moving to business days and to 08:00 Pacific, the duplicate-alert fix, and the July Resend key rotation. Nothing in it is an open item. Everything still live was promoted into the sections above before archiving.
 
 ---
 
@@ -488,6 +374,8 @@ python3 -m scripts.sync_notion_competitor_options --apply
 - **The PAT gained `workflow` scope on 2026-08-18.** Before that, pushes and Contents-API writes touching `.github/workflows/` failed — and the API returns **404**, not 403, which reads as "missing file" rather than "missing scope". Editing workflow YAML in the GitHub web editor is error-prone (pasted blocks inherit the editor's auto-indent; it took three attempts). Push the file instead.
 - **The Teams webhook `sig` parameter IS the credential**, and `requests` puts the full URL into its `HTTPError` text — so any `logger.error("...: %s", e)` published it. Use `teams_client.redact()` on anything derived from a failed post.
 - **Notion select options must exist before a write.** Do not rely on auto-creation; `scripts/sync_notion_competitor_options.py --apply` syncs both Competitor and Tier from `config.py`.
+- **The repo is at `/Users/lewisdyson/Claude Code/`, not `~/Desktop/Claude Code/`.** The Desktop path appears in some sandbox views and in older briefs, but the real git checkout is the home-folder one. Sessions get launched with the Desktop path as the working directory, so check before assuming.
+- **Resend broadcast field is `segment_id`** (canonical); `audience_id` is a legacy alias. If a future API change rejects `segment_id`, the fallback is a one-line swap in `send_broadcast()`. The HTML body must carry the `{{{RESEND_UNSUBSCRIBE_URL}}}` merge tag for bulk-sender compliance; `send_broadcast()` auto-injects it when absent.
 - **Sonnet 5 runs adaptive thinking by default; Sonnet 4.6 did not.** Never read `message.content[0].text` — use `anthropic_retry.response_text()`. Thinking tokens are drawn from the same `max_tokens` budget, so a small budget plus thinking equals a truncated response.
 - **Sonnet 5's tokenizer produces ~1.39x more tokens than Sonnet 4.6 for the same text** (measured: 24,000 → 33,240 on 33 identical prompts). Never estimate a model-swap saving from sticker prices alone.
 - **Minimum cacheable prefix: 1,024 tokens on Sonnet 4.6 and Sonnet 5** (512 on Opus 5). The scoring prompt is 806 tokens, so its `cache_control` marker is inert — proven by 66 live calls returning `cache_read_input_tokens: 0`.
