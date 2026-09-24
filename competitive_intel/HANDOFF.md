@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-08-31
+**Last updated:** 2026-09-24
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -134,47 +134,58 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ---
 
-## Status as of 2026-08-31
+## Status as of 2026-09-24
 
 ### Where this stands right now
 
-**PR ledger** (repo `dysonmaximizer-sys/claude`, all work under `competitive_intel/`):
+**Everything from the August-September rebuild is merged. No open PRs.** Thirteen PRs, #1 to #13. (#6 merged into the wrong base and was re-landed as #7.)
 
-| PR | What | State |
-|---|---|---|
-| #1 | Preflight, status-aware dedupe, rescue sweep, backfill, 4 competitors | merged |
-| #2 | Rescore: say which alerting outcome happened | merged |
-| #3 | Failsafe monitoring; backlog scored silently | merged |
-| #4 | Undelivered health report is itself a failure; webhook redaction | merged |
-| #5 | Retry transient errors; health check exit-code split | merged |
-| #7 | Re-land of #6 (it merged into the stacked base, not `main`) | merged |
-| **#8** | **Four Frenemies + tier glossary in the scoring prompt** | **OPEN — needs merge** |
+**Three weeks of clean unattended operation, 2026-09-02 to 09-24:**
+
+| | |
+|---|---|
+| Daily polls | **17/17 succeeded** |
+| Health checks | **23/23 succeeded**, all five checks green |
+| Unscored backlog | **0** |
+| Rows scored | 412, none failed |
+| Alert-worthy (6+) | 53 = **13%** |
+| cd.io watches | 89, all matching a competitor |
+| Registry | 18 competitors: 3 Tier 1, 8 Tier 2, 4 Frenemies, 3 Ankle Biter |
+| Cost | ~$2-3/month |
+
+**The Frenemies tier is earning its place.** 94 rows in three weeks (Zocks 35, Fireflies 30, Focal AI 18, Continuum 11), and they produced the highest-scoring intel of the period: **Continuum shipped a live direct Maximizer integration (8/10)** and Zocks became a launch partner for Claude for Financial Advisors (7/10). None of that was visible before 2026-08-31.
+
+**The Sonnet 5 alert-suppression worry did not materialise.** The pre-swap sample predicted roughly half of alerts falling below threshold; the actual September rate is **13% against a 7% August baseline**. Confounded by the new frenemy watches, which are high-signal, so do not read it as proof the model scores identically. The practical conclusion: **`ALERT_SCORE_THRESHOLD` does not need lowering to 4.** Leave it at 5.
+
+**The autonomous broadcast has not actually run yet.** The 2026-09-01 scheduled run crashed (ThinkingBlock), August went out manually the same day, and the 09-02 and 09-03 runs were correctly skipped by the business-day gate, not by the idempotency guard. **2026-10-01 (a Thursday) is the first genuinely unattended broadcast**, and the first live exercise of the duplicate guard in CI.
 
 **Decisions made this session** (with what was rejected, so they are not relitigated):
 
-- **Backlog is scored silently.** `RESCUE_SWEEP_ALERTS = False`; backfill takes `--alerts` as opt-in. Rejected: alerting on backlog — two-week-old news buries fresh signal. It reaches the team via the monthly newsletter.
-- **`Frenemies` is a fourth `Tier` value.** Rejected: a separate `Relationship` property that would have allowed "Tier 1 frenemy" — Lewis chose the simpler overload knowing those four lose a threat ranking.
-- **Model switched to `claude-sonnet-5`, with the tradeoff on the record.** Measured: 12% cheaper, but 6 of 33 sampled rows dropped below the alert threshold. Lewis chose it after seeing that. If alert volume thins out, the lever is `ALERT_SCORE_THRESHOLD` 5 → 4 — **not** reverting the model.
+- **Backlog is scored silently.** `RESCUE_SWEEP_ALERTS = False`; backfill takes `--alerts` as opt-in. Rejected: alerting on backlog, because two-week-old news buries fresh signal. It reaches the team via the monthly newsletter.
+- **`Frenemies` is a fourth `Tier` value.** Rejected: a separate `Relationship` property that would have allowed "Tier 1 frenemy". Lewis chose the simpler overload knowing those four lose a threat ranking.
+- **Model switched to `claude-sonnet-5`, with the tradeoff on the record.** Measured: 12% cheaper, but 6 of 33 sampled rows dropped below the alert threshold. Lewis chose it after seeing that. **Outcome (2026-09-24): the suppression did not happen.** September ran at 13% alert-worthy against a 7% August baseline, so `ALERT_SCORE_THRESHOLD` stays at 5. If volume ever does thin, that threshold is still the lever, not reverting the model.
 - **Redtail, AdvisorEngine, Microsoft Dynamics, Act! are all Tier 2.** Rejected: Redtail as Tier 1.
 - **One Teams webhook for everything.** Per-competitor routing deleted entirely; all 11 secrets were null.
 - **Rejected: Batch API.** 50% off scoring, but up to 24h alert delay and submit/poll complexity for ~$0.60/month.
-- **Declined: measuring the tier glossary's effect on scoring** (A/B on 33 rows, ~10c). Asked and declined 2026-08-31, so two scoring changes — Sonnet 5 and the glossary — landed unmeasured within a day of each other. If scores look off, that is where to look first.
+- **Broadcasts send without human review** (Lewis, 2026-09-01). The `confirm=SEND` prompt was never a content review. It only ever gated accidental duplicate manual sends. Replaced by a Resend-backed duplicate guard rather than removed outright. Rejected: marking the month's rows `Status = Distributed` in Notion, which would mean up to 400 writes per broadcast to restate what Resend already knows.
+- **Monday dropped from the registry** (2026-08-31). Tier 2 since April with no watch and 0 rows ever. The Notion `Competitor` select keeps the option, because deleting a select option strips the value from any page that used it.
+- **Declined: measuring the tier glossary's effect on scoring** (A/B on 33 rows, ~10c). Asked and declined 2026-08-31, so two scoring changes (Sonnet 5 and the glossary) landed unmeasured within a day of each other. If scores look off, that is where to look first.
 
 **Open items and blockers:**
 
-- **PR #8 is unmerged.** Everything else is on `main`.
-- **None of the four Frenemies has a changedetection.io watch** (checked live: 73 watches, zero matches), so those registry entries produce nothing until Lewis creates them. Suggest narrow pages — pricing, product, blog/changelog, integrations — not YouTube or follower counts.
-- **8 dead watches still live in cd.io**, 22% of all scoring calls, never above 2/10. Only Lewis can delete them. Hold `developers.hubspot.com/changelog` — 9 changes scoring ≤2 from a changelog looks like a bad CSS selector, not a worthless source.
-- **1 Zoho row sits Unscored** from a transient Anthropic 500 on 2026-08-28. Self-heals on the next successful poll's rescue sweep; no action needed.
-- **GitHub disables scheduled workflows after 60 days of repo inactivity** — the poll and its watchdog would both stop silently. Any commit resets the clock.
+- **Nothing is blocked.** The pipeline runs unattended and green.
+- **2 noise watches remain** in cd.io, both deliberately kept: `developers.hubspot.com/changelog` (9 rows, never above 2/10, more likely a bad CSS selector than a worthless source, so check the selector before deleting) and `advisorengine.com/newsroom` (4 rows, too few to judge). Six others were dropped 2026-08-31, removing ~20% of scoring calls.
+- **Prompt caching still inert.** The scoring system prompt is 806 tokens against a 1,024-token minimum on Sonnet 5, proven by 66 live calls returning `cache_read_input_tokens: 0`. Crossing 1,024 with genuinely useful content (a "what cosmetic noise looks like" section) would make the prefix cacheable at 0.1x across each run's ~25 back-to-back calls. Worth roughly $1/month, more than every other cost lever combined, and it should sharpen scoring on the ~67% of rows that are cosmetic.
+- **`requirements.txt` allows `anthropic>=0.40.0`.** CI installed 1.3.0 while this Mac runs 0.96.0. Pinning needs a local upgrade first.
+- **Nothing logs `response.usage`**, so spend is measured by `count_tokens` arithmetic rather than observed.
+- **GitHub disables scheduled workflows after 60 days of repository inactivity.** Any commit resets the clock.
 
 **Next steps, in order:**
 
-1. Merge PR #8.
-2. Create cd.io watches for Focal AI (`meetwithfocal.com`), Continuum (`oncontinuum.com`), Zocks (`zocks.io`), Fireflies (`fireflies.ai`).
-3. Delete the six clearly-dead watches; investigate the HubSpot changelog selector before deleting it.
-4. Watch alert volume for a week after Sonnet 5. If it thins, drop `ALERT_SCORE_THRESHOLD` to 4.
-5. Optional, and the largest remaining cost lever: push the scoring prompt past 1,024 tokens (it is at 806) with a "what cosmetic noise looks like" section. That makes the prefix cacheable at 0.1x across each run's ~25 back-to-back calls — roughly $1/month, more than every other lever combined, and it should sharpen scoring on the 77% of rows that are noise.
+1. **Watch the 2026-10-01 broadcast.** First unattended send, first CI exercise of the duplicate guard. If it fails, the `if: failure()` Teams card fires and the health check flags it from the 4th.
+2. Consider pushing the scoring prompt past 1,024 tokens (see caching above). Largest remaining cost lever and a quality improvement.
+3. Check the `developers.hubspot.com/changelog` watch selector, then keep or drop it.
+4. Optional: raise `get_monthly_changes(min_score=...)` from 1 to 3 so the newsletter generator stops receiving the ~67% of rows that are cosmetic. Largest single input-token cost in the system.
 
 Related Cowork handoffs, for the frenemy context: `/Users/lewisdyson/PMM/Cowork/focal-partnership-handoff-2026-08-21.md` and `/Users/lewisdyson/PMM/Cowork/continuum-integration-handoff-2026-08-11.md`.
 
