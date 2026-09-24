@@ -260,6 +260,18 @@ def mark_alert_sent(page_id: str) -> None:
     }})
 
 
+def mark_teams_suppressed(page_id: str, reason: str) -> None:
+    """
+    Record that an alert-worthy row was kept out of Teams because Maximizer is
+    a party to the news (see agents/awareness_agent.py). The row stays Scored
+    and still feeds the newsletter; this only makes the suppression auditable.
+    """
+    _patch(f"/pages/{page_id}", {"properties": {
+        "Teams Suppressed": {"checkbox": True},
+        "Suppression Reason": {"rich_text": [{"text": {"content": _truncate_for_notion(reason)}}]},
+    }})
+
+
 def get_monthly_changes(year: int, month: int, min_score: int = 0) -> list[dict]:
     """Return all scored changes from a given month, optionally filtered by min score."""
     from calendar import monthrange

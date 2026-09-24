@@ -20,6 +20,7 @@ all replaced by in-memory fakes:
                                                      the row for the next sweep
                                                      and does NOT fail the run;
                                                      a systemic failure does.
+  5-8. Insight de-dup and the Maximizer-party filter (see main()).
   3. A row stranded OUTSIDE the 76h lookback       → still rescued, because the
                                                      rescue sweep reads the
                                                      database rather than the
@@ -83,6 +84,9 @@ class FakeNotion:
     def mark_alert_sent(self, page_id):
         self.rows[page_id]["teams_alert_sent"] = True
 
+    def mark_teams_suppressed(self, page_id, reason):
+        self.rows[page_id]["teams_suppressed"] = reason
+
     # -- reads --
     def find_existing_change(self, competitor_name, url, detected_at):
         if not detected_at:
@@ -119,14 +123,15 @@ class FakeNotion:
 
 # ── Fake module wiring ─────────────────────────────────────────────────────────
 
-def install_fakes(notion, changes, failing_after=None, cluster_all_together=False):
+def install_fakes(notion, changes, failing_after=None, cluster_all_together=False,
+                  party_urls=(), awareness_raises=False):
     """
     Put fake modules in sys.modules so daily_poll/rescore pick them up.
 
     failing_after=N makes score_change raise on every call after the Nth,
     simulating the credit outage that broke scoring mid-run.
     """
-    calls = {"score": 0, "alerts": [], "digests": [], "summaries": []}
+    calls = {"score": 0, "alerts": [], "digests": [], "summaries": [], "awareness": 0}
 
     preflight = types.ModuleType("integrations.anthropic_preflight")
     preflight.preflight_or_exit = lambda *a, **k: {"ok": True}
@@ -138,7 +143,7 @@ def install_fakes(notion, changes, failing_after=None, cluster_all_together=Fals
     nc = types.ModuleType("integrations.notion_client")
     for name in ("log_change", "find_existing_change", "update_change_score",
                  "update_change_summary", "update_change_meta", "mark_alert_sent",
-                 "get_unscored_changes", "extract_change_fields"):
+                 "mark_teams_suppressed", "get_unscored_changes", "extract_change_fields"):
         setattr(nc, name, getattr(notion, name))
 
     def score_change(competitor_name, tier, category, url, raw_change):
@@ -168,6 +173,35 @@ def install_fakes(notion, changes, failing_after=None, cluster_all_together=Fals
     else:
         dedup.cluster_changes_by_insight = lambda name, items: [[i] for i in range(len(items))]
 
+    # The real gate is kept (it is deterministic and is what decides whether a
+    # model call happens at all); only the model's verdict is faked. A cluster
+    # is PARTY when any of its URLs is in party_urls.
+    import importlib.util
+    spec = importlib.util.spec_from_file_location(
+        "_real_awareness", Path(__file__).parent.parent / "agents" / "awareness_agent.py")
+    awareness = types.ModuleType("agents.awareness_agent")
+    real_gate = None
+    try:
+        real = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(real)
+        real_gate = real.mentions_maximizer
+    except Exception:  # no .env / anthropic in this environment: use a copy of the gate
+        import re
+        real_gate = lambda it: bool(re.search("maximizer", (it.get("url") or "") + (it.get("raw_change") or ""), re.I))
+    awareness.mentions_maximizer = real_gate
+
+    def classify_insight(name, items):
+        if not any(real_gate(it) for it in items):
+            return False, ""
+        calls["awareness"] += 1
+        if awareness_raises:
+            return False, ""  # the real agent swallows errors and fails open
+        if any(it["url"] in party_urls for it in items):
+            return True, "joint activity"
+        return False, "target"
+
+    awareness.classify_insight = classify_insight
+
     teams = types.ModuleType("integrations.teams_client")
 
     def send_competitive_alert(**kw):
@@ -191,6 +225,7 @@ def install_fakes(notion, changes, failing_after=None, cluster_all_together=Fals
         ("agents.scoring_agent", scoring),
         ("agents.summariser_agent", summariser),
         ("agents.dedup_agent", dedup),
+        ("agents.awareness_agent", awareness),
         ("integrations.teams_client", teams),
     ]:
         sys.modules[name] = mod
@@ -320,6 +355,58 @@ def main() -> int:
     check("only the representative row got an AI Summary in Notion",
           sum(1 for r in notion6.rows.values() if r["ai_summary"]) == 1,
           f"{[bool(r['ai_summary']) for r in notion6.rows.values()]}")
+
+    # ── Scenario 6: Maximizer-party insights stay out of Teams ────────────────
+    print("\nScenario 6 — Maximizer-party filter")
+    feed = make_changes(4, hot_indexes=(0, 1, 2, 3))
+    feed[0]["raw_change"] = "+ Join our joint webinar with Maximizer CRM"          # party
+    feed[1]["raw_change"] = "+ Switching from Maximizer? Migrate in one click"     # target
+    feed[2]["raw_change"] = "+ New pricing tiers"                                  # no mention
+    feed[3]["url"] = "https://wealthbox.com/integrations/maximizer-hot"            # party, via URL
+    party = {feed[0]["url"], feed[3]["url"]}
+    notion7 = FakeNotion()
+    calls7 = install_fakes(notion7, feed, party_urls=party)
+    sys.modules.pop("jobs.daily_poll", None)
+    from jobs.daily_poll import run as poll_run7
+    r7 = poll_run7()
+    rows7 = {r["url"]: r for r in notion7.rows.values()}
+    check("2 party insights suppressed", r7["suppressed"] == 2, f"result={r7}")
+    check("2 alerts still sent (the attack and the unrelated change)",
+          len(calls7["alerts"]) == 2, f"alerts={calls7['alerts']}")
+    check("model only consulted for rows that mention Maximizer",
+          calls7["awareness"] == 3, f"awareness calls={calls7['awareness']}")
+    check("suppressed rows recorded in Notion with a reason",
+          all(rows7[u].get("teams_suppressed") for u in party))
+    check("suppressed rows NOT marked Teams Alert Sent",
+          not any(rows7[u]["teams_alert_sent"] for u in party))
+    check("suppressed rows still Scored with the score untouched",
+          all(rows7[u]["status"] == "Scored" and rows7[u]["score"] == 9 for u in party))
+    check("suppressed insights still get an AI Summary (for the newsletter)",
+          all(rows7[u]["ai_summary"] for u in party))
+    check("the attack row alerted", rows7[feed[1]["url"]]["teams_alert_sent"] is True)
+    check("suppression is not an error", r7["errors"] == 0, f"result={r7}")
+
+    print("\nScenario 7 — a party page clustered with an attack page")
+    feed8 = make_changes(2, hot_indexes=(0, 1))
+    feed8[0]["raw_change"] = "+ Webinar with Maximizer"
+    notion8 = FakeNotion()
+    calls8 = install_fakes(notion8, feed8, cluster_all_together=True, party_urls=set())
+    sys.modules.pop("jobs.daily_poll", None)
+    from jobs.daily_poll import run as poll_run8
+    r8 = poll_run8()
+    check("mixed cluster judged as a whole, and alerts", len(calls8["alerts"]) == 1 and r8["suppressed"] == 0,
+          f"alerts={calls8['alerts']} result={r8}")
+
+    print("\nScenario 8 — awareness check fails: fail open")
+    feed9 = make_changes(1, hot_indexes=(0,))
+    feed9[0]["raw_change"] = "+ Webinar with Maximizer"
+    notion9 = FakeNotion()
+    calls9 = install_fakes(notion9, feed9, party_urls={feed9[0]["url"]}, awareness_raises=True)
+    sys.modules.pop("jobs.daily_poll", None)
+    from jobs.daily_poll import run as poll_run9
+    r9 = poll_run9()
+    check("a failed check still alerts", len(calls9["alerts"]) == 1 and r9["suppressed"] == 0,
+          f"alerts={calls9['alerts']} result={r9}")
 
     print()
     if failures:

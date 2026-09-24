@@ -13,6 +13,9 @@ Teams alerts are deferred until every change is logged, scored, and summarised,
 then grouped by underlying insight so one announcement spread across several of
 a competitor's pages fires a single alert instead of one per page. Every alert
 goes to the single general webhook, with the competitor as the card headline.
+Insights Maximizer is itself a party to (joint webinars, a partner's Maximizer
+integration) are logged and summarised but kept out of Teams; see
+agents/awareness_agent.py.
 
 Order of operations, and why (all three guards were added 2026-08-18 after a
 credit outage stranded 183 rows as permanently-"Unscored"):
@@ -64,7 +67,9 @@ def run(dry_run: bool = False) -> dict:
         update_change_summary,
         update_change_meta,
         mark_alert_sent,
+        mark_teams_suppressed,
     )
+    from agents.awareness_agent import classify_insight
     from agents.scoring_agent import score_change
     from agents.summariser_agent import summarise_change
     from agents.dedup_agent import cluster_changes_by_insight
@@ -226,6 +231,7 @@ def run(dry_run: bool = False) -> dict:
     for item in pending_alerts:
         by_competitor.setdefault(item["competitor"], []).append(item)
 
+    suppressed = 0
     for competitor, items in by_competitor.items():
         try:
             clusters = cluster_changes_by_insight(competitor, items)
@@ -264,6 +270,27 @@ def run(dry_run: bool = False) -> dict:
             except Exception as e:
                 logger.error("  → Summarisation failed for %s: %s", competitor, e)
                 errors += 1  # rep["summary"] stays as the scoring reasoning
+
+            # Maximizer-party check: news we took part in (joint webinar, a
+            # partner's Maximizer integration) stays out of Teams. Judged on the
+            # whole cluster, so a sibling page cannot leak the same news. Runs
+            # after summarising on purpose: a suppressed insight still gets its
+            # AI Summary, which the newsletter uses. Fails open (see the agent).
+            suppress, reason = classify_insight(competitor, [items[i] for i in cluster])
+            if suppress:
+                logger.info(
+                    "  → Teams alert suppressed for %s (Maximizer is a party): %s",
+                    competitor, reason,
+                )
+                suppressed += 1
+                for i in cluster:
+                    try:
+                        mark_teams_suppressed(items[i]["page_id"], reason)
+                    except Exception as e:
+                        logger.error("  → Could not record suppression on %s: %s",
+                                     items[i]["page_id"], e)
+                        errors += 1
+                continue
 
             try:
                 sent = send_competitive_alert(
@@ -313,9 +340,9 @@ def run(dry_run: bool = False) -> dict:
     total_errors = errors + sweep["errors"]
     logger.info(
         "=== Daily poll complete: %d logged, %d resumed, %d swept, %d scored, "
-        "%d alerted, %d scoring blips, %d errors ===",
+        "%d alerted, %d suppressed (Maximizer party), %d scoring blips, %d errors ===",
         logged, resumed, sweep["processed"], total_scored, total_alerted,
-        scoring_failures, total_errors,
+        suppressed, scoring_failures, total_errors,
     )
     return {
         "new_changes": logged,
@@ -324,6 +351,7 @@ def run(dry_run: bool = False) -> dict:
         "swept": sweep["processed"],
         "scored": total_scored,
         "alerted": total_alerted,
+        "suppressed": suppressed,
         "errors": total_errors,
     }
 

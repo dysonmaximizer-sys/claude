@@ -69,6 +69,7 @@ def rescore_unscored(
         extract_change_fields,
         get_unscored_changes,
         mark_alert_sent,
+        mark_teams_suppressed,
         update_change_meta,
         update_change_score,
         update_change_summary,
@@ -238,6 +239,22 @@ def rescore_unscored(
                 logger.error("  Summarisation failed for %s: %s", competitor, e)
                 summary = reasoning
                 stats["errors"] += 1
+
+        if above_threshold and not fields["teams_alert_sent"] and alert:
+            # Same Maximizer-party filter as the daily poll (fails open). Only
+            # checked when this run may alert, so silent sweeps cost nothing.
+            from agents.awareness_agent import classify_insight
+            suppress, why = classify_insight(competitor, [{
+                "url": fields["url"], "raw_change": raw_change, "summary": summary or reasoning,
+            }])
+            if suppress:
+                logger.info("  Teams alert suppressed for %s (Maximizer is a party): %s", competitor, why)
+                try:
+                    mark_teams_suppressed(page_id, why)
+                except Exception as e:
+                    logger.error("  Could not record suppression on %s: %s", page_id, e)
+                    stats["errors"] += 1
+                continue
 
         if above_threshold and not fields["teams_alert_sent"]:
             pending.append({

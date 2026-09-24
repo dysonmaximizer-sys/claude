@@ -30,6 +30,8 @@ agents/
   scoring_agent.py       # Scores each change 1-10 with reasoning
   summariser_agent.py    # Writes AI summary for high-score changes
   newsletter_agent.py    # Generates the newsletter + send_draft_email() and send_broadcast()
+  dedup_agent.py         # Groups one competitor's alert-worthy changes by insight
+  awareness_agent.py     # Keeps Maximizer-party news (joint webinars, partner integrations) out of Teams
 
 integrations/
   changedetection_client.py  # Polls changedetection.io API, builds the diff
@@ -48,7 +50,8 @@ scripts/
   test_teams_alert.py          # Smoke test: fires a sample alert card to Teams
   check_api_key.py             # Standalone: is the Anthropic key funded? (auth vs billing)
   sync_notion_competitor_options.py  # Adds missing Competitor select options to Notion
-  test_dedupe_recovery.py      # Offline regression test for the dedupe-poisoning fix
+  test_dedupe_recovery.py      # Offline regression test: dedupe fix, clustering, Maximizer-party filter
+  add_suppression_properties.py  # One-shot: added Teams Suppressed + Suppression Reason to Notion (applied 2026-09-24)
 ```
 
 Battlecards have been removed from scope. The 11 legacy battlecard pages and the `Battlecard Updated` Notion column have been archived. No code touches battlecard pages.
@@ -169,6 +172,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 - **Rejected: Batch API.** 50% off scoring, but up to 24h alert delay and submit/poll complexity for ~$0.60/month.
 - **Broadcasts send without human review** (Lewis, 2026-09-01). The `confirm=SEND` prompt was never a content review. It only ever gated accidental duplicate manual sends. Replaced by a Resend-backed duplicate guard rather than removed outright. Rejected: marking the month's rows `Status = Distributed` in Notion, which would mean up to 400 writes per broadcast to restate what Resend already knows.
 - **Monday dropped from the registry** (2026-08-31). Tier 2 since April with no watch and 0 rows ever. The Notion `Competitor` select keeps the option, because deleting a select option strips the value from any page that used it.
+- **Maximizer-party news is kept out of Teams but kept in the newsletter** (2026-09-24). Filter is separate from scoring and fails open. Rejected: a plain "mentions Maximizer" keyword filter, which would also mute comparison pages and switch offers, the highest-value alerts. Also rejected: a curated partner list, which goes stale and would suppress a partner turning hostile.
 - **Declined: measuring the tier glossary's effect on scoring** (A/B on 33 rows, ~10c). Asked and declined 2026-08-31, so two scoring changes (Sonnet 5 and the glossary) landed unmeasured within a day of each other. If scores look off, that is where to look first.
 
 **Who receives the broadcast** (verified against Resend 2026-09-24): the `CI Newsletter` audience `082d3537-5ee3-4a6b-81c5-a732a738eae8` holds exactly three subscribed addresses, `sales@maximizer.com`, `customersuccess@maximizer.com`, `pm@maximizer.com`. These are internal aliases, not individuals. Every unattended broadcast goes to them.
@@ -188,6 +192,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 **Next steps, in order:**
 
+0. **Merge the Maximizer-party filter PR** (branch `ci-maximizer-party-filter`). It is inert until it reaches `main`.
 1. **Watch the 2026-10-01 broadcast.** First unattended send, first CI exercise of the duplicate guard. If it fails, the `if: failure()` Teams card fires and the health check flags it from the 4th.
 2. Consider pushing the scoring prompt past 1,024 tokens (see caching above). Largest remaining cost lever and a quality improvement.
 3. Check the `developers.hubspot.com/changelog` watch selector, then keep or drop it.
@@ -196,7 +201,28 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 Related Cowork handoffs, for the frenemy context: `/Users/lewisdyson/PMM/Cowork/focal-partnership-handoff-2026-08-21.md` and `/Users/lewisdyson/PMM/Cowork/continuum-integration-handoff-2026-08-11.md`.
 
 
-### Latest update — 2026-09-01 (later): unattended broadcasts, guarded
+### Latest update — 2026-09-24 (later): Maximizer-party filter on Teams alerts
+
+Feedback: intel where Maximizer is itself a party (a joint webinar, a partner's Maximizer integration) is noise in the Teams chat because we already know. It is still logged, scored and summarised, and it stays in the newsletter (Lewis, 2026-09-24). Only the Teams card is dropped.
+
+**How it works** (`agents/awareness_agent.py`, called per insight cluster in `daily_poll.py` after summarising, and in `rescore.py` only when alerting is on):
+1. **Keyword gate.** Only clusters whose URL or diff contains "Maximizer" go further. Every other insight costs nothing extra.
+2. **Separate classifier call** returns `PARTY` or `ALERT`. PARTY means integrations with Maximizer (even when only the partner announces them), joint webinars, co-marketing, partner listings, and joint customer stories. ALERT means comparisons, switch or migration offers, an integration removed or paywalled, claims about Maximizer, Maximizer mentioned only in passing, **or a Maximizer integration bundled with other real news** (e.g. new integrations with other CRMs as well). In that last case the other news still earns the alert.
+3. **Fails open.** An API error, unparseable output or uncertainty all send the alert.
+4. **Auditable.** Suppressed rows get `Teams Suppressed` ticked and a `Suppression Reason` in Notion (properties added live 2026-09-24). `Teams Alert Sent` stays unticked. The run summary logs a `suppressed` count.
+
+**Not touched:** the significance score and the scoring prompt. Rejected: adding a field to the scoring call, because that changes the scoring prompt, and two scoring changes have already landed unmeasured.
+
+**Bug caught during the live eval:** the classifier first read only the first 1,500 characters of each diff. On LinkedIn pages the Maximizer post sits below follower counts and employee lists, so it judged the noise. It now reads the opening lines plus a window around every Maximizer mention (`_excerpt`).
+
+**Evidence:** 9/9 synthetic cases correct (switch offers, comparison pages, a removed integration, a paywalled integration and bundled news all alert; webinars, integration launches and customer stories are suppressed). Against the only 3 alert-worthy historical rows that mention Maximizer (all Continuum LinkedIn), 2 are suppressed, including the 8/10 "live direct Maximizer integration". The third alerts. Its diff is truncated in Notion, where the classifier only sees follower-count noise. The full diff at poll time would likely be judged differently. Offline regression suite extended with scenarios 6-8.
+
+**Known limits:**
+- An integration a partner builds **without** Maximizer's knowledge is treated as PARTY and suppressed, by design (per the feedback). If that ever matters, the fix is a known-partners allowlist gating the integration case, not loosening the prompt.
+- Maximizer-mentioning rows are rare (5 in the whole database), so expect this to fire a few times a month at most. If `Teams Suppressed` never ticks, the likelier cause is that nothing qualified, not that the filter is broken.
+- A Maximizer mention that appears only in an image or logo is invisible to the gate, so that change alerts. That is the safe direction.
+
+### Earlier — 2026-09-01 (later): unattended broadcasts, guarded
 
 Lewis authorised sending the monthly newsletter broadcast **without human review** from now on (recorded in Claude's memory). Two things had to change for that to be safe, because the `confirm=SEND` prompt was never a content review — it was the only thing preventing a duplicate send.
 
