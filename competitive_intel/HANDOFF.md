@@ -141,7 +141,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 ### Where this stands right now
 
-**Everything from the August-September rebuild is merged. No open PRs.** Thirteen PRs, #1 to #13. (#6 merged into the wrong base and was re-landed as #7.)
+**Everything from the August-September rebuild is merged, plus the Maximizer-party filter (merged to `main` 2026-09-24 as bf9518d). No open PRs.** Thirteen PRs, #1 to #13. (#6 merged into the wrong base and was re-landed as #7.)
 
 **Three weeks of clean unattended operation, 2026-09-02 to 09-24:**
 
@@ -192,7 +192,6 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 **Next steps, in order:**
 
-0. **Merge the Maximizer-party filter PR** (branch `ci-maximizer-party-filter`). It is inert until it reaches `main`.
 1. **Watch the 2026-10-01 broadcast.** First unattended send, first CI exercise of the duplicate guard. If it fails, the `if: failure()` Teams card fires and the health check flags it from the 4th.
 2. Consider pushing the scoring prompt past 1,024 tokens (see caching above). Largest remaining cost lever and a quality improvement.
 3. Check the `developers.hubspot.com/changelog` watch selector, then keep or drop it.
