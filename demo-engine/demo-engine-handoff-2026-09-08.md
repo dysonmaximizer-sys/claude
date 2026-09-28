@@ -42,6 +42,10 @@ Updated: 2026-09-08 · Session: Claude Code
   (3 wks after webinar); Maya student/Grade 12. No McGill or cottage-SALE
   language (those must come from the live meeting and June call). Priors
   in manifests/halloran-profile-2026-09-28.json (reversible).
+- Household: Primary Advisor = B. Smith ($TYPEID(437)), email
+  halloran.family@mail.test. Group-benefits company questionnaire left
+  blank on purpose (households are Company-typed; filled answers look fake).
+  [verify] which advisor field the UI labels "Advisor".
 
 ## 2026-09-08 session (IQ Boost Q3 came back weak — phrasing, or data shape)
 - **Q3 test result (Lewis ran it in the UI, pasted the answer).** Asked

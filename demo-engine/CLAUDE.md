@@ -228,6 +228,12 @@ Blocked:
   household picked up the seed date, likely from appointment/task
   creation). The refresh script rolls it wherever set. "Days Since Last
   Contacted" ($TYPEID(838)) is a formula off it — never write.
+- **Email write (validated 2026-09-28):** AbEntry Update with nested
+  `"Email1": {"Address": "<x>", "Default": true, "Description": "Home"}`
+  stores and becomes the default (`Email/Address` reads it back).
+- **Advisor pick-lists:** Primary Advisor `Udf/$TYPEID(437)` = 1 Steven,
+  2 Rikki, 3 B. Smith, 4 S Wilson; a second "Advisor" enum
+  `Udf/$TYPEID(1178)` = 1 Candace, 2 John. Adding options is admin-only.
 - **Note RichText (validated 2026-09-28):** Note has TWO text fields,
   `Text` (plain) and `RichText` (HTML, one `<div>` per line; this is what
   the UI renders). After a UI edit, `Text` reads back flattened to one
