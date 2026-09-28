@@ -31,7 +31,8 @@ Updated: 2026-09-08 · Session: Claude Code
   Re-check the household the morning of Oct 1 for new Continuum test records.
 - Later 2026-09-28: Lewis accidentally re-dated the RESP statement note
   (Tm90ZQkzMzAw) to Oct 1 in the UI; moved to 2026-09-28 10:30 PT at his
-  request (read-back verified). Its line breaks appear lost in that UI edit.
+  request (read-back verified). Line breaks: RichText holds 4 <div> lines
+  (what the UI shows); plain Text reads flattened. See CLAUDE.md Note RichText.
 
 ## 2026-09-08 session (IQ Boost Q3 came back weak — phrasing, or data shape)
 - **Q3 test result (Lewis ran it in the UI, pasted the answer).** Asked

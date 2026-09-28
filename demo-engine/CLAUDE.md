@@ -221,6 +221,12 @@ Blocked:
   household picked up the seed date, likely from appointment/task
   creation). The refresh script rolls it wherever set. "Days Since Last
   Contacted" ($TYPEID(838)) is a formula off it — never write.
+- **Note RichText (validated 2026-09-28):** Note has TWO text fields,
+  `Text` (plain) and `RichText` (HTML, one `<div>` per line; this is what
+  the UI renders). After a UI edit, `Text` reads back flattened to one
+  line even though `RichText` keeps the breaks, so check line breaks via
+  `RichText`, not `Text`. To control formatting, write `RichText` as
+  `<div>line</div>\r\n<div>line</div>`.
 - **Note queries:** link field is `ParentKey` (NOT AbEntryKey); Note has no
   CreationDate property and DateTime rejects $GT — read all notes for the
   parent and filter client-side.
