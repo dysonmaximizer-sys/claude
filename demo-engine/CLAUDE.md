@@ -141,7 +141,8 @@ Works:
 - **Insurance/coverage surface on AbEntry (validated 2026-07-22):**
   **Life Insurance** = enum `Udf/$NAME(WM_Client Info\Additional
   Info\Life Insurance)` (2=Yes, 1=No). **RESP balance** = currency
-  `Udf/$NAME(WM_KYC etc.\Balance Sheet\Liquid\RESP)`. **Named
+  `Udf/$NAME(WM_KYC etc.\Balance Sheet\Liquid\RESP)` Write a NUMBER (91400); a string is
+  rejected with Code -1024 (validated 2026-09-28). **Named
   beneficiary for life policies** = enum (Estate Planning folder, 2=Yes).
   **Evaluate/initiate insurance plan** = enum 1-5 (Financial Planning
   objectives). There is NO critical-illness or disability UDF — a CI/DI

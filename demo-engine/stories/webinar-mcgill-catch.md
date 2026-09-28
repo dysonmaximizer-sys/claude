@@ -18,6 +18,21 @@ calls, and tasks on the record. Second question, "Where do the Hallorans
 stand on selling the cottage?", surfaces today's transcript AND Priya's
 June call.
 
+## 2026-10-01 rerun: Continuum x Maximizer webinar (Elena + Alex)
+
+Same Halloran story, new partner. Continuum (Alex) captures the meeting live
+and pushes it to Maximizer; the Focal summary note was DELETED 2026-09-28.
+The live meeting must include the cottage sale, Maya getting into McGill,
+and a TFSA beneficiary update assigned to the associate.
+
+- **Never refresh this story with refresh-story.py.** The script needs the
+  thin note in MARCH ("scroll back to March") and Priya's call in JUNE.
+- `engine/update-webinar-resp.py --demo-day 2026-10-01` added a current RESP
+  statement note (~3 weeks before, allocation UNCHANGED at ~80/20) and set
+  the household RESP balance to $91,400, so RESP answers stop citing March.
+- Manual (API cannot): sample Halloran page in Documents, dealer accounts,
+  email history; Continuum maps the TFSA task to the associate user.
+
 ## What must be true in the data on recording day
 
 1. Halloran household with Dan, Priya, and Maya (17, birthdates seeded).

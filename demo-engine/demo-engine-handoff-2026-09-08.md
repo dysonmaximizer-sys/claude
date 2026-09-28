@@ -16,9 +16,19 @@ Updated: 2026-09-08 · Session: Claude Code
   Dan (today), tasks "Contact property appraiser..." and "Fund TFSA
   account" (both due Sep 30, AssignedTo LDYSON = Lewis's name leak).
 - RESP balance UDF is empty on all four Hallorans. Next KYC = 2026-10-15.
-- PENDING Lewis: webinar + dry-run dates, Elena's login (next-meeting
-  appointment 3 weeks out), then seed a recent RESP statement note + RESP
-  balance.
+- **Webinar = Oct 1.** Lewis: skip the next-meeting calendar entry.
+- **Deleted the four test records** (Lewis's call): both notes and both
+  Sep 30 tasks above; 2 "task deleted" audit notes swept.
+- **RESP brought current:** engine/update-webinar-resp.py added a Sep 8
+  RESP statement note (value $91,400, contributions $46,500, CESG $7,200
+  lifetime max, 2026 $2,500 contribution, allocation unchanged ~80/20) and
+  set household RESP balance = 91400. FINDING: the currency UDF rejects a
+  string ("91400", Code -1024); send a number. Final read: timeline holds
+  ONLY story records (2024 note+task, Mar note, May note, Jun call, Sep note).
+- Still manual before the dry run: sample page in Documents, dealer
+  accounts, a real email if the "email history" line is kept; Continuum
+  must assign the TFSA task to a female associate user (Deb Jackson exists).
+  Re-check the household the morning of Oct 1 for new Continuum test records.
 
 ## 2026-09-08 session (IQ Boost Q3 came back weak — phrasing, or data shape)
 - **Q3 test result (Lewis ran it in the UI, pasted the answer).** Asked
