@@ -33,6 +33,15 @@ Updated: 2026-09-08 · Session: Claude Code
   (Tm90ZQkzMzAw) to Oct 1 in the UI; moved to 2026-09-28 10:30 PT at his
   request (read-back verified). Line breaks: RichText holds 4 <div> lines
   (what the UI shows); plain Text reads flattened. See CLAUDE.md Note RichText.
+- **Halloran profile filled** (engine/update-halloran-profile.py, all 93
+  target fields were empty, 0 overwrites): household balance sheet (home
+  $1.65M, Muskoka cottage $780k, RSP/TFSA/non-reg/cash, mortgage $285k,
+  totals incl. RESP), client since 2011, referral, Last KYC 2025-10-15,
+  wills/life insurance; Dan + Priya employment, income, family, estate
+  checklist, goals, risk/objective %, Next Portfolio Review 2026-10-22
+  (3 wks after webinar); Maya student/Grade 12. No McGill or cottage-SALE
+  language (those must come from the live meeting and June call). Priors
+  in manifests/halloran-profile-2026-09-28.json (reversible).
 
 ## 2026-09-08 session (IQ Boost Q3 came back weak — phrasing, or data shape)
 - **Q3 test result (Lewis ran it in the UI, pasted the answer).** Asked

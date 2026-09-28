@@ -153,7 +153,14 @@ Works:
   ($TYPEID(550)/$TYPEID(842)) write Code 0 on a household but store
   NOTHING; they only persist on Individuals/Contacts (validated
   2026-07-22). Segmentation, RESP balance, Date Last Contacted DO store
-  on households. When a household UDF write matters, always read back.
+  on households. Also person-level only (validated 2026-09-28): Next
+  Portfolio Review $TYPEID(1120), Financial Objectives 1-5 enums
+  ($TYPEID(1014)/(1019)/(1020)/(1021)), and the financial-planning
+  questions ($TYPEID(1032), (1041)). Balance-sheet currency UDFs, Client
+  Since, Referred by, Wills, Life Insurance, Family and Relatives,
+  Recreation DO store on households. Some short text UDFs cap at 29
+  characters ("Referred by" $TYPEID(113), "Last Education Institute"
+  $TYPEID(142)); an over-length value fails the WHOLE Update. When a household UDF write matters, always read back.
 - **Household create requires `CompanyName`** — `LastName` shapes fail
   with "mandatory field" (ErrorCode -10010); the CLAUDE.md shape is the
   only validated one.
