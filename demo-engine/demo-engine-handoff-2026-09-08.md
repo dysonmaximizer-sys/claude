@@ -1,6 +1,25 @@
 # Maximizer Demo Engine — Handoff
 Updated: 2026-09-08 · Session: Claude Code
 
+## 2026-09-28 session (Continuum webinar prep - Halloran story, IN PROGRESS)
+- Webinar partner is now **Continuum**, not Focal (script: Downloads/
+  "Continuum x Maximizer Webinar Script.docx", presenters Elena + Alex).
+  FSE PAT renewed today (next expiry ~Oct 28).
+- **DELETED the Focal summary note** Tm90ZQkzMjg5 (Lewis's call); it was
+  the only Focal note in the tenant (tenant-wide Text search). Removed from
+  the webinar-mcgill-catch manifest; 0 audit notes generated.
+- **Do NOT run refresh-story.py on this story:** the script needs the thin
+  note in MARCH ("scroll back to March") and Priya's call in JUNE.
+- Found on the record, NOT seeded by the engine (left alone, flagged to
+  Lewis): note "TFSA Funding Next Steps Test meeting..." (Sep 25, likely a
+  Continuum sync test), note "Open RESP item to the Halloran household" on
+  Dan (today), tasks "Contact property appraiser..." and "Fund TFSA
+  account" (both due Sep 30, AssignedTo LDYSON = Lewis's name leak).
+- RESP balance UDF is empty on all four Hallorans. Next KYC = 2026-10-15.
+- PENDING Lewis: webinar + dry-run dates, Elena's login (next-meeting
+  appointment 3 weeks out), then seed a recent RESP statement note + RESP
+  balance.
+
 ## 2026-09-08 session (IQ Boost Q3 came back weak — phrasing, or data shape)
 - **Q3 test result (Lewis ran it in the UI, pasted the answer).** Asked
   "What did we agree on RESP contributions?" IQ Boost cited the March 2026
