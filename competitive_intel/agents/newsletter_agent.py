@@ -667,17 +667,29 @@ def _render_news_stories(text: str) -> str:
     if not lines:
         return "<em>No significant competitive news this period.</em>"
 
-    label_re = re.compile(
-        r"^(What happened|Why it matters|How we should respond)\s*:\s*(.*)$",
-        re.IGNORECASE,
-    )
+    stories_html = _render_labelled_stories(lines)
+    return "<br><br>".join(stories_html) if stories_html else \
+        "<em>No significant competitive news this period.</em>"
 
+
+_LABEL_RE = re.compile(
+    r"^(What happened|Why it matters|How we should respond)\s*:\s*(.*)$",
+    re.IGNORECASE,
+)
+
+
+def _render_labelled_stories(lines: list[str]) -> list[str]:
+    """
+    Parse headline + 'What happened:' / 'Why it matters:' blocks into one HTML
+    string per story. Shared by Competitive News and Product Updates' top
+    priorities. A label's body may be inline or on the following line.
+    """
     stories: list = []
     current = None
     awaiting_body = False  # last label had no inline body, so the next line is it
 
     for line in lines:
-        m = label_re.match(line)
+        m = _LABEL_RE.match(line)
         if m:
             label, inline_body = m.group(1).strip(), m.group(2).strip()
             if current is None:
@@ -691,7 +703,7 @@ def _render_news_stories(text: str) -> str:
             awaiting_body = False
         else:
             # Non-label line that isn't a pending body → a new story headline.
-            current = {"headline": line, "parts": []}
+            current = {"headline": re.sub(r"^\d+[.)]\s*", "", line), "parts": []}
             stories.append(current)
             awaiting_body = False
 
@@ -706,40 +718,62 @@ def _render_news_stories(text: str) -> str:
             out += f"<br><strong>{_escape(label)}:</strong> {_escape(body)}"
         if out:
             stories_html.append(out)
+    return stories_html
 
-    return "<br><br>".join(stories_html) if stories_html else \
-        "<em>No significant competitive news this period.</em>"
+
+_PU_SUBSECTIONS = {"MAXIMIZER UPDATES": "Maximizer updates"}
+
+# "Wealthbox: Dispatch integration; ..." → bold the competitor name.
+_COMPETITOR_PREFIX_RE = re.compile(r"^([A-Z][\w!&.'\- ]{0,30}?):\s+(.+)$")
+
+
+def _subheading(title: str) -> str:
+    return (f'<div style="font-size:12px; font-weight:bold; color:#5A6266; '
+            f'text-transform:uppercase; letter-spacing:0.5px; margin:12px 0 4px 0;">'
+            f'{_escape(title)}</div>')
+
+
+def _bullet_html(line: str) -> str:
+    content = re.sub(r"^[-•]\s*", "", line)
+    m = _COMPETITOR_PREFIX_RE.match(content)
+    if m:
+        return f"<li><strong>{_escape(m.group(1))}:</strong> {_escape(m.group(2))}</li>"
+    return f"<li>{_escape(content)}</li>"
 
 
 def _render_product_updates(text: str) -> str:
     """
-    Render Product Updates as a bullet list.
-    Non-bullet lines (e.g. a 'Maximizer updates' subheading) are rendered as bold.
+    Render Product Updates as one bullet per competitor ("Competitor: a; b; c"),
+    competitor name in bold, with an optional MAXIMIZER UPDATES sub-header.
+
+    Every line renders as a bullet, hyphen or not. The old renderer bolded each
+    un-hyphenated line as a subheading and joined them with no separator; when
+    the model wrote plain paragraphs (Sept 2026 issue) the whole section became
+    one run-on block of bold text.
     """
     text = _preprocess(text)
     lines = [l.strip() for l in text.splitlines() if l.strip()]
     if not lines:
         return "<em>No product updates this period.</em>"
 
-    bullet_items: list[str] = []
-    non_bullets: list[str] = []
     out_parts: list[str] = []
+    buffer: list[str] = []
 
-    def _flush_bullets() -> None:
-        if bullet_items:
-            items = "".join(f"<li>{_escape(l)}</li>" for l in bullet_items)
+    def _flush() -> None:
+        if buffer:
+            items = "".join(_bullet_html(l) for l in buffer)
             out_parts.append(f'<ul class="ci-list">{items}</ul>')
-            bullet_items.clear()
+            buffer.clear()
 
     for line in lines:
-        if line.startswith(("-", "•")):
-            content = re.sub(r"^[-•]\s*", "", line)
-            bullet_items.append(content)
+        key = line.rstrip(":")
+        if key in _PU_SUBSECTIONS:
+            _flush()
+            out_parts.append(_subheading(_PU_SUBSECTIONS[key]))
         else:
-            _flush_bullets()
-            out_parts.append(f"<strong>{_escape(line)}</strong>")
+            buffer.append(line)
+    _flush()
 
-    _flush_bullets()
     return "".join(out_parts)
 
 
