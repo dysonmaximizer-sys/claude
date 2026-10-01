@@ -27,7 +27,7 @@ A scannable changelog of what competitors shipped or announced this period. This
 - Only product changes count: new features, AI capabilities, integrations, new editions or tiers, pricing and packaging changes, and announced release dates.
 - Leave out everything else: customer wins, hires, funding, webinars, podcasts, blog posts, compliance or marketing content, website copy and navigation changes, and anything described as "promoting" rather than shipping.
 - Put each update under the competitor that shipped it. If two vendors announced a joint integration, list it under the vendor whose product changed.
-- Order competitors Tier 1 first, then Tier 2, then Frenemies. Skip any competitor with no product changes.
+- Order competitors Tier 1 first, then Tier 2, then Frenemies, then Ankle Biter. Skip any competitor with no product changes.
 Maximizer updates: only if the intel includes a recent or upcoming Maximizer product update relevant to the competitive landscape. If there is none, omit this part entirely. Do not write that none are available.
 
 Do not include collateral updates, win/loss metrics, future outlook, shoutouts, or calls for stakeholder input. Only populate sections you have enough intel to support. If a section cannot be filled meaningfully, omit it and note that no updates are available this period.

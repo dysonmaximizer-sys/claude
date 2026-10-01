@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-09-24
+**Last updated:** 2026-10-01
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -160,7 +160,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 **The Sonnet 5 alert-suppression worry did not materialise.** The pre-swap sample predicted roughly half of alerts falling below threshold; the actual September rate is **13% against a 7% August baseline**. Confounded by the new frenemy watches, which are high-signal, so do not read it as proof the model scores identically. The practical conclusion: **`ALERT_SCORE_THRESHOLD` does not need lowering to 4.** Leave it at 5.
 
-**The autonomous broadcast has not actually run yet.** The 2026-09-01 scheduled run crashed (ThinkingBlock), August went out manually the same day, and the 09-02 and 09-03 runs were correctly skipped by the business-day gate, not by the idempotency guard. **2026-10-01 (a Thursday) is the first genuinely unattended broadcast**, and the first live exercise of the duplicate guard in CI.
+**The first unattended broadcast went out on 2026-10-01.** Resend shows `CI Newsletter 2026-09` with status `sent` at **20:46 UTC**, not 16:00. Nearly five hours is a long GitHub cron delay; whether it was the scheduled run or a manual dispatch is `[verify]` in the Actions tab. It went out in the **old** Product Updates format (the run-on bold block that prompted the 2026-10-01 redesign below); the fix was pushed about 30 minutes after.
 
 **Decisions made this session** (with what was rejected, so they are not relitigated):
 
@@ -192,7 +192,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 
 **Next steps, in order:**
 
-1. **Watch the 2026-10-01 broadcast.** First unattended send, first CI exercise of the duplicate guard. If it fails, the `if: failure()` Teams card fires and the health check flags it from the 4th.
+1. **Check the 2026-11-02 (Monday) broadcast** of October, the first in the new Product Updates format. Look for: one bullet per competitor, product changes only, no paragraphs. If the model writes paragraphs anyway, the renderer degrades to plain bullets rather than the bold block, so it will still be readable.
 2. Consider pushing the scoring prompt past 1,024 tokens (see caching above). Largest remaining cost lever and a quality improvement.
 3. Check the `developers.hubspot.com/changelog` watch selector, then keep or drop it.
 4. Optional: raise `get_monthly_changes(min_score=...)` from 1 to 3 so the newsletter generator stops receiving the ~67% of rows that are cosmetic. Largest single input-token cost in the system.
@@ -200,7 +200,36 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 Related Cowork handoffs, for the frenemy context: `/Users/lewisdyson/PMM/Cowork/focal-partnership-handoff-2026-08-21.md` and `/Users/lewisdyson/PMM/Cowork/continuum-integration-handoff-2026-08-11.md`.
 
 
-### Latest update — 2026-09-24 (later): Maximizer-party filter on Teams alerts
+### Latest update — 2026-10-01: newsletter Product Updates became a per-competitor changelog
+
+Commit `d3ac7d7` on `main`. Files: `resources/newsletter_system_prompt.txt`, `agents/newsletter_agent.py`.
+
+**Problem (Lewis, from the 2026-10-01 issue):** Product Updates rendered as one unreadable block of bold text, ~450 words. Two separate causes:
+1. **Renderer bug.** The model ignored the "start bullets with a hyphen" rule and wrote plain paragraphs. `_render_product_updates()` treated every un-hyphenated line as a subheading, wrapped it in `<strong>`, and joined them with no separator ("doesn't yet match.Wealthbox:").
+2. **Prompt design.** The prompt said "include every feature... breadth matters more than curation", so ~15 items got equal weight, each with a "why it matters" sentence.
+
+**What it is now:**
+- **One hyphen bullet per competitor:** `- Competitor: update; update; update.` Each update a short phrase under 10 words. No analysis in this section.
+- **Product changes only:** features, AI, integrations, editions/tiers, pricing and packaging, announced release dates. Excluded: customer wins, hires, funding, webinars, podcasts, blog posts, compliance/marketing content, website copy and navigation changes, anything "promoted" rather than shipped.
+- **Each update under the vendor whose product changed** (joint integrations included).
+- **Items discussed in Competitive News still appear here** as a short phrase. News explains; Product Updates lists.
+- **The "No Maximizer product updates are available" line is gone.** A `MAXIMIZER UPDATES` sub-header appears only when there is one.
+- **Renderer:** every line renders as a bullet, hyphen or not, with the competitor name bolded. Re-tested on the saved August text: 16 clean bullets, 0 bold blocks. The story parser was factored out to `_render_labelled_stories()`; Competitive News output verified byte-identical to before.
+
+**Result on September data:** 177 words across 12 competitors (was ~450).
+
+**Ordering rule:** Tier 1, Tier 2, Frenemies, then Ankle Biter. Ankle Biter was missing from the first version of the rule (`d3ac7d7`), and was added in the follow-up commit.
+
+**Rejected, with reasons:**
+- **A "Top priorities" block** (up to 3 cross-competitor themes with What happened / Why it matters, then one line per competitor). Built and sent as drafts v1 and v2. Lewis rejected it: it read the same as Competitive News, and he couldn't tell the two sections apart. It also grouped loosely, e.g. "Legacy CRM vendors" covering Zoho and Equisoft, and Claudeforce under "meeting assistants".
+- **Excluding Competitive News items from Product Updates.** That would drop the biggest launches from the changelog.
+- **A link to the full Notion log** under the section. Floated, not built; unclear whether the three alias audiences can open Notion.
+
+**Watch in future issues:** in the September draft, "Redtail: Claude AI integration via Orion" may belong under Orion. "Denali AI features" also conflicts with August intel saying Redtail removed Denali from its nav. The vendor-attribution rule is model judgement, and broadcasts are unreviewed.
+
+**The local September file is not what was broadcast.** `output/competitive_intel_newsletter_2026-09.txt` was overwritten by the third draft run. The broadcast copy exists only in Resend and the recipients' inboxes.
+
+### Earlier — 2026-09-24 (later): Maximizer-party filter on Teams alerts
 
 Feedback: intel where Maximizer is itself a party (a joint webinar, a partner's Maximizer integration) is noise in the Teams chat because we already know. It is still logged, scored and summarised, and it stays in the newsletter (Lewis, 2026-09-24). Only the Teams card is dropped.
 
@@ -390,7 +419,9 @@ python3 -m scripts.sync_notion_competitor_options --apply
 - `notion_client.py` loads dotenv at module level (before module-level vars are set), important because it captures `NOTION_TOKEN` at import time.
 - changedetection.io history array is **newest-first** (index 0 = most recent). The client diffs `history[i]` against `history[i+1]`.
 - Alert threshold is set in `config.py` as `ALERT_SCORE_THRESHOLD`. Only changes scoring above this get summarised and alerted.
-- Newsletter system prompt is loaded from `resources/newsletter_system_prompt.txt` at agent startup. Editing that file is all that's needed to change newsletter structure or tone, no code changes required.
+- Newsletter system prompt is loaded from `resources/newsletter_system_prompt.txt` at agent startup. Editing that file is all that's needed to change tone or wording. **Changing structure (new labels or sub-headers) also needs the matching renderer** in `newsletter_agent.py`, or the new lines render as plain bullets.
+- **`_parse_sections()` splits on `INTRODUCTION` / `COMPETITIVE NEWS` / `PRODUCT UPDATES` anywhere in the text, not only at line start.** Any sub-header or phrase that contains one of those strings will split the newsletter in the wrong place. This is why the Maximizer sub-header is `MAXIMIZER UPDATES`.
+- **Testing a newsletter change:** `python3 -m jobs.monthly_newsletter --mode draft --year YYYY --month M` emails `DRAFT_REVIEWER` (Lewis) only. It costs one generation (~70s for 542 rows) and overwrites that month's file in `output/`. Draft mode never touches the audience or the duplicate guard.
 - Teams webhook is the Power Automate Workflows flow, not a classic Office 365 Connector. The flow validates incoming JSON as Adaptive Card 1.5 and rejects anything else with 400 `InvalidBotAdaptiveCard`. Don't go back to MessageCard.
 - The Notion Changes DB schema matches the code. The legacy `Battlecard Updated` column was removed via `scripts/drop_battlecard_column.py`. The 11 legacy battlecard pages and the defunct `Competitors` database were archived via `scripts/archive_battlecard_pages.py` and `scripts/archive_competitors_database.py`.
 - `scripts/` holds one-shot maintenance scripts. They are not part of the scheduled pipeline.
