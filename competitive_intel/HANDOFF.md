@@ -1,5 +1,5 @@
 # Competitive Intelligence System — Handoff Doc
-**Last updated:** 2026-10-01
+**Last updated:** 2026-10-02
 **Repo:** https://github.com/dysonmaximizer-sys/claude
 **Project path:** `/Users/lewisdyson/Claude Code/competitive_intel/`
 
@@ -64,22 +64,24 @@ Battlecards have been removed from scope. The 11 legacy battlecard pages and the
 |-------------|-------------|----------------------|
 | Equisoft    | Tier 1      | Yes                  |
 | Cloven      | Tier 1      | Yes                  |
-| HubSpot     | Tier 1      | Yes                  |
-| Laylah      | Tier 2      | Yes                  |
+| Laylah      | Tier 1      | Yes (Tier 2 → 1 on 2026-10-02) |
+| HubSpot     | Tier 2      | Yes (Tier 1 → 2 on 2026-10-02) |
 | Salesforce  | Tier 2      | Yes                  |
 | Wealthbox   | Tier 2      | Yes                  |
 | Zoho        | Tier 2      | Yes                  |
 | Redtail     | Tier 2      | Yes (added 2026-08-18) |
-| AdvisorEngine | Tier 2    | Yes (added 2026-08-18) |
 | Microsoft Dynamics | Tier 2 | Yes (added 2026-08-18) |
 | Act!        | Tier 2      | Yes (added 2026-08-18) |
-| Focal AI    | Frenemies   | **No — watch not created yet** |
-| Continuum   | Frenemies   | **No — watch not created yet** |
-| Zocks       | Frenemies   | **No — watch not created yet** |
-| Fireflies   | Frenemies   | **No — watch not created yet** |
+| Focal AI    | Frenemies   | Yes (94 Frenemies rows in Sept 2026) |
+| Continuum   | Frenemies   | Yes                  |
+| Zocks       | Frenemies   | Yes                  |
+| Fireflies   | Frenemies   | Yes                  |
+| AdvisorEngine | Ankle Biter | Yes (added 2026-08-18; Tier 2 → Ankle Biter on 2026-10-02) |
 | Onevest     | Ankle Biter | Yes                  |
 | Pipedrive   | Ankle Biter | Yes                  |
 | Advora      | Ankle Biter | Yes                  |
+
+**Retiered 2026-10-02 (Lewis):** Laylah Tier 2 → Tier 1, HubSpot Tier 1 → Tier 2, AdvisorEngine Tier 2 → Ankle Biter. Only the `tier` values in `config.py` changed. The entries were deliberately **not** reordered: `_match_competitor`'s slug fallback returns the first match in dict order, so moving entries could re-map watches. **Existing Notion rows keep the tier they were logged with.** Nothing backfills them, so Notion views and the newsletter will show HubSpot as Tier 1 on rows logged before the change. Not decided: Wealthbox and Salesforce were raised as possibly under-tiered (both drove more September intel than Equisoft or Cloven) and left at Tier 2.
 
 Monday was removed from the registry on 2026-08-31: it had been listed as Tier 2 since April with **no changedetection.io watch**, so it produced zero rows in the entire history of the database. The Notion `Competitor` select still carries the option (removing a select option would strip the value from any page that used it; keeping it costs nothing).
 
@@ -153,7 +155,7 @@ All set in `.env` (local) and GitHub Actions secrets (CI). Both must be kept in 
 | Rows scored | 412, none failed |
 | Alert-worthy (6+) | 53 = **13%** |
 | cd.io watches | 89, all matching a competitor |
-| Registry | 18 competitors: 3 Tier 1, 8 Tier 2, 4 Frenemies, 3 Ankle Biter |
+| Registry | 18 competitors: 3 Tier 1, 8 Tier 2, 4 Frenemies, 3 Ankle Biter (as of 09-24; 3 / 7 / 4 / 4 after the 2026-10-02 retier) |
 | Cost | ~$2-3/month |
 
 **The Frenemies tier is earning its place.** 94 rows in three weeks (Zocks 35, Fireflies 30, Focal AI 18, Continuum 11), and they produced the highest-scoring intel of the period: **Continuum shipped a live direct Maximizer integration (8/10)** and Zocks became a launch partner for Claude for Financial Advisors (7/10). None of that was visible before 2026-08-31.

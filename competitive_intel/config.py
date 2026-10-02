@@ -70,11 +70,10 @@ PREFLIGHT_MODEL = "claude-haiku-4-5-20251001"
 #   "Frenemies"   partner and competitor at once — integration or partnership news
 #                 from these matters as much as their competitive moves.
 #                 Currently: Focal AI, Continuum, Zocks, Fireflies.
-# NOTE: the tier is passed to the scoring prompt as a bare label ("Tier: Frenemies")
-# and the prompt does not explain the vocabulary, so today the value is metadata for
-# humans (Teams cards, Notion views, the newsletter) rather than something that
-# changes how a change is scored. Making it steer scoring means adding a tier
-# glossary to agents/scoring_agent.SYSTEM_PROMPT.
+# NOTE: the tier steers scoring, not just labels. agents/scoring_agent.SYSTEM_PROMPT
+# carries a tier glossary (since 2026-08-31) that weights Tier 1 most heavily, so
+# retiering a competitor changes which of its changes reach ALERT_SCORE_THRESHOLD.
+# It also appears on Teams cards, in Notion, and orders newsletter Product Updates.
 # Matching contract (see integrations/changedetection_client._match_competitor):
 #   url_patterns   — list of (host_suffix, path_substring_or_None). Matched
 #                    against the watch URL's host and path. Precise, so this is
@@ -89,12 +88,16 @@ PREFLIGHT_MODEL = "claude-haiku-4-5-20251001"
 #                    ("act" would match contact, interact, practifi…), which
 #                    rely on url_patterns/title_patterns instead.
 COMPETITORS = {
+    # Entries are grouped by the tier they were added under; the "tier" value is
+    # authoritative. Order is NOT cosmetic: the slug fallback in
+    # _match_competitor returns the first match, so reordering can re-map watches.
+    # Retiered 2026-10-02 (Lewis): Laylah 2→1, HubSpot 1→2, AdvisorEngine 2→Ankle Biter.
     # Tier 1 — direct, highest-priority threats
     "Equisoft": {"tier": "Tier 1", "slug": "equisoft"},
     "Cloven":   {"tier": "Tier 1", "slug": "cloven"},
-    "HubSpot":  {"tier": "Tier 1", "slug": "hubspot"},
+    "HubSpot":  {"tier": "Tier 2", "slug": "hubspot"},
     # Tier 2 — relevant but less direct
-    "Laylah":     {"tier": "Tier 2", "slug": "laylah"},
+    "Laylah":     {"tier": "Tier 1", "slug": "laylah"},
     "Salesforce": {"tier": "Tier 2", "slug": "salesforce"},
     "Wealthbox":  {"tier": "Tier 2", "slug": "wealthbox"},
     "Zoho":       {"tier": "Tier 2", "slug": "zoho"},
@@ -111,7 +114,7 @@ COMPETITORS = {
         "slug_match": False,
     },
     "AdvisorEngine": {
-        "tier": "Tier 2",
+        "tier": "Ankle Biter",
         "slug": "advisorengine",
         "url_patterns": [("advisorengine.com", None)],  # includes /newsroom
         "title_patterns": [r"\badvisorengine\b"],
